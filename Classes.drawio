@@ -1,4 +1,4 @@
-<mxfile host="app.diagrams.net" modified="2024-01-19T18:27:24.702Z" agent="Mozilla/5.0 (X11; Linux x86_64; rv:121.0) Gecko/20100101 Firefox/121.0" etag="kzG9AqOkXOnWvMo3AXtD" version="22.1.21" type="github">
+<mxfile host="app.diagrams.net" modified="2024-01-19T18:29:13.503Z" agent="Mozilla/5.0 (X11; Linux x86_64; rv:121.0) Gecko/20100101 Firefox/121.0" etag="iHPOkOfO7G9XhZQ57Fb2" version="22.1.21" type="github">
   <diagram name="Страница — 1" id="Bt4thBoPrSUwoxWzjaqT">
     <mxGraphModel dx="1434" dy="774" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
       <root>
@@ -29,10 +29,10 @@
           <mxGeometry x="170" y="200" width="60" height="30" as="geometry" />
         </mxCell>
         <mxCell id="uj_38s1KniOL5Ioj-gPl-8" value="" style="verticalLabelPosition=bottom;verticalAlign=top;html=1;shape=mxgraph.flowchart.on-page_reference;" parent="1" vertex="1">
-          <mxGeometry x="510" y="75" width="60" height="60" as="geometry" />
+          <mxGeometry x="500" y="220" width="80" height="70" as="geometry" />
         </mxCell>
         <mxCell id="uj_38s1KniOL5Ioj-gPl-9" value="UsbGuard" style="text;strokeColor=none;align=center;fillColor=none;html=1;verticalAlign=middle;whiteSpace=wrap;rounded=0;" parent="1" vertex="1">
-          <mxGeometry x="505" y="80" width="70" height="50" as="geometry" />
+          <mxGeometry x="512.5" y="235" width="55" height="40" as="geometry" />
         </mxCell>
         <mxCell id="uj_38s1KniOL5Ioj-gPl-11" value="Message Dispatcher" style="html=1;whiteSpace=wrap;" parent="1" vertex="1">
           <mxGeometry x="290" y="230" width="110" height="50" as="geometry" />
@@ -52,23 +52,14 @@
         <mxCell id="uj_38s1KniOL5Ioj-gPl-14" value="Messages" style="text;strokeColor=none;align=center;fillColor=none;html=1;verticalAlign=middle;whiteSpace=wrap;rounded=0;" parent="1" vertex="1">
           <mxGeometry x="210" y="280" width="60" height="30" as="geometry" />
         </mxCell>
-        <mxCell id="uj_38s1KniOL5Ioj-gPl-15" value="Methods" style="whiteSpace=wrap;html=1;aspect=fixed;" parent="1" vertex="1">
-          <mxGeometry x="500" y="220" width="80" height="80" as="geometry" />
-        </mxCell>
-        <mxCell id="uj_38s1KniOL5Ioj-gPl-16" value="" style="endArrow=classic;html=1;rounded=0;entryX=0;entryY=0.375;entryDx=0;entryDy=0;entryPerimeter=0;exitX=1;exitY=0.5;exitDx=0;exitDy=0;" parent="1" source="uj_38s1KniOL5Ioj-gPl-11" target="uj_38s1KniOL5Ioj-gPl-15" edge="1">
+        <mxCell id="uj_38s1KniOL5Ioj-gPl-16" value="" style="endArrow=classic;html=1;rounded=0;entryX=0;entryY=0.375;entryDx=0;entryDy=0;entryPerimeter=0;exitX=1;exitY=0.5;exitDx=0;exitDy=0;" parent="1" source="uj_38s1KniOL5Ioj-gPl-11" edge="1">
           <mxGeometry width="50" height="50" relative="1" as="geometry">
             <mxPoint x="300" y="350" as="sourcePoint" />
-            <mxPoint x="350" y="300" as="targetPoint" />
-          </mxGeometry>
-        </mxCell>
-        <mxCell id="uj_38s1KniOL5Ioj-gPl-18" value="" style="endArrow=classic;html=1;rounded=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;entryPerimeter=0;exitX=0.491;exitY=-0.05;exitDx=0;exitDy=0;exitPerimeter=0;" parent="1" source="uj_38s1KniOL5Ioj-gPl-15" target="uj_38s1KniOL5Ioj-gPl-8" edge="1">
-          <mxGeometry width="50" height="50" relative="1" as="geometry">
-            <mxPoint x="300" y="350" as="sourcePoint" />
-            <mxPoint x="350" y="300" as="targetPoint" />
+            <mxPoint x="500" y="250" as="targetPoint" />
           </mxGeometry>
         </mxCell>
         <mxCell id="uj_38s1KniOL5Ioj-gPl-19" value="Calls" style="text;strokeColor=none;align=center;fillColor=none;html=1;verticalAlign=middle;whiteSpace=wrap;rounded=0;" parent="1" vertex="1">
-          <mxGeometry x="410" y="210" width="60" height="30" as="geometry" />
+          <mxGeometry x="414" y="220" width="60" height="30" as="geometry" />
         </mxCell>
         <mxCell id="uj_38s1KniOL5Ioj-gPl-20" value="Lisp Gui" style="rounded=1;whiteSpace=wrap;html=1;" parent="1" vertex="1">
           <mxGeometry x="210" y="100" width="120" height="60" as="geometry" />
