@@ -7,7 +7,6 @@
 
 #include "lispmessage.hpp"
 
-
 void MessageReader::Loop(){
     std::string line;
     bool msg_in_progress=false;
@@ -40,10 +39,8 @@ void MessageReader::Loop(){
                     objects,
                     params
                 );
-                std::cerr << request_message <<std::endl;
-            }
-         
-            // TODO call dispatcher
+                dispatcher.Dispatch(request_message);
+            }            
             // TODO send response
             // for now - just send empty response
             std::cout << begining << ending;
@@ -83,7 +80,7 @@ void MessageReader::Loop(){
     
 }
 
-std::string MessageReader::WrapWithQuotes(const std::string& str){
+std::string MessageReader::WrapWithQuotes(const std::string& str) const{
     std::string res;
     res+="\"";
     res+=str;
