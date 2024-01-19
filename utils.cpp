@@ -3,13 +3,14 @@
 
 std::string ToLisp(const vecPairs& vec){
     std::string res;
-    for (const auto& pair : vec){
-        res+="(";
+    res+="(";
+    for (const auto& pair : vec){       
         res+=WrapWithQuotes(pair.first);
         res+=" ";
-        res+=WrapWithQuotes(pair.second);
-        res+=")";
+        res+=WrapWithQuotes(pair.second);        
+        res+=" ";
     }
+    res+=")";
     std::cerr << "result string: " <<std::endl <<res << std::endl;
     return res;
 }
