@@ -5,16 +5,19 @@
 #include <fstream>
 #include <unordered_map>
 
+#include "lispmessage.hpp"
+
 
 void MessageReader::Loop(){
     std::string line;
     bool msg_in_progress=false;
     std::string action;
+    std::string objects;
     std::unordered_map<std::string,std::string> params;
 
     // read stdin loop
     while (std::getline(std::cin,line) ) {  
-        std::cerr <<line<<std::endl;
+        //std::cerr <<line<<std::endl;
         boost::trim(line);
         
         // message begin
@@ -31,7 +34,20 @@ void MessageReader::Loop(){
         // the end of a message
         if(boost::contains(line,"_message:end")){
             msg_in_progress=false;
-            //TODO  create and send messag
+            if (!action.empty() && !objects.empty()){
+                LispMessage request_message(
+                    action,
+                    objects,
+                    params
+                );
+                std::cerr << request_message <<std::endl;
+            }
+         
+            // TODO call dispatcher
+            // TODO send response
+            // for now - just send empty response
+            std::cout << begining << ending;
+
             continue;
         }
 
@@ -40,7 +56,15 @@ void MessageReader::Loop(){
             boost::erase_first(line,str_action);
             boost::trim(line);
             action=line;
-            std::cerr << "Action = " <<action <<std::endl;
+            line.clear();
+            continue;
+        }
+
+        // find object
+        if (boost::starts_with(line,str_objects)){
+            boost::erase_first(line,str_objects);
+            boost::trim(line);
+            objects=line;
             line.clear();
             continue;
         }

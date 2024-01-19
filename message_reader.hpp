@@ -15,9 +15,9 @@ private:
     const std::string str_action="action:";
     const std::string begining="(\n";
     const std::string ending=")\n";
-    const std::string str_parameter="parameter:";
+    const std::string str_objects="_objects:";
 
-    std::string MessageReader::WrapWithQuotes(const std::string& str);
+    std::string WrapWithQuotes(const std::string& str);
 
 
 };
