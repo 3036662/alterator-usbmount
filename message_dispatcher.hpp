@@ -1,6 +1,8 @@
 #pragma once
 
 #include "lispmessage.hpp"
+#include "usb_device.hpp"
+#include "types.hpp"
 
 class MessageDispatcher{
     public:
@@ -8,3 +10,5 @@ class MessageDispatcher{
         
         bool Dispatch(const LispMessage& msg);
 };
+
+std::vector<UsbDevice> fakeLibGetUsbList();

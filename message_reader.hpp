@@ -19,9 +19,6 @@ private:
     const std::string ending=")\n";
     const std::string str_objects="_objects:";
 
-    std::string WrapWithQuotes(const std::string& str) const;
-
-
 };
 
 #endif // MESSAGE_READER_HPP

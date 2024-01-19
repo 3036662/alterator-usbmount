@@ -8,7 +8,11 @@ add_compile_options(-Wall -Wextra -pedantic)
 
 add_executable(simple main.cpp
     lispmessage.hpp lispmessage.cpp
-    message_reader.hpp message_reader.cpp)
+    message_reader.hpp message_reader.cpp
+    message_dispatcher.cpp message_dispatcher.hpp
+    utils.cpp utils.hpp
+    usb_device.cpp usb_device.hpp
+    )
 
 include(GNUInstallDirs)
 install(TARGETS simple

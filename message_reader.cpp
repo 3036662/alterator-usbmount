@@ -16,7 +16,7 @@ void MessageReader::Loop(){
 
     // read stdin loop
     while (std::getline(std::cin,line) ) {  
-        //std::cerr <<line<<std::endl;
+        std::cerr <<line<<std::endl;
         boost::trim(line);
         
         // message begin
@@ -39,12 +39,11 @@ void MessageReader::Loop(){
                     objects,
                     params
                 );
-                dispatcher.Dispatch(request_message);
+                dispatcher.Dispatch(request_message);                
             }            
             // TODO send response
             // for now - just send empty response
             std::cout << begining << ending;
-
             continue;
         }
 
@@ -80,13 +79,7 @@ void MessageReader::Loop(){
     
 }
 
-std::string MessageReader::WrapWithQuotes(const std::string& str) const{
-    std::string res;
-    res+="\"";
-    res+=str;
-    res+="\"";
-    return res;
-}
+
 
 
  // if (action == "read"){
