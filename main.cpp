@@ -8,15 +8,10 @@
 
 
 
-int main(int argc, char* argv[], char **envp)
+int main(int argc, char* argv[], char **envp )
 {
 
     std::cerr << "argc = " <<argc <<std::endl;
-
-    std::string line;
-    bool msg_in_progress=false;
-    std::string action;
-    std::string parameter;
 
     MessageReader reader;
     reader.Loop();
