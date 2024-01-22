@@ -43,7 +43,7 @@ void MessageReader::Loop(){
             }            
             // TODO send response
             // for now - just send empty response
-            std::cout << begining << ending;
+          //  std::cout << begining << ending;
             continue;
         }
 
