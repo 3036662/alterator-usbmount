@@ -6,19 +6,16 @@
 bool MessageDispatcher::Dispatch(const LispMessage& msg){
     std::cerr << msg <<std::endl;
     std::cerr<<"curr action "<< msg.action <<std::endl;
-    if (msg.action=="list"){
+    if (msg.action=="list" && msg.objects=="list_curr_usbs"){
         std::cerr <<"dispatcher->list"<<std::endl;
-       // if (msg.params.count("list") && 
-        //    msg.params.find("list")->second=="current_usb_list"){
-               // TODO 
              std::vector<UsbDevice> vec_usb=fakeLibGetUsbList();
              std::cout <<"(";
              for (const auto& usb : vec_usb){
                 std::cout << ToLisp(usb.SerializeForLisp());
              }  
              std::cout << ")";
-       // }
     }
+    // empty response
     else {
         std::cout <<"(\n)\n";
     }
