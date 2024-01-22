@@ -15,8 +15,6 @@ private:
     MessageDispatcher dispatcher;
 
     const std::string str_action="action:";
-    const std::string begining="(\n";
-    const std::string ending=")\n";
     const std::string str_objects="_objects:";
 
 };

@@ -41,9 +41,6 @@ void MessageReader::Loop(){
                 );
                 dispatcher.Dispatch(request_message);                
             }            
-            // TODO send response
-            // for now - just send empty response
-          //  std::cout << begining << ending;
             continue;
         }
 
