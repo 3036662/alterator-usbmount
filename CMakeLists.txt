@@ -19,8 +19,9 @@ add_executable(simple main.cpp
     message_dispatcher.cpp message_dispatcher.hpp
     utils.cpp utils.hpp
     usb_device.cpp usb_device.hpp
+    guard.cpp guard.hpp
     )
-
+target_include_directories(simple PUBLIC ${UDBGUARD_INCLUDE_DIRS})
 target_link_libraries(simple PRIVATE PkgConfig::UDBGUARD)
 
 

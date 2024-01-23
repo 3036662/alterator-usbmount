@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE QtCreatorProject>
-<!-- Written by QtCreator 12.0.0, 2024-01-19T11:49:25. -->
+<!-- Written by QtCreator 12.0.0, 2024-01-22T17:35:22. -->
 <qtcreator>
  <data>
   <variable>EnvironmentId</variable>
@@ -392,9 +392,9 @@
     <value type="int" key="PE.EnvironmentAspect.Base">2</value>
     <valuelist type="QVariantList" key="PE.EnvironmentAspect.Changes"/>
     <value type="bool" key="PE.EnvironmentAspect.PrintOnRun">false</value>
-    <value type="QString" key="ProjectExplorer.ProjectConfiguration.DisplayName">backendcpp</value>
-    <value type="QString" key="ProjectExplorer.ProjectConfiguration.Id">CMakeProjectManager.CMakeRunConfiguration.backendcpp</value>
-    <value type="QString" key="ProjectExplorer.RunConfiguration.BuildKey">backendcpp</value>
+    <value type="QString" key="ProjectExplorer.ProjectConfiguration.DisplayName">simple</value>
+    <value type="QString" key="ProjectExplorer.ProjectConfiguration.Id">CMakeProjectManager.CMakeRunConfiguration.simple</value>
+    <value type="QString" key="ProjectExplorer.RunConfiguration.BuildKey">simple</value>
     <value type="bool" key="ProjectExplorer.RunConfiguration.Customized">false</value>
     <value type="bool" key="RunConfiguration.UseCppDebuggerAuto">true</value>
     <value type="bool" key="RunConfiguration.UseLibrarySearchPath">true</value>
