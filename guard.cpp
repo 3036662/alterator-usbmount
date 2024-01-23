@@ -1,5 +1,6 @@
 #include "guard.hpp"
 #include <iostream>
+#include "utils.hpp"
 
 Guard::Guard(): ptr_ipc(nullptr)
 {
@@ -13,7 +14,7 @@ Guard::Guard(): ptr_ipc(nullptr)
 
 }
 
-bool Guard::HealthStatus(){
+bool Guard::HealthStatus() const{
     return ptr_ipc && ptr_ipc->isConnected();
 }
 
@@ -35,6 +36,21 @@ std::vector<UsbDevice> Guard::ListCurrentUsbDevices(){
     }
     return res;
 }
+
+bool Guard::AllowOrBlockDevice(std::string id,bool allow, bool permanent){
+    if (id.empty() || !HealthStatus()) return false;
+    uint32_t id_numeric=StrToUint(id);
+    if (!id_numeric) return false;
+    usbguard::Rule::Target policy= allow ? usbguard::Rule::Target::Allow :
+                                           usbguard::Rule::Target::Block;
+    ptr_ipc->applyDevicePolicy(id_numeric,policy,permanent); 
+    return true;
+}
+
+
+
+
+
 
 // just in case
 // this strings can be recieved from the rule, but they are not used yet

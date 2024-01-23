@@ -22,9 +22,32 @@ bool MessageDispatcher::Dispatch(const LispMessage& msg){
              return true;
     }
 
+    // allow device with id
+    if (msg.action=="read" && msg.objects=="usb_allow"){
+        if (!msg.params.count("usb_id") || msg.params.find("usb_id")->second.empty() ){
+            std::cout <<mess_beg<<mess_end;
+            std::cerr << "bad request for usb allow,doing nothing"<<std::endl;
+            return true;
+        }
+        guard.AllowOrBlockDevice(msg.params.find("usb_id")->second,true);
+        std::cout << mess_beg<<"status"<<WrapWithQuotes("OK")<<mess_end;
+        return true;
+    }
+
+    // block device with id
+        if (msg.action=="read" && msg.objects=="usb_block"){
+        if (!msg.params.count("usb_id") || msg.params.find("usb_id")->second.empty() ){
+            std::cout <<mess_beg<<mess_end;
+            std::cerr << "bad request for usb allow,doing nothing"<<std::endl;
+            return true;
+        }
+        guard.AllowOrBlockDevice(msg.params.find("usb_id")->second,false);
+        std::cout << mess_beg<<"status"<<WrapWithQuotes("OK")<<mess_end;
+        return true;
+    }
+
     // empty response
     std::cout <<"(\n)\n";
-
     return true;
 }
 

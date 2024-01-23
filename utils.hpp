@@ -1,6 +1,7 @@
 #pragma once
 #include <string>
 #include <vector>
+#include <cstdint>
 #include "types.hpp"
 #include "usb_device.hpp"
 
@@ -12,3 +13,5 @@ std::string WrapWithQuotes(const std::string& str);
 
 // data mocking
 std::vector<UsbDevice> fakeLibGetUsbList();
+
+uint32_t StrToUint(const std::string& id) noexcept;
