@@ -3,10 +3,11 @@
 
 #include <string>
 #include "message_dispatcher.hpp"
+#include "guard.hpp"
 class MessageReader
 {
 public:
-    MessageReader() = default;
+    MessageReader(Guard& guard);
     
     //main loop
     void Loop();

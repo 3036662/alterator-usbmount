@@ -7,6 +7,10 @@
 
 #include "lispmessage.hpp"
 
+
+MessageReader::MessageReader(Guard& guard):dispatcher(guard)
+{}
+
 void MessageReader::Loop(){
     std::string line;
     bool msg_in_progress=false;
