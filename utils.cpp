@@ -18,7 +18,7 @@ std::string ToLisp(const vecPairs& vec){
         res+=" ";   
     }
     res+=")";
-    std::cerr << "result string: " <<std::endl <<res << std::endl;
+    //std::cerr << "result string: " <<std::endl <<res << std::endl;
     return res;
 }
 
