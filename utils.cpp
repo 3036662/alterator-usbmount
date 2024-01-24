@@ -9,16 +9,18 @@ std::string ToLisp(const vecPairs& vec){
     // name for list - alterator expectes first value to be
     // something called "name" -> just put vec[0].second
     // TODO find out if it used somewhere
-    res+=WrapWithQuotes(vec[0].second);
-    res+=" ";
-    for (const auto& pair : vec){    
-        res+=WrapWithQuotes(pair.first);
-        res+=" ";
+
+    for (const auto& pair : vec){   
         res+=WrapWithQuotes(pair.second);        
         res+=" ";   
+        res+=WrapWithQuotes(pair.first);
+        res+=" ";
     }
+    // res+=WrapWithQuotes(vec[0].second);
+    res+=WrapWithQuotes("");
+    res+=" ";
     res+=")";
-    //std::cerr << "result string: " <<std::endl <<res << std::endl;
+   // std::cerr << "result string: " <<std::endl <<res << std::endl;
     return res;
 }
 
