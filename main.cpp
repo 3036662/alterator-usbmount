@@ -8,8 +8,6 @@
 #include "message_reader.hpp"
 
 int main(int argc, char *argv[], char **envp) {
-
-  // std::shared_ptr<Guard> ptr_guard=std::make_shared<Guard>();
   Guard guard;
 
   MessageReader reader(guard);
