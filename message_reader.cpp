@@ -72,32 +72,3 @@ void MessageReader::Loop() {
     line.clear();
   }
 }
-
-// if (action == "read"){
-//     // read from file
-//     std::ifstream is("/tmp/config");
-//     if (is.is_open()){
-//         is >> parameter;
-//     }
-//     else{
-//         std::cerr << "Can't open file for reading"<<std::endl;
-//     }
-//     std::cerr <<"Sending response = " << begining<<"parameter "<<
-//     WrapWithQuotes(parameter) << ending <<std::endl; std::cout  <<
-//     begining<<"parameter "<< WrapWithQuotes(parameter) << ending <<std::endl;
-// }
-// else if (action == "write" && !parameter.empty()){
-//     std::ofstream os("/tmp/config");
-//     if (os.is_open()){
-//         os << parameter;
-//     }
-//     else {
-//         std::cerr << "Can't open file for writing"<<std::endl;
-//     }
-//     os.close();
-//     std::cout << begining <<ending;
-// }
-// else{
-//     // just empty answer for other requests
-//       std::cout << begining <<ending;
-// }
