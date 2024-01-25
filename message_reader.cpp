@@ -40,6 +40,10 @@ void MessageReader::Loop() {
         LispMessage request_message(action, objects, params);
         dispatcher.Dispatch(request_message);
       }
+      params.clear();
+      action.clear();
+      objects.clear();
+      line.clear();
       continue;
     }
 
