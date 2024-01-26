@@ -1,0 +1,36 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0//EN" "http://www.w3.org/TR/REC-html40/strict.dtd">
+<html wf="none">
+    <body>
+        <form method="POST">
+        <table class="alterator-listbox single-select" align="center" name="list_prsnt_devices">
+            <thead>
+              <tr>
+                <th>N</th>
+                <th>Status</th>
+                <th>Name</th>
+                <th>ID</th>
+                <th>Port</th>
+                <th>Connect type</th>
+               </tr>
+                </thead>
+                <tbody>              
+                  <tr class="wrap">
+                    <td><span class="alterator-label" name="name" /></td>
+                    <td><span class="alterator-label" name="label_prsnt_usb_number" /></td>
+                    <td><span class="alterator-label" name="label_prsnt_usb_status" /></td>
+                    <td><span class="alterator-label" name="label_prsnt_usb_name" /></td>
+                    <td><span class="alterator-label" name="label_prsnt_usb_id" /></td>
+                    <td><span class="alterator-label" name="label_prsnt_usb_port" /></td>
+                    <td><span class="alterator-label" name="label_prsnt_usb_connection" /></td>
+
+                  </tr>
+                </tbody>
+        </table>
+        </form>
+        <nobr>
+            <input type="button" name="btn_prsnt_scan" class="btn" value="Scan plugged-in USB devices"/>&nbsp;&nbsp;
+            <input type="button" name="btn_prsnt_dev_add" class="btn" value="Allow device"/>
+            <input type="button" name="btn_prsnt_dev_block" class="btn" value="Block device"/>
+        </nobr>
+    </body>
+</html>
