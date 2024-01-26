@@ -4,8 +4,8 @@ project(backendcpp LANGUAGES CXX)
 
 
 find_package(PkgConfig REQUIRED)
-pkg_check_modules(UDBGUARD REQUIRED IMPORTED_TARGET libusbguard)
-message("UDBGUARD_FOUND: ${UDBGUARD_FOUND}")
+pkg_check_modules(USBGUARD REQUIRED IMPORTED_TARGET libusbguard)
+message("USBGUARD_FOUND: ${USBGUARD_FOUND}")
 
 find_package(Boost REQUIRED)
 
@@ -15,5 +15,10 @@ add_compile_options(-Wall -Wextra -pedantic)
 
 add_subdirectory(backend)
 
-
 include(GNUInstallDirs)
+
+
+pkg_check_modules(UDEV REQUIRED IMPORTED_TARGET libudev)
+add_executable(test main.cpp)
+target_link_libraries(test PRIVATE PkgConfig::UDEV)
+target_include_directories(test PUBLIC ${UDEV_INCLUDE_DIRS})

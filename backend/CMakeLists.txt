@@ -8,8 +8,8 @@ add_executable(simple main.cpp
     guard.cpp guard.hpp
     )
 
-target_include_directories(simple PUBLIC ${UDBGUARD_INCLUDE_DIRS})
-target_link_libraries(simple PRIVATE PkgConfig::UDBGUARD)
+target_include_directories(simple PUBLIC ${USBGUARD_INCLUDE_DIRS})
+target_link_libraries(simple PRIVATE PkgConfig::USBGUARD)
 
 install(TARGETS simple
     LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
