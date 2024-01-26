@@ -13,20 +13,7 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 add_compile_options(-Wall -Wextra -pedantic)
 
-add_executable(simple main.cpp
-    lispmessage.hpp lispmessage.cpp
-    message_reader.hpp message_reader.cpp
-    message_dispatcher.cpp message_dispatcher.hpp
-    utils.cpp utils.hpp
-    usb_device.cpp usb_device.hpp
-    guard.cpp guard.hpp
-    )
-target_include_directories(simple PUBLIC ${UDBGUARD_INCLUDE_DIRS})
-target_link_libraries(simple PRIVATE PkgConfig::UDBGUARD)
+add_subdirectory(backend)
 
 
 include(GNUInstallDirs)
-install(TARGETS simple
-    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
-    RUNTIME DESTINATION "/home/oleg/dev/alterator/alterator-simple/backend3"
-)
