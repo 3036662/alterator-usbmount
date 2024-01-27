@@ -1,8 +1,13 @@
+#include <cstring>
+#include <filesystem>
+#include <fstream>
 #include <iostream>
 #include <libudev.h>
-#include <cstring>
+#include <string>
+
 
 void printDeviceProperties(struct udev_device *device);
+bool mountBlock(const char *block);
 
 int main(int argrc, char *argc[]) {
   struct udev *udev;
@@ -14,6 +19,7 @@ int main(int argrc, char *argc[]) {
   }
   monitor = udev_monitor_new_from_netlink(udev, "udev");
   udev_monitor_filter_add_match_subsystem_devtype(monitor, "usb", NULL);
+  udev_monitor_filter_add_match_subsystem_devtype(monitor, "block", NULL);
   udev_monitor_enable_receiving(monitor);
   int fd = udev_monitor_get_fd(monitor);
 
@@ -39,27 +45,37 @@ int main(int argrc, char *argc[]) {
           std::cout << "Action: " << action << std::endl;
         }
 
-        // vendor    
-        const char *vendor_id = udev_device_get_property_value(device, "ID_VENDOR_ID");
+        // vendor
+        const char *vendor_id =
+            udev_device_get_property_value(device, "ID_VENDOR_ID");
         if (vendor_id) {
           std::cout << "VENDOR_ID = " << vendor_id << std::endl;
         }
 
         // model
-        const char* model_id = udev_device_get_property_value(device, "ID_MODEL_ID");
+        const char *model_id =
+            udev_device_get_property_value(device, "ID_MODEL_ID");
         if (model_id) {
           std::cout << "MODEL_ID = " << model_id << std::endl;
         }
         std::cout << std::endl << std::endl;
-        
-        if (action && vendor_id && model_id && strcmp(vendor_id,"8564")==0 && strcmp(model_id,"1000")==0){
-            std::cout << "We have found the chosen device!" << std::endl;
-            if (int err=udev_device_set_sysattr_value(device,"OWNER", "oleg") < 0){
-                std::cerr << "Can't change the owner..." << err <<std::endl;
+
+        if (action && vendor_id && model_id && strcmp(vendor_id, "13fe") == 0 &&
+            strcmp(model_id, "4300") == 0) {
+          std::cout << "We have found the chosen device!" << std::endl;
+
+          const char *subsystem =
+              udev_device_get_property_value(device, "SUBSYSTEM");
+          if (subsystem && strcmp(subsystem, "block") == 0 && action &&
+              strcmp(action, "add") == 0) {
+            std::cout << "found block" << std::endl;
+            const char *block =
+                udev_device_get_property_value(device, "DEVNAME");
+            if (block) {
+              std::cout << "dev = " << block << std::endl;
+              mountBlock(block);
             }
-            else {
-                std::cout  << "Change owner. Success." <<std::endl;
-            }
+          }
         }
 
         udev_device_unref(device);
@@ -84,29 +100,49 @@ void printDeviceProperties(struct udev_device *device) {
   }
 }
 
-// sd_event *event = nullptr;
-// sd_device_monitor *monitor = nullptr;
+bool mountBlock(const char *block) {
+  std::string target = "/home/test";
+  target += "/";
+  target += std::filesystem::path(block).filename();
+  std::string fs = "auto";
 
-// // reference to default event loop
-// int res = sd_event_default(&event);
-// if (res < 0){
-//     std::cerr << "Failed to create event loop" << std::endl;
-//     return 1;
-// }
+  if (!std::filesystem::exists(target)) {
+    if (std::filesystem::create_directory(target)) {
+      std::cout << "Folder created successfully." << std::endl;
+    } else {
+      std::cerr << "Failed to create folder." << std::endl;
+    }
+  }
 
-// res = sd_device_monitor_new(&monitor);
-// if (res < 0){
-//     std::cerr << "Failed to create device monitor" << std::endl;
-//     sd_event_unref(event);
-//     return 1;
-// }
+  std::ofstream fstabFile("/etc/fstab", std::ios::app);
+  if (!fstabFile.is_open()) {
+    std::cerr << "Failed to open /etc/fstab for writing." << std::endl;
+    return false;
+  }
+  // Write the new entry to /etc/fstab
+  std::string options = "uid=1000,gid=1000,umask=007";
+  fstabFile << block << "\t" << target << "\t" << fs << "\t" << options
+            << "\t0\t0" << std::endl;
+  // Close the file
+  fstabFile.close();
 
-// res = sd_device_monitor_attach_event(monitor,event);
-// if (res < 0){
-//     std::cerr << "Failed to attach device monitor to the event loop" <<
-//     std::endl; sd_device_monitor_unref(monitor); sd_event_unref(event);
-//     return 1;
-// }
+  std::cout << "Rule added to /etc/fstab successfully." << std::endl;
+  return true;
+}
 
-// // Start the monitor
-// res = sd_device_monitor_enable_receiving(monitor, true);
+// blkid_probe pr = blkid_new_probe_from_filename(block);
+//   const char* value = nullptr;
+//   if (pr) {
+//        if (blkid_do_probe(pr) == 0) {
+//            if (blkid_probe_lookup_value(pr, "TYPE", &value, NULL) == 0) {
+//                std::cout << "Filesystem type of " << block << " is " << value
+//                << std::endl;
+//            } else {
+//                std::cerr << "Failed to determine filesystem type" <<
+//                std::endl;
+//            }
+//        }
+//        blkid_free_probe(pr);
+//    } else {
+//        std::cerr << "Failed to create probe for " << block << std::endl;
+//    }
