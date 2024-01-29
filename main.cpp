@@ -3,28 +3,26 @@
 #include <fstream>
 #include <iostream>
 #include <libudev.h>
+#include <memory>
 #include <string>
 
-
-void printDeviceProperties(struct udev_device *device);
+void printDeviceProperties(std::shared_ptr<udev_device> device);
 bool mountBlock(const char *block);
 
 int main(int argrc, char *argc[]) {
-  struct udev *udev;
-  struct udev_monitor *monitor;
 
-  udev = udev_new(); // Create, acquire and release a udev context object
+  std::unique_ptr<udev, decltype(&udev_unref)> udev(udev_new(), udev_unref);
   if (!udev) {
     std::cerr << "Can't create udev object";
   }
-  monitor = udev_monitor_new_from_netlink(udev, "udev");
-  udev_monitor_filter_add_match_subsystem_devtype(monitor, "usb", NULL);
-  udev_monitor_filter_add_match_subsystem_devtype(monitor, "block", NULL);
-  udev_monitor_enable_receiving(monitor);
-  int fd = udev_monitor_get_fd(monitor);
+  std::unique_ptr<udev_monitor, decltype(&udev_monitor_unref)> monitor(
+      udev_monitor_new_from_netlink(udev.get(), "udev"), &udev_monitor_unref);
+  udev_monitor_filter_add_match_subsystem_devtype(monitor.get(), "usb", NULL);
+  udev_monitor_filter_add_match_subsystem_devtype(monitor.get(), "block", NULL);
+  udev_monitor_enable_receiving(monitor.get());
+  int fd = udev_monitor_get_fd(monitor.get());
 
   while (true) {
-
     struct timeval tv; // secs and microsecs
     fd_set fds;        // file descriptors set
     FD_ZERO(&fds);     // clear fds
@@ -35,68 +33,68 @@ int main(int argrc, char *argc[]) {
     // TODO handle errors
     if (ret > 0 &&
         FD_ISSET(fd, &fds)) { // if a file descriptor is still present in a set
-      struct udev_device *device = udev_monitor_receive_device(monitor);
+      std::shared_ptr<udev_device> device(
+          udev_monitor_receive_device(monitor.get()), &udev_device_unref);
       if (device) {
         std::cout << "Gotcha !" << std::endl;
-        printDeviceProperties(device);
+      //  printDeviceProperties(device);
 
-        const char *action = udev_device_get_property_value(device, "ACTION");
+        const char *action =
+            udev_device_get_property_value(device.get(), "ACTION");
         if (action) {
           std::cout << "Action: " << action << std::endl;
         }
 
         // vendor
         const char *vendor_id =
-            udev_device_get_property_value(device, "ID_VENDOR_ID");
+            udev_device_get_property_value(device.get(), "ID_VENDOR_ID");
         if (vendor_id) {
           std::cout << "VENDOR_ID = " << vendor_id << std::endl;
         }
 
         // model
         const char *model_id =
-            udev_device_get_property_value(device, "ID_MODEL_ID");
+            udev_device_get_property_value(device.get(), "ID_MODEL_ID");
         if (model_id) {
           std::cout << "MODEL_ID = " << model_id << std::endl;
         }
         std::cout << std::endl << std::endl;
 
-        if (action && vendor_id && model_id && strcmp(vendor_id, "13fe") == 0 &&
-            strcmp(model_id, "4300") == 0) {
+        if (action && vendor_id && model_id && strcmp(vendor_id, "8564") == 0 &&
+            strcmp(model_id, "1000") == 0) {
           std::cout << "We have found the chosen device!" << std::endl;
 
           const char *subsystem =
-              udev_device_get_property_value(device, "SUBSYSTEM");
+              udev_device_get_property_value(device.get(), "SUBSYSTEM");
           if (subsystem && strcmp(subsystem, "block") == 0 && action &&
               strcmp(action, "add") == 0) {
             std::cout << "found block" << std::endl;
             const char *block =
-                udev_device_get_property_value(device, "DEVNAME");
+                udev_device_get_property_value(device.get(), "DEVNAME");
             if (block) {
               std::cout << "dev = " << block << std::endl;
               mountBlock(block);
             }
           }
         }
-
-        udev_device_unref(device);
       }
     }
   }
-  udev_monitor_unref(monitor);
-  udev_unref(udev);
-
   return 0;
 }
 
-void printDeviceProperties(struct udev_device *device) {
+void printDeviceProperties(std::shared_ptr<udev_device> device) {
   struct udev_list_entry *properties =
-      udev_device_get_properties_list_entry(device);
+      udev_device_get_properties_list_entry(device.get());
+  if (!properties)
+    return;
   struct udev_list_entry *entry;
-
   udev_list_entry_foreach(entry, properties) {
     const char *name = udev_list_entry_get_name(entry);
     const char *value = udev_list_entry_get_value(entry);
-    std::cout << name << " = " << value << std::endl;
+    if (name && value) {
+      std::cout << name << " = " << value << std::endl;
+    }
   }
 }
 
