@@ -12,11 +12,5 @@ int main(int argc, char *argv[], char **envp) {
 
   MessageReader reader(guard);
   reader.Loop();
-
-  // for (char **env = envp; *env != 0; env++)
-  // {
-  //     char *thisEnv = *env;
-  //     std::cerr << thisEnv <<std::endl;
-  // }
   return 0;
 }
