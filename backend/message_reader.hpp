@@ -4,11 +4,20 @@
 #include "guard.hpp"
 #include "message_dispatcher.hpp"
 #include <string>
+
+/**
+ * @class MessageReader
+ * @brief Reads message from alterator fronted
+ *
+ * Creates LispMessage objects ans sends them to MessageDispatcher
+ */
 class MessageReader {
 public:
+  /// @brief  Constructor
+  /// @param guard Guard object
   MessageReader(Guard &guard);
 
-  // main loop
+  /// @brief Main loop - reades messages and sens them to dispatcher
   void Loop();
 
 private:

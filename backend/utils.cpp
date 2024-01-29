@@ -42,10 +42,10 @@ std::vector<UsbDevice> fakeLibGetUsbList() {
   return res;
 }
 
-uint32_t StrToUint(const std::string &id) noexcept {
+uint32_t StrToUint(const std::string &str) noexcept {
   uint32_t res = 0;
   try {
-    res = static_cast<uint32_t>(std::stoul(id));
+    res = static_cast<uint32_t>(std::stoul(str));
   } catch (std::exception &e ) {
     std::cerr << "Error string to number conversion";
     std::cerr << e.what();
