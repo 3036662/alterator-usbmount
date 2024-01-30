@@ -15,12 +15,13 @@ include_directories(simple PUBLIC $CMAKE_SOURCE_DIR/tests)
 target_link_libraries(simple PRIVATE PkgConfig::USBGUARD)
 
 install(TARGETS simple
-    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
     RUNTIME DESTINATION "/usr/lib/alterator/backend3"
 )
 
-install(FILES alterator_ui/ajax.scm alterator_ui/index.html 
-        DESTINATION "/usr/share/alterator/ui"
+install(FILES 
+        ${CMAKE_SOURCE_DIR}/alterator_ui/ajax.scm 
+        ${CMAKE_SOURCE_DIR}/alterator_ui/index.html 
+        DESTINATION "/usr/share/alterator/ui/simple"
 )
 
 install(CODE "execute_process(COMMAND service alteratord restart)")
