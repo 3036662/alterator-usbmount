@@ -1,8 +1,9 @@
 #include "guard.hpp"
 #include "utils.hpp"
+#include <filesystem>
 #include <iostream>
 
-namespace guard{
+namespace guard {
 
 Guard::Guard() : ptr_ipc(nullptr) {
   try {
@@ -41,19 +42,77 @@ bool Guard::AllowOrBlockDevice(std::string id, bool allow, bool permanent) {
   return true;
 }
 
-ConfigStatus Guard::GetConfigStatus(){
+ConfigStatus Guard::GetConfigStatus() {
   ConfigStatus config_status;
-  //ConfigStatus
-  // TODO check udev rules for usb + authorized or authorized_default
-  // TODO check status of Daemon (active + enabled)
-  // TODO if daemon is on active think about creating policy before enabling
+
+  // inspect udev rules for string constaining usb and authorized
+  config_status.udev_warnings = InspectUdevRules();
+  if (!config_status.udev_warnings.empty()) {
+    config_status.udev_rules_OK = false;
+  }
+
+  // ConfigStatus
+  //  TODO check status of Daemon (active + enabled)
+  //  TODO if daemon is on active think about creating policy before enabling
   return config_status;
 }
 
-}//guard
+std::unordered_map<std::string, std::string>
+Guard::InspectUdevRules(
+  #ifdef UNIT_TEST  
+  const std::vector<std::string>* vec
+  #endif
+  ) {
+  std::unordered_map<std::string, std::string> res;
+  std::vector<std::string> udev_paths{
+      "/usr/lib/udev/rules.d", "/usr/local/lib/udev/rules.d",
+      "/run/udev/rules.d", "/etc/udev/rules.d"}; 
+  #ifdef UNIT_TEST
+     if (vec)
+        udev_paths=*vec;
+  #endif  
+  for (const std::string &path : udev_paths) {
+    std::cerr << "Inspecting udev folder " << path << std::endl;
+    try {
+      // find all files in folder
+      std::vector<std::string> files = FindAllFilesInDirRecursive(path,".rules");
 
+      // for each file - check if it contains suspicious strings
+      for (const std::string &str_path : files) {
+        std::ifstream f(str_path);
+        if (f.is_open()) {
+          std::string tmp_str;
+          bool found_usb{false};
+          bool found_authorize{false};
+          // for each string
+          while (getline(f, tmp_str)) {
+            if (tmp_str.find("usb") != std::string::npos) {
+              found_usb = true;
+            }
+            if (tmp_str.find("authorize") != std::string::npos) {
+              found_authorize = true;
+            }
+          }
+          tmp_str.clear();
+          f.close();
 
+          if (found_usb && found_authorize){
+            std::cerr <<"Found file " << str_path <<std::endl;
+              res.emplace( str_path,"usb_rule");
+          }
+        } else {
+          std::cerr << "Can't open file " << str_path << std::endl;
+        }
+      }
+    } catch (const std::exception &ex) {
+      std::cerr << "Error checking " << path << std::endl;
+      std::cerr << ex.what() << std::endl;
+    }
+  }
+  return res;
+}
 
+} // namespace guard
 
 // just in case
 // this strings can be recieved from the rule, but they are not used yet
@@ -77,5 +136,3 @@ ConfigStatus Guard::GetConfigStatus(){
 // catch(std::runtime_error& ex){
 //     std::cerr << ex.what();
 // }
-
-

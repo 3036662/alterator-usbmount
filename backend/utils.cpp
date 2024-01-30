@@ -46,9 +46,30 @@ uint32_t StrToUint(const std::string &str) noexcept {
   uint32_t res = 0;
   try {
     res = static_cast<uint32_t>(std::stoul(str));
-  } catch (std::exception &e ) {
+  } catch (std::exception &e) {
     std::cerr << "Error string to number conversion";
     std::cerr << e.what();
+  }
+  return res;
+}
+
+std::vector<std::string> FindAllFilesInDirRecursive(const std::string &dir,
+                                                    const std::string &ext) {
+  // TODO think about enabling symlinks support
+  namespace fs = std::filesystem;
+  const int max_depth = 30;
+  std::vector<std::string> res;
+  fs::path fs_path(dir);
+  if (fs::exists(fs_path)) {
+    for (auto it_entry = fs::recursive_directory_iterator(fs_path);
+         it_entry != fs::recursive_directory_iterator(); ++it_entry) {
+      if (it_entry.depth() > max_depth)
+        break;
+      if (it_entry->is_regular_file() &&
+          it_entry->path().extension().string() == ext) {
+        res.emplace_back(it_entry->path().string());
+      }
+    }
   }
   return res;
 }

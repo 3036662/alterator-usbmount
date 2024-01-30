@@ -8,7 +8,10 @@ add_executable(simple main.cpp
     guard.cpp guard.hpp
     )
 
-target_include_directories(simple PUBLIC ${USBGUARD_INCLUDE_DIRS})
+include_directories(simple PUBLIC ${USBGUARD_INCLUDE_DIRS})
+
+include_directories(simple PUBLIC $CMAKE_SOURCE_DIR/tests) 
+
 target_link_libraries(simple PRIVATE PkgConfig::USBGUARD)
 
 install(TARGETS simple

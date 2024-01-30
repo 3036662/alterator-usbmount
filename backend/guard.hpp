@@ -3,19 +3,22 @@
 #include <IPCClient.hpp>
 #include <USBGuard.hpp>
 #include <memory>
-#include <unordered_map>
 #include <string>
-
-namespace guard{
-
-
+#include <unordered_map>
+#ifdef UNIT_TEST
+#include "test.hpp"
+#endif
+namespace guard {
 
 /**
- * @brief Status for configuration: suspiciuos udev rules, and UsbGuard Status
- * */ 
-struct ConfigStatus{
+ * @class ConfigStatus
+ * @brief Status for con1figuration: suspiciuos udev rules,
+ * and UsbGuard Status
+ * */
+struct ConfigStatus {
   bool udev_rules_OK = false;
-  std::unordered_map<std::string, std::string> udev_warnings; 
+  std::unordered_map<std::string, std::string>
+      udev_warnings; /// warning:filename
   bool guard_daemon_OK = false;
 };
 
@@ -44,7 +47,7 @@ public:
                           bool permanent = true);
   /**
    * @brief check configuration of UsbGuard daemon
-  */
+   */
   ConfigStatus GetConfigStatus();
 
 private:
@@ -54,7 +57,18 @@ private:
   /// True if daemon is active
   bool HealthStatus() const;
 
+  /// @brief  inspect udev rules for suspicious files
+  /// @param vec just for testing purposes
+  /// @return map of string warning : file
+  std::unordered_map<std::string, std::string> InspectUdevRules(
+#ifdef UNIT_TEST
+      const std::vector<std::string> *vec = nullptr
+#endif
+  );
+
+#ifdef UNIT_TEST
+  friend class ::Test;
+#endif
 };
 
-
-} // guard
+} // namespace guard

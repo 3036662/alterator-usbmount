@@ -21,13 +21,20 @@ include(GNUInstallDirs)
 
 
 pkg_check_modules(UDEV REQUIRED IMPORTED_TARGET libudev)
-add_executable(test fstab_test.cpp)
-target_link_libraries(test PRIVATE PkgConfig::UDEV)
-target_include_directories(test PUBLIC ${UDEV_INCLUDE_DIRS})
+add_executable(test_fstab fstab_test.cpp)
+target_link_libraries(test_fstab PRIVATE PkgConfig::UDEV)
+target_include_directories(test_fstab PUBLIC ${UDEV_INCLUDE_DIRS})
 
+# tests
+IF (DEFINED UNIT_TEST)
+    message("Building tests...")
+    add_compile_definitions(UNIT_TEST=1)
+    add_subdirectory(tests)
+ENDIF (DEFINED UNIT_TEST)
 
 # docs
 
+IF (DEFINED BUILD_DOCS)
 find_package(Doxygen)
 if (DOXYGEN_FOUND)
     set(DOXYGEN_IN ${CMAKE_CURRENT_SOURCE_DIR}/Doxyfile.in)
@@ -42,3 +49,4 @@ if (DOXYGEN_FOUND)
 else (DOXYGEN_FOUND)
     message ("Doxygen need to be installed to generate documentation.")
 endif (DOXYGEN_FOUND)
+ENDIF (DEFINED BUILD_DOCS)

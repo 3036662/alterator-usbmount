@@ -2,6 +2,7 @@
 #include "types.hpp"
 #include "usb_device.hpp"
 #include <cstdint>
+#include <filesystem>
 #include <string>
 #include <vector>
 
@@ -23,3 +24,12 @@ std::vector<UsbDevice> fakeLibGetUsbList();
 /// @param id String, containing number
 /// @return Numerical value (uint32_t)
 uint32_t StrToUint(const std::string &str) noexcept;
+
+/// @brief Recursive search for all files in direcrory
+/// @param dir Directory to search in
+/// @param ext Extension - which files to search
+/// @return Vector of string pathes for all files in directory (recursive)
+/// @warning may throw exceptions
+std::vector<std::string>
+FindAllFilesInDirRecursive(const std::string &dir,
+                           const std::string &ext = std::string());
