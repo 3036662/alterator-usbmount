@@ -3,6 +3,21 @@
 #include <IPCClient.hpp>
 #include <USBGuard.hpp>
 #include <memory>
+#include <unordered_map>
+#include <string>
+
+namespace guard{
+
+
+
+/**
+ * @brief Status for configuration: suspiciuos udev rules, and UsbGuard Status
+ * */ 
+struct ConfigStatus{
+  bool udev_rules_OK = false;
+  std::unordered_map<std::string, std::string> udev_warnings; 
+  bool guard_daemon_OK = false;
+};
 
 /**
  * @class Guard
@@ -27,6 +42,10 @@ public:
    */
   bool AllowOrBlockDevice(std::string id, bool allow = false,
                           bool permanent = true);
+  /**
+   * @brief check configuration of UsbGuard daemon
+  */
+  ConfigStatus GetConfigStatus();
 
 private:
   const std::string default_query = "match";
@@ -34,4 +53,8 @@ private:
 
   /// True if daemon is active
   bool HealthStatus() const;
+
 };
+
+
+} // guard

@@ -2,6 +2,8 @@
 #include "utils.hpp"
 #include <iostream>
 
+namespace guard{
+
 Guard::Guard() : ptr_ipc(nullptr) {
   try {
     ptr_ipc = std::make_unique<usbguard::IPCClient>(true);
@@ -39,6 +41,20 @@ bool Guard::AllowOrBlockDevice(std::string id, bool allow, bool permanent) {
   return true;
 }
 
+ConfigStatus Guard::GetConfigStatus(){
+  ConfigStatus config_status;
+  //ConfigStatus
+  // TODO check udev rules for usb + authorized or authorized_default
+  // TODO check status of Daemon (active + enabled)
+  // TODO if daemon is on active think about creating policy before enabling
+  return config_status;
+}
+
+}//guard
+
+
+
+
 // just in case
 // this strings can be recieved from the rule, but they are not used yet
 // std::string status =rule.targetToString(rule.getTarget());
@@ -61,3 +77,5 @@ bool Guard::AllowOrBlockDevice(std::string id, bool allow, bool permanent) {
 // catch(std::runtime_error& ex){
 //     std::cerr << ex.what();
 // }
+
+

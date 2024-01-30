@@ -15,7 +15,7 @@ class MessageReader {
 public:
   /// @brief  Constructor
   /// @param guard Guard object
-  MessageReader(Guard &guard);
+  MessageReader(guard::Guard &guard);
 
   /// @brief Main loop - reades messages and sens them to dispatcher
   void Loop();

@@ -7,7 +7,7 @@
 
 #include "lispmessage.hpp"
 
-MessageReader::MessageReader(Guard &guard) : dispatcher(guard) {}
+MessageReader::MessageReader(guard::Guard &guard) : dispatcher(guard) {}
 
 void MessageReader::Loop() {
   std::string line;

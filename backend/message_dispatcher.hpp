@@ -16,7 +16,7 @@ public:
    * @brief Constructor for Message Dispatcher
    * @param guard The Guard object
    */
-  MessageDispatcher(Guard &guard);
+  MessageDispatcher(guard::Guard &guard);
   /**
    * @brief Perfom an appropriate action for msg
    * @param msg LispMessage from MessageReader
@@ -24,7 +24,7 @@ public:
   bool Dispatch(const LispMessage &msg);
 
 private:
-  Guard &guard;
+  guard::Guard &guard;
   const std::string mess_beg = "(";
   const std::string mess_end = ")";
 };

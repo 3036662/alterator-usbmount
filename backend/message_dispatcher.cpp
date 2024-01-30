@@ -3,7 +3,7 @@
 #include <boost/algorithm/algorithm.hpp>
 #include <boost/algorithm/string.hpp>
 
-MessageDispatcher::MessageDispatcher(Guard &guard) : guard(guard) {}
+MessageDispatcher::MessageDispatcher(guard::Guard &guard) : guard(guard) {}
 
 bool MessageDispatcher::Dispatch(const LispMessage &msg) {
   std::cerr << msg << std::endl;

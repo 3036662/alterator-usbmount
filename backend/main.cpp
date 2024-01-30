@@ -8,7 +8,7 @@
 #include "message_reader.hpp"
 
 int main(int argc, char *argv[], char **envp) {
-  Guard guard;
+  guard::Guard guard;
 
   MessageReader reader(guard);
   reader.Loop();
