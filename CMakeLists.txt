@@ -19,7 +19,7 @@ include(GNUInstallDirs)
 
 
 pkg_check_modules(UDEV REQUIRED IMPORTED_TARGET libudev)
-add_executable(test main.cpp)
+add_executable(test fstab_test.cpp)
 target_link_libraries(test PRIVATE PkgConfig::UDEV)
 target_include_directories(test PUBLIC ${UDEV_INCLUDE_DIRS})
 
