@@ -5,6 +5,8 @@
 
 namespace guard {
 
+
+
 Guard::Guard() : ptr_ipc(nullptr) {
   try {
     ptr_ipc = std::make_unique<usbguard::IPCClient>(true);
@@ -50,12 +52,15 @@ ConfigStatus Guard::GetConfigStatus() {
   if (!config_status.udev_warnings.empty()) {
     config_status.udev_rules_OK = false;
   }
-
+  
   // ConfigStatus
   //  TODO check status of Daemon (active + enabled)
   //  TODO if daemon is on active think about creating policy before enabling
+  config_status.guard_daemon_OK=true;
   return config_status;
 }
+
+// ---------------------- private ---------------------------
 
 std::unordered_map<std::string, std::string>
 Guard::InspectUdevRules(
