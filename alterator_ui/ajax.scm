@@ -3,9 +3,14 @@
     :use-module (alterator woo)
     :export (init))
 
- (define (ls_usbs)
+(define (ls_usbs)
     (form-update-enum "list_prsnt_devices" (woo-list "/simple/list_curr_usbs" ))
- )   
+)   
+
+(define (udev_rules_check)
+    (form-update-enum "suspicious_udev_files" (woo-list "/simple/check_config_udev"))
+)
+
 
 ; unblock the selected device 
  (define (allow_device)
@@ -31,6 +36,7 @@
 
 (define (init)
   (ls_usbs) ; update list on init
+  (udev_rules_check) 
   (form-bind "btn_prsnt_scan" "click" ls_usbs)
   (form-bind "btn_prsnt_dev_add" "click" allow_device)
   (form-bind "btn_prsnt_dev_block" "click" block_device)
