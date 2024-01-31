@@ -31,27 +31,42 @@ FindAllFilesInDirRecursive(const std::string &dir,
                            const std::string &ext = std::string());
 
 
-/// @brief Converts vec of string pairs to a LispSring
-/// @param vec Vector of string
-/// @return String, suitable for sending to Lisp(Alterator)
+/**
+* @brief Converts vec of string pairs to a LispSring
+* @param vec Vector of string
+* @return String, suitable for sending to Lisp(Alterator)
+* @details  Can be used map html table labels to data values
+*/
 template <typename T>
 std::string ToLisp(const SerializableForLisp<T>& obj){
   std::string res;
   vecPairs vec {obj.SerializeForLisp()};
   res += "(";
-  // name for list - alterator expectes first value to be
-  // something called "name" -> just put vec[0].second
-  // TODO find out if it used somewhere
-  for (const auto &pair : vec) {
-    res += WrapWithQuotes(pair.second);
-    res += " ";
-    res += WrapWithQuotes(pair.first);
-    res += " ";
+  // ignore firs name, use only value
+  auto it = vec.cbegin();
+  if (it!=vec.cend()){
+    res+=WrapWithQuotes(it->second);
+    res+=" ";
+    ++it;
   }
-  // res+=WrapWithQuotes(vec[0].second);
-  res += WrapWithQuotes("");
-  res += " ";
+  // use name:value
+  while (it!=vec.cend()){
+       res += WrapWithQuotes(it->first);
+       res += " ";
+       res += WrapWithQuotes(it->second);
+       res += " ";
+       ++it;
+  }
   res += ")";
   // std::cerr << "result string: " <<std::endl <<res << std::endl;
   return res;
 }
+
+/**
+ * @brief Maps one name:value -> lisp string (name , value) for html tables
+ * @param name Html label name
+ * @param value Value 
+ * @details Name parameter will be ignored - table with one column
+ * needs only value
+*/ 
+std::string ToLisp([[maybe_unused]] const std::string& name,const std::string& value);

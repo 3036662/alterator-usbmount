@@ -1,28 +1,17 @@
 #include "utils.hpp"
 #include <iostream>
 
-// convert vector of string pairs to lisp list ("wierd_val_called_name" "name"
-// "value" "name2" "value2")
-std::string ToLisp(const vecPairs &vec) {
+std::string ToLisp(const std::string& name,const std::string& value){
   std::string res;
-  res += "(";
-  // name for list - alterator expectes first value to be
-  // something called "name" -> just put vec[0].second
-  // TODO find out if it used somewhere
-
-  for (const auto &pair : vec) {
-    res += WrapWithQuotes(pair.second);
-    res += " ";
-    res += WrapWithQuotes(pair.first);
-    res += " ";
-  }
-  // res+=WrapWithQuotes(vec[0].second);
-  res += WrapWithQuotes("");
-  res += " ";
-  res += ")";
-  // std::cerr << "result string: " <<std::endl <<res << std::endl;
+  // ignore name - use olny value
+  res+="(";
+  res+=WrapWithQuotes(value);
+  res+=")";
   return res;
 }
+
+
+
 
 std::string WrapWithQuotes(const std::string &str) {
   std::string res;
