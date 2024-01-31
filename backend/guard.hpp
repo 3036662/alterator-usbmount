@@ -5,22 +5,12 @@
 #include <memory>
 #include <string>
 #include <unordered_map>
+#include "config_status.hpp"
+
 #ifdef UNIT_TEST
 #include "test.hpp"
 #endif
 namespace guard {
-
-/**
- * @class ConfigStatus
- * @brief Status for con1figuration: suspiciuos udev rules,
- * and UsbGuard Status
- * */
-struct ConfigStatus {
-  bool udev_rules_OK = false;
-  std::unordered_map<std::string, std::string>
-      udev_warnings; /// warning:filename
-  bool guard_daemon_OK = false;
-};
 
 /**
  * @class Guard
