@@ -6,6 +6,7 @@ add_executable(simple main.cpp
     utils.cpp utils.hpp
     usb_device.cpp usb_device.hpp
     guard.cpp guard.hpp
+    config_status.cpp config_status.hpp
     )
 
 include_directories(simple PUBLIC ${USBGUARD_INCLUDE_DIRS})
