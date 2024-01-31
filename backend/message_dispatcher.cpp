@@ -48,10 +48,16 @@ bool MessageDispatcher::Dispatch(const LispMessage &msg) {
     return true;
   }
 
-  // check configuration
-  if (msg.action == "list" && msg.objects == "check_config"){
+  // get udev rules list
+  if (msg.action == "list" && msg.objects == "check_config_udev"){
     std::cerr << "[Dispatcher] Check config" <<std::endl;
-
+    std::string str=mess_beg;
+    for(const auto& pair :guard.GetConfigStatus().udev_warnings){
+      str+=ToLisp("label_udev_rules_filename",pair.first);
+    }
+    str+=mess_end;
+    std::cout <<str;
+    return true;
   }
 
   // empty response
