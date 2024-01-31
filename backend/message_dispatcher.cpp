@@ -16,7 +16,7 @@ bool MessageDispatcher::Dispatch(const LispMessage &msg) {
     std::vector<UsbDevice> vec_usb = guard.ListCurrentUsbDevices();
     std::cout << mess_beg;
     for (const auto &usb : vec_usb) {
-      std::cout << ToLisp(usb.SerializeForLisp());
+      std::cout << ToLisp(usb);
     }
     std::cout << mess_end;
     return true;
@@ -46,6 +46,12 @@ bool MessageDispatcher::Dispatch(const LispMessage &msg) {
     guard.AllowOrBlockDevice(msg.params.find("usb_id")->second, false);
     std::cout << mess_beg << "status" << WrapWithQuotes("OK") << mess_end;
     return true;
+  }
+
+  // check configuration
+  if (msg.action == "list" && msg.objects == "check_config"){
+    std::cerr << "[Dispatcher] Check config" <<std::endl;
+
   }
 
   // empty response

@@ -3,13 +3,14 @@
 #include <iostream>
 #include <string>
 #include <vector>
+#include "serializible_for_lisp.hpp"
 
 /**
  * @class UsbDevice
  * @brief Represents and usb device
  */
 
-class UsbDevice {
+class UsbDevice : public SerializableForLisp<UsbDevice> {
 public:
   int number;
   std::string status;

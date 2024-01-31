@@ -6,10 +6,6 @@
 #include <string>
 #include <vector>
 
-/// @brief Converts vec of string pairs to a LispSring
-/// @param vec Vector of string
-/// @return String, suitable for sending to Lisp(Alterator)
-std::string ToLisp(const vecPairs &vec);
 
 /// @brief Wrap string with esape coutes
 /// @param str String to wrap
@@ -33,3 +29,29 @@ uint32_t StrToUint(const std::string &str) noexcept;
 std::vector<std::string>
 FindAllFilesInDirRecursive(const std::string &dir,
                            const std::string &ext = std::string());
+
+
+/// @brief Converts vec of string pairs to a LispSring
+/// @param vec Vector of string
+/// @return String, suitable for sending to Lisp(Alterator)
+template <typename T>
+std::string ToLisp(const SerializableForLisp<T>& obj){
+  std::string res;
+  vecPairs vec {obj.SerializeForLisp()};
+  res += "(";
+  // name for list - alterator expectes first value to be
+  // something called "name" -> just put vec[0].second
+  // TODO find out if it used somewhere
+  for (const auto &pair : vec) {
+    res += WrapWithQuotes(pair.second);
+    res += " ";
+    res += WrapWithQuotes(pair.first);
+    res += " ";
+  }
+  // res+=WrapWithQuotes(vec[0].second);
+  res += WrapWithQuotes("");
+  res += " ";
+  res += ")";
+  // std::cerr << "result string: " <<std::endl <<res << std::endl;
+  return res;
+}
