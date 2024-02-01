@@ -5,13 +5,42 @@
     </head>
     <body>
       <div class="config_check">
-        <div class="config_check_header">
+        <form method="POST">
+          <!-- status guard is OK-->
+          <div name="guard_status_ok" class="service_status">
+            <svg>
+              <circle cx="10" cy="10" r="8" fill="green" />
+            </svg>
+            <span>UsbGuard service ... ACTIVE</span>
+          </div>
+          <!-- status guard is BAD-->
+          <div name="guard_status_bad" class="service_status">
+            <svg>
+              <circle cx="10" cy="10" r="8" fill="red" />
+            </svg>
+            <span>UsbGuard service ... DISABLED</span>
+          </div>
+          <!-- status udev is OK-->
+          <div name="udev_status_ok" class="service_status">
+            <svg>
+              <circle cx="10" cy="10" r="8" fill="green" />
+            </svg>
+            <span>Udev rules ... OK</span>
+          </div>
+           <!-- status udev is not OK-->
+          <div name="udev_status_warnig" class="service_status">
+            <svg>
+              <circle cx="10" cy="10" r="8" fill="yellow" />
+            </svg>
+            <span>Udev rules ... WARNING</span>
+          </div>
+          <!-- warnigs for udev-->
+          <div class="config_check_header" name="udev_config_warinigs">
             <span class="warning">Warning!</span>
             <p>Suspicious files were found in udev config folders.</p> 
             <p>It may cause undefined behavior.</p>
             <p>Please double-check before configuring.</p>
-        </div>
-        <form method="POST">
+          </div>
           <table class="alterator-listbox" align="center" name="suspicious_udev_files">
             <thead>
               <tr>
@@ -22,6 +51,7 @@
               <td><span class="alterator-label" name="name" /></td>
             </tbody>
           </table>
+          
         </form>
       </div>
 
@@ -48,11 +78,12 @@
                   </tr>
                 </tbody>
         </table>
-      </form>
-        <nobr>
-            <input type="button" name="btn_prsnt_scan" class="btn" value="Scan plugged-in USB devices"/>&nbsp;&nbsp;
-            <input type="button" name="btn_prsnt_dev_add" class="btn" value="Allow device"/>
-            <input type="button" name="btn_prsnt_dev_block" class="btn" value="Block device"/>
+        <nobr name="usb_buttons">
+          <input type="button" name="btn_prsnt_scan" class="btn" value="Scan plugged-in USB devices"/>&nbsp;&nbsp;
+          <input type="button" name="btn_prsnt_dev_add" class="btn" value="Allow device"/>
+          <input type="button" name="btn_prsnt_dev_block" class="btn" value="Block device"/>
         </nobr>
+      </form>
+
     </body>
 </html>

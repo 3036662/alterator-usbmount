@@ -12,6 +12,7 @@
 
 .config_check_header{
     margin-bottom: 15px;
+    margin-top: 10px;
 }
 
 .config_check_header p{
@@ -20,4 +21,23 @@
 }
 .hidden{
     visibility: hidden;
+}
+
+.service_status{
+    height: 20px;
+    margin-top: 10px;
+    margin-bottom: 10px;
+}
+
+.service_status svg{
+    height: 20px;
+    width: 20px;
+    float: left;
+}
+
+.service_status span{
+    display: table-cell;
+    vertical-align: middle;
+    height: 20px;
+    padding-left: 10px;
 }

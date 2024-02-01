@@ -12,7 +12,7 @@
     (form-update-enum "suspicious_udev_files" (woo-list "/simple/check_config_udev"))
 )
 
-; remove first el from sublists ( (a b c) (a b c)) => ((b c)(b c))
+; remove first element from sublists ( (a b c) (a b c)) => ((b c)(b c))
 ; purpose is to construct associative list
 (define (removeFirstElement lst)
   (map cdr lst))
@@ -25,12 +25,43 @@
 ; udev:     "OK" or BAD 
 (define (config_status_check)
    (let ((status  (removeFirstElement (woo-read "/simple/config_status")) ))
-           ; (woo-throw (get-value 'usbguard status))
-           ; udev status
-           (if (string=? "OK" (get-value 'udev status))
-               (format (current-error-port) "debug-message~%")
-               (udev_rules_check)  
-           )       
+           (if (string=? "OK" (get-value 'udev status)) ; if udev=OK
+                (begin
+                    (form-update-visibility "udev_status_ok" #t)
+                    (form-update-visibility "udev_config_warinigs" #f)
+                    (form-update-visibility "suspicious_udev_files" #f)
+                    (form-update-visibility "udev_status_warnig" #f)
+                )
+               ; else
+               ( begin
+                    (form-update-visibility "udev_status_ok" #f)
+                    (form-update-visibility "udev_status_warnig" #t)
+                    (form-update-visibility "udev_config_warinigs" #t)
+                    (form-update-visibility "suspicious_udev_files" #t)
+                    (udev_rules_check) 
+               )
+              
+           ) ;endif
+
+           (if (string=? "OK" (get-value 'usbguard status)) ; if sbguard=OK
+                (begin
+                    (form-update-visibility "guard_status_ok" #t)
+                    (form-update-visibility "guard_status_bad" #f)
+                    (form-update-visibility "list_prsnt_devices" #t)
+                    (form-update-visibility "usb_buttons" #t)
+                    (ls_usbs)
+                )
+                ;else usbguard not active
+                (begin 
+                     (form-update-visibility "guard_status_ok" #f)
+                     (form-update-visibility "guard_status_bad" #t)
+                     (form-update-visibility "list_prsnt_devices" #f)
+                     (form-update-visibility "usb_buttons" #f)
+                )    
+                   
+           
+           ) ; endif
+
    )  
 )
 
@@ -57,7 +88,7 @@
  )
 
 (define (init)
-  (ls_usbs) ; update list on init
+ ; (ls_usbs) ; update list on init
   (config_status_check) 
   (form-bind "btn_prsnt_scan" "click" ls_usbs)
   (form-bind "btn_prsnt_dev_add" "click" allow_device)
