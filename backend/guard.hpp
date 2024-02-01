@@ -7,9 +7,6 @@
 #include <unordered_map>
 #include "config_status.hpp"
 
-#ifdef UNIT_TEST
-#include "test.hpp"
-#endif
 namespace guard {
 
 /**
@@ -46,19 +43,6 @@ private:
 
   /// True if daemon is active
   bool HealthStatus() const;
-
-  /// @brief  inspect udev rules for suspicious files
-  /// @param vec just for testing purposes
-  /// @return map of string warning : file
-  std::unordered_map<std::string, std::string> InspectUdevRules(
-#ifdef UNIT_TEST
-      const std::vector<std::string> *vec = nullptr
-#endif
-  );
-
-#ifdef UNIT_TEST
-  friend class ::Test;
-#endif
 };
 
 } // namespace guard

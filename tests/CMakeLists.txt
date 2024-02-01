@@ -3,6 +3,7 @@ add_executable(test
                run.cpp 
                test.cpp 
                ../backend/utils.cpp
+               ../backend/config_status.cpp
                ../backend/guard.cpp)
 target_include_directories(test PRIVATE ../backend)
 target_include_directories(test PRIVATE .)

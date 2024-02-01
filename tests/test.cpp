@@ -7,7 +7,7 @@
 
 void Test::Run1() {
   std::cout << "Test udev rules files search" << std::endl;
-  guard::Guard guard;
+ // guard::Guard guard_obj;
   std::string curr_path = std::filesystem::current_path().string();
 
   // create files
@@ -63,7 +63,7 @@ void Test::Run1() {
     "sdgzg098gav\\c" // bad path
   };
   const std::unordered_map<std::string, std::string> map =
-      guard.InspectUdevRules(&vec_mock);
+      guard::InspectUdevRules(&vec_mock);
   const std::unordered_map<std::string, std::string> expected_map{
       std::pair<std::string, std::string>{file1, "usb_rule"},
       std::pair<std::string, std::string>{file5, "usb_rule"}};
