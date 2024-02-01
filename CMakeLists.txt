@@ -1,9 +1,9 @@
 cmake_minimum_required(VERSION 3.5)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+add_compile_options(-Wall -Wextra -pedantic)
 
 project(backendcpp LANGUAGES CXX)
-
 
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(USBGUARD REQUIRED IMPORTED_TARGET libusbguard)
@@ -11,15 +11,16 @@ message("USBGUARD_FOUND: ${USBGUARD_FOUND}")
 
 find_package(Boost REQUIRED)
 
-set(CMAKE_CXX_STANDARD 17)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
-add_compile_options(-Wall -Wextra -pedantic)
-
-add_subdirectory(backend)
-
 include(GNUInstallDirs)
 
+find_package(sdbus-c++ REQUIRED)
 
+
+
+# backend
+add_subdirectory(backend)
+
+# for now - required only for fstab test
 pkg_check_modules(UDEV REQUIRED IMPORTED_TARGET libudev)
 add_executable(test_fstab fstab_test.cpp)
 target_link_libraries(test_fstab PRIVATE PkgConfig::UDEV)
