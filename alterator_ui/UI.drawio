@@ -1,6 +1,6 @@
-<mxfile host="app.diagrams.net" modified="2024-02-01T08:50:11.243Z" agent="Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36" etag="_h2qrVcUSJLKHpydHeI8" version="23.0.2" type="github">
+<mxfile host="app.diagrams.net" modified="2024-02-01T09:05:52.906Z" agent="Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36" etag="3g3Azn6Rct_vf5j8t8Xv" version="23.0.2" type="github">
   <diagram id="HF3EYHtyEsSgDk29EQUM" name="Страница 1">
-    <mxGraphModel dx="1235" dy="684" grid="0" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1169" pageHeight="827" math="0" shadow="0">
+    <mxGraphModel dx="2404" dy="684" grid="0" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1169" pageHeight="827" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
@@ -930,6 +930,12 @@
         </mxCell>
         <mxCell id="zK-23l5FGaJQOKJmWewh-6" value="Выключить - убрать правила, остановить сервис" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="1">
           <mxGeometry x="811" y="1581" width="300" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="zK-23l5FGaJQOKJmWewh-7" value="По умолчанию при активации контроля&lt;br&gt;если нет правил" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="1">
+          <mxGeometry x="-243" y="414" width="246" height="41" as="geometry" />
+        </mxCell>
+        <mxCell id="zK-23l5FGaJQOKJmWewh-8" value="При активации контроля&lt;br&gt;и наличии правил" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="1">
+          <mxGeometry x="-160" y="495" width="160" height="41" as="geometry" />
         </mxCell>
       </root>
     </mxGraphModel>
