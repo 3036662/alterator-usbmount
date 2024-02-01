@@ -15,6 +15,8 @@ void Test::Run1() {
   const std::string file2 = curr_path + "/rule2.rules";
   const std::string file3 = curr_path + "/rule3.rules";
   const std::string file4 = curr_path + "/rule4.rules";
+  const std::string file5 = curr_path + "/rule5.rules";
+  const std::string file6 = curr_path + "/rule6.rules";
 
   // usb + authorized
   std::ofstream os(file1);
@@ -42,13 +44,29 @@ void Test::Run1() {
     os << "bla usb \n bla bla" << std::endl;
   os.close();
 
+  // CASE different cases
+  os = std::ofstream(file5);
+  if (os.is_open())
+    os << "bla uSB \n bla bla AutHorizeD" <<"" << std::endl;
+  os.close();
+
+  // CASE different 
+  os = std::ofstream(file6);
+  if (os.is_open())
+    os << "bla uS \n bla bla AutHorizeD" <<"" << std::endl;
+  os.close();
+
 
   // check
-  std::vector<std::string> vec_mock{curr_path};
+  std::vector<std::string> vec_mock{
+    curr_path,
+    "sdgzg098gav\\c" // bad path
+  };
   const std::unordered_map<std::string, std::string> map =
       guard.InspectUdevRules(&vec_mock);
   const std::unordered_map<std::string, std::string> expected_map{
-      std::pair<std::string, std::string>{file1, "usb_rule"}};
+      std::pair<std::string, std::string>{file1, "usb_rule"},
+      std::pair<std::string, std::string>{file5, "usb_rule"}};
   assert(map == expected_map);
   std::cout << "TEST1 ... OK" << std::endl;
 }

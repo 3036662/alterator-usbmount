@@ -49,14 +49,25 @@ ConfigStatus Guard::GetConfigStatus() {
 
   // inspect udev rules for string constaining usb and authorized
   config_status.udev_warnings = InspectUdevRules();
-  if (!config_status.udev_warnings.empty()) {
-    config_status.udev_rules_OK = false;
+  if (config_status.udev_warnings.empty()) {
+    config_status.udev_rules_OK = true;
   }
   
   // ConfigStatus
   //  TODO check status of Daemon (active + enabled)
   //  TODO if daemon is on active think about creating policy before enabling
-  config_status.guard_daemon_OK=true;
+  if (!HealthStatus()){
+    
+    // TODO move to separate method
+    try {
+      ptr_ipc = std::make_unique<usbguard::IPCClient>(true);
+    } catch (usbguard::Exception &e) {
+    std::cerr << "Error connecting to USBGuard daemon \n"
+              << e.what() << std::endl;
+    }
+  }
+  config_status.guard_daemon_OK=HealthStatus();
+  
   return config_status;
 }
 
@@ -91,7 +102,13 @@ Guard::InspectUdevRules(
           bool found_authorize{false};
           // for each string
           while (getline(f, tmp_str)) {
-            if (tmp_str.find("usb") != std::string::npos) {
+                // case insentitive search
+                std::transform(tmp_str.begin(), tmp_str.end(), tmp_str.begin(), 
+                   [](unsigned char c){ 
+                    return  std::isalnum(c) ? std::tolower(c) : c; 
+                });
+
+            if (tmp_str.find("usb") != std::string::npos ) {
               found_usb = true;
             }
             if (tmp_str.find("authorize") != std::string::npos) {
