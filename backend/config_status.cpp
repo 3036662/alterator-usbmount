@@ -3,6 +3,7 @@
 #include <fstream>
 #include <iostream>
 #include <string>
+#include <sdbus-c++/sdbus-c++.h>
 
 namespace guard {
 
@@ -20,6 +21,24 @@ vecPairs ConfigStatus::SerializeForLisp() const {
   res.emplace_back("udev", udev_rules_OK ? "OK" : "BAD");
   res.emplace_back("usbguard", guard_daemon_OK ? "OK" : "BAD");
   return res;
+}
+
+void ConfigStatus::CheckDaemon(){
+  //std::unique_ptr<sdbus::IConnection>  connection = sdbus::createSystemBusConnection();
+  const std::string destinationName = "org.freedesktop.systemd1";
+  const std::string objectPath = "/org/freedesktop/systemd1";
+  const std::string interfaceName ="org.freedesktop.systemd1.Manager";
+  std::unique_ptr<sdbus::IProxy> concatenatorProxy = 
+                      sdbus::createProxy(destinationName, objectPath);
+  auto method = concatenatorProxy->createMethodCall(interfaceName, "GetUnitFileState");
+  method << "usbguard.service";
+  auto reply = concatenatorProxy->callMethod(method);  
+  std::string result;  
+  reply >> result;
+  std::cerr <<result;
+  // TODO - check active status too 
+  //"org.freedesktop.systemd1.Unit", "ActiveState";
+
 }
 
 /***********************************************************/

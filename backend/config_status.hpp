@@ -31,6 +31,9 @@ public:
   /// @brief Serialize statuses
   /// @return vector of string patrs
   vecPairs SerializeForLisp() const;
+  void CheckDaemon();  
+private:
+  
 };
 
 /*************************************************************/
