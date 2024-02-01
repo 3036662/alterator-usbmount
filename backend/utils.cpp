@@ -1,7 +1,7 @@
 #include "utils.hpp"
 #include <iostream>
 
-std::string ToLisp(const std::string& name,const std::string& value){
+std::string ToLisp([[maybe_unused]] const std::string& name,const std::string& value){
   std::string res;
   // ignore name - use olny value
   res+="(";

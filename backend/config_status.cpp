@@ -6,7 +6,8 @@ namespace guard {
 
 vecPairs ConfigStatus::SerializeForLisp() const{
   vecPairs res;
-  //res.emplace_back("label_udev_rules_filename",pair.first);
+  res.emplace_back("udev", udev_rules_OK ?  "OK":"BAD");
+  res.emplace_back("usbguard",guard_daemon_OK ? "OK":"BAD");
   return res;
 }
 

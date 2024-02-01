@@ -60,6 +60,16 @@ bool MessageDispatcher::Dispatch(const LispMessage &msg) {
     return true;
   }
 
+  if (msg.action == "read" && msg.objects == "config_status") {
+    std::cerr << "[Dispatcher] Get config status" <<std::endl;
+    //std::cout << "((usbguard \"OK\") (udev \"OK\"))";
+    std::cout << ToLispAssoc(guard.GetConfigStatus());
+    std::cerr << ToLispAssoc(guard.GetConfigStatus());
+    return true;
+  }
+
+
+
   // empty response
   std::cout << "(\n)\n";
   return true;
