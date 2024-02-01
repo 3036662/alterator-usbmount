@@ -1,11 +1,11 @@
 #pragma once
+#include "config_status.hpp"
 #include "usb_device.hpp"
 #include <IPCClient.hpp>
 #include <USBGuard.hpp>
 #include <memory>
 #include <string>
 #include <unordered_map>
-#include "config_status.hpp"
 
 namespace guard {
 

@@ -1,10 +1,7 @@
 #include "guard.hpp"
 #include "utils.hpp"
 
-
 namespace guard {
-
-
 
 Guard::Guard() : ptr_ipc(nullptr) {
   try {
@@ -48,23 +45,21 @@ ConfigStatus Guard::GetConfigStatus() {
   // ConfigStatus
   //  TODO check status of Daemon (active + enabled)
   //  TODO if daemon is on active think about creating policy before enabling
-  if (!HealthStatus()){
-    
+  if (!HealthStatus()) {
+
     // TODO move to separate method
     try {
       ptr_ipc = std::make_unique<usbguard::IPCClient>(true);
     } catch (usbguard::Exception &e) {
-    std::cerr << "Error connecting to USBGuard daemon \n"
-              << e.what() << std::endl;
+      std::cerr << "Error connecting to USBGuard daemon \n"
+                << e.what() << std::endl;
     }
   }
-  config_status.guard_daemon_OK=HealthStatus();
+  config_status.guard_daemon_OK = HealthStatus();
   return config_status;
 }
 
 // ---------------------- private ---------------------------
-
-
 
 } // namespace guard
 

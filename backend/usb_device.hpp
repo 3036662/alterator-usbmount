@@ -1,9 +1,9 @@
 #pragma once
+#include "serializible_for_lisp.hpp"
 #include "types.hpp"
 #include <iostream>
 #include <string>
 #include <vector>
-#include "serializible_for_lisp.hpp"
 
 /**
  * @class UsbDevice

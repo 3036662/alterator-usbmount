@@ -6,7 +6,6 @@
 #include <string>
 #include <vector>
 
-
 /// @brief Wrap string with esape coutes
 /// @param str String to wrap
 /// @return New wrapped string
@@ -30,33 +29,31 @@ std::vector<std::string>
 FindAllFilesInDirRecursive(const std::string &dir,
                            const std::string &ext = std::string());
 
-
 /**
-* @brief Converts vec of string pairs to a LispSring
-* @param vec Vector of string
-* @return String, suitable for sending to Lisp(Alterator)
-* @details  Can be used map html table labels to data values.
-* Returns a lisp strig ("value1" "label2" "value2" ...)
-*/
-template <typename T>
-std::string ToLisp(const SerializableForLisp<T>& obj){
+ * @brief Converts vec of string pairs to a LispSring
+ * @param vec Vector of string
+ * @return String, suitable for sending to Lisp(Alterator)
+ * @details  Can be used map html table labels to data values.
+ * Returns a lisp strig ("value1" "label2" "value2" ...)
+ */
+template <typename T> std::string ToLisp(const SerializableForLisp<T> &obj) {
   std::string res;
-  vecPairs vec {obj.SerializeForLisp()};
+  vecPairs vec{obj.SerializeForLisp()};
   res += "(";
   // ignore firs name, use only value
   auto it = vec.cbegin();
-  if (it!=vec.cend()){
-    res+=WrapWithQuotes(it->second);
-    res+=" ";
+  if (it != vec.cend()) {
+    res += WrapWithQuotes(it->second);
+    res += " ";
     ++it;
   }
   // use name:value
-  while (it!=vec.cend()){
-       res += WrapWithQuotes(it->first);
-       res += " ";
-       res += WrapWithQuotes(it->second);
-       res += " ";
-       ++it;
+  while (it != vec.cend()) {
+    res += WrapWithQuotes(it->first);
+    res += " ";
+    res += WrapWithQuotes(it->second);
+    res += " ";
+    ++it;
   }
   res += ")";
   // std::cerr << "result string: " <<std::endl <<res << std::endl;
@@ -67,28 +64,29 @@ std::string ToLisp(const SerializableForLisp<T>& obj){
  * @brief Constructs a lisp associative list from vector ov sring pairs
  * @param obj Any SerializableForLisp object
  * @return Lisp string - ((name "value")(name2 "value2"))
-*/
+ */
 template <typename T>
-std::string ToLispAssoc(const SerializableForLisp<T>& obj){
+std::string ToLispAssoc(const SerializableForLisp<T> &obj) {
   std::string res;
-  vecPairs vec {obj.SerializeForLisp()};
-  res+='(';
-  for (const auto& pair : vec){
-    res+='(';
-    res+=pair.first;
-    res+=' ';
-    res+=WrapWithQuotes(pair.second);
-    res+=')';
+  vecPairs vec{obj.SerializeForLisp()};
+  res += '(';
+  for (const auto &pair : vec) {
+    res += '(';
+    res += pair.first;
+    res += ' ';
+    res += WrapWithQuotes(pair.second);
+    res += ')';
   }
-  res+=')';
+  res += ')';
   return res;
 }
 
 /**
  * @brief Maps one name:value -> lisp string (name , value) for html tables
  * @param name Html label name
- * @param value Value 
+ * @param value Value
  * @details Name parameter will be ignored - table with one column
  * needs only value. Returns a lisp string ("value")
-*/ 
-std::string ToLisp([[maybe_unused]] const std::string& name,const std::string& value);
+ */
+std::string ToLisp([[maybe_unused]] const std::string &name,
+                   const std::string &value);

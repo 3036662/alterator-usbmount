@@ -1,8 +1,8 @@
 #include "config_status.hpp"
-#include <iostream>
-#include <string>
 #include <algorithm>
 #include <fstream>
+#include <iostream>
+#include <string>
 
 namespace guard {
 
@@ -10,17 +10,15 @@ namespace guard {
 // ConfigStatus
 
 ConfigStatus::ConfigStatus()
-        :udev_warnings{InspectUdevRules()},
-        udev_rules_OK{udev_warnings.empty()},
-        guard_daemon_OK{false}
-{
-    //TODO initialize guard_daemon_OK
+    : udev_warnings{InspectUdevRules()}, udev_rules_OK{udev_warnings.empty()},
+      guard_daemon_OK{false} {
+  // TODO initialize guard_daemon_OK
 }
 
-vecPairs ConfigStatus::SerializeForLisp() const{
+vecPairs ConfigStatus::SerializeForLisp() const {
   vecPairs res;
-  res.emplace_back("udev", udev_rules_OK ?  "OK":"BAD");
-  res.emplace_back("usbguard",guard_daemon_OK ? "OK":"BAD");
+  res.emplace_back("udev", udev_rules_OK ? "OK" : "BAD");
+  res.emplace_back("usbguard", guard_daemon_OK ? "OK" : "BAD");
   return res;
 }
 
@@ -28,23 +26,24 @@ vecPairs ConfigStatus::SerializeForLisp() const{
 // non-friend funcions
 
 std::unordered_map<std::string, std::string> InspectUdevRules(
-  #ifdef UNIT_TEST  
-  const std::vector<std::string>* vec
-  #endif
-  ) {
+#ifdef UNIT_TEST
+    const std::vector<std::string> *vec
+#endif
+) {
   std::unordered_map<std::string, std::string> res;
-  std::vector<std::string> udev_paths{
-      "/usr/lib/udev/rules.d", "/usr/local/lib/udev/rules.d",
-      "/run/udev/rules.d", "/etc/udev/rules.d"}; 
-  #ifdef UNIT_TEST
-     if (vec)
-        udev_paths=*vec;
-  #endif  
+  std::vector<std::string> udev_paths{"/usr/lib/udev/rules.d",
+                                      "/usr/local/lib/udev/rules.d",
+                                      "/run/udev/rules.d", "/etc/udev/rules.d"};
+#ifdef UNIT_TEST
+  if (vec)
+    udev_paths = *vec;
+#endif
   for (const std::string &path : udev_paths) {
     std::cerr << "Inspecting udev folder " << path << std::endl;
     try {
       // find all files in folder
-      std::vector<std::string> files = FindAllFilesInDirRecursive(path,".rules");
+      std::vector<std::string> files =
+          FindAllFilesInDirRecursive(path, ".rules");
 
       // for each file - check if it contains suspicious strings
       for (const std::string &str_path : files) {
@@ -55,13 +54,13 @@ std::unordered_map<std::string, std::string> InspectUdevRules(
           bool found_authorize{false};
           // for each string
           while (getline(f, tmp_str)) {
-                // case insentitive search
-                std::transform(tmp_str.begin(), tmp_str.end(), tmp_str.begin(), 
-                   [](unsigned char c){ 
-                    return  std::isalnum(c) ? std::tolower(c) : c; 
-                });
+            // case insentitive search
+            std::transform(tmp_str.begin(), tmp_str.end(), tmp_str.begin(),
+                           [](unsigned char c) {
+                             return std::isalnum(c) ? std::tolower(c) : c;
+                           });
 
-            if (tmp_str.find("usb") != std::string::npos ) {
+            if (tmp_str.find("usb") != std::string::npos) {
               found_usb = true;
             }
             if (tmp_str.find("authorize") != std::string::npos) {
@@ -71,9 +70,9 @@ std::unordered_map<std::string, std::string> InspectUdevRules(
           tmp_str.clear();
           f.close();
 
-          if (found_usb && found_authorize){
-            std::cerr <<"Found file " << str_path <<std::endl;
-              res.emplace( str_path,"usb_rule");
+          if (found_usb && found_authorize) {
+            std::cerr << "Found file " << str_path << std::endl;
+            res.emplace(str_path, "usb_rule");
           }
         } else {
           std::cerr << "Can't open file " << str_path << std::endl;
@@ -87,5 +86,4 @@ std::unordered_map<std::string, std::string> InspectUdevRules(
   return res;
 }
 
-
-} // namespace
+} // namespace guard

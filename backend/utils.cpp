@@ -1,17 +1,15 @@
 #include "utils.hpp"
 #include <iostream>
 
-std::string ToLisp([[maybe_unused]] const std::string& name,const std::string& value){
+std::string ToLisp([[maybe_unused]] const std::string &name,
+                   const std::string &value) {
   std::string res;
   // ignore name - use olny value
-  res+="(";
-  res+=WrapWithQuotes(value);
-  res+=")";
+  res += "(";
+  res += WrapWithQuotes(value);
+  res += ")";
   return res;
 }
-
-
-
 
 std::string WrapWithQuotes(const std::string &str) {
   std::string res;

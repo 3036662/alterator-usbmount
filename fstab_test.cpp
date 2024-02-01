@@ -37,7 +37,7 @@ int main(int argrc, char *argc[]) {
           udev_monitor_receive_device(monitor.get()), &udev_device_unref);
       if (device) {
         std::cout << "Gotcha !" << std::endl;
-      //  printDeviceProperties(device);
+        //  printDeviceProperties(device);
 
         const char *action =
             udev_device_get_property_value(device.get(), "ACTION");

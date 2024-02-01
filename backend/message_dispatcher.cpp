@@ -49,24 +49,22 @@ bool MessageDispatcher::Dispatch(const LispMessage &msg) {
   }
 
   // get udev rules list
-  if (msg.action == "list" && msg.objects == "check_config_udev"){
-    std::cerr << "[Dispatcher] Check config" <<std::endl;
-    std::string str=mess_beg;
-    for(const auto& pair :guard.GetConfigStatus().udev_warnings){
-      str+=ToLisp("label_udev_rules_filename",pair.first);
+  if (msg.action == "list" && msg.objects == "check_config_udev") {
+    std::cerr << "[Dispatcher] Check config" << std::endl;
+    std::string str = mess_beg;
+    for (const auto &pair : guard.GetConfigStatus().udev_warnings) {
+      str += ToLisp("label_udev_rules_filename", pair.first);
     }
-    str+=mess_end;
-    std::cout <<str;
+    str += mess_end;
+    std::cout << str;
     return true;
   }
 
   if (msg.action == "read" && msg.objects == "config_status") {
-    std::cerr << "[Dispatcher] Get config status" <<std::endl;
+    std::cerr << "[Dispatcher] Get config status" << std::endl;
     std::cout << ToLispAssoc(guard.GetConfigStatus());
     return true;
   }
-
-
 
   // empty response
   std::cout << "(\n)\n";

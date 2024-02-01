@@ -1,9 +1,9 @@
 #pragma once
 
-#include <unordered_map>
 #include "serializible_for_lisp.hpp"
 #include "types.hpp"
 #include "utils.hpp"
+#include <unordered_map>
 
 #ifdef UNIT_TEST
 #include "test.hpp"
@@ -18,10 +18,10 @@ namespace guard {
  * @brief Status for configuration: suspiciuos udev rules,
  * and UsbGuard Status
  * */
-class ConfigStatus:public SerializableForLisp<ConfigStatus> {
+class ConfigStatus : public SerializableForLisp<ConfigStatus> {
 public:
   // warning_info : filename
-  std::unordered_map<std::string, std::string> udev_warnings; 
+  std::unordered_map<std::string, std::string> udev_warnings;
   bool udev_rules_OK;
   bool guard_daemon_OK;
 
@@ -41,10 +41,8 @@ public:
 /// @return map of string warning : file
 std::unordered_map<std::string, std::string> InspectUdevRules(
 #ifdef UNIT_TEST
-      const std::vector<std::string> *vec = nullptr
+    const std::vector<std::string> *vec = nullptr
 #endif
-  );
+);
 
-
-
-}
+} // namespace guard
