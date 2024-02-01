@@ -34,15 +34,17 @@ public:
                           bool permanent = true);
   /**
    * @brief check configuration of UsbGuard daemon
+   * @return ConfigStatus object
    */
   ConfigStatus GetConfigStatus();
 
 private:
   const std::string default_query = "match";
   std::unique_ptr<usbguard::IPCClient> ptr_ipc;
-
   /// True if daemon is active
   bool HealthStatus() const;
+  /// try to connect the UsbGuardDaemon
+  void ConnectToUsbGuard() noexcept;
 };
 
 } // namespace guard

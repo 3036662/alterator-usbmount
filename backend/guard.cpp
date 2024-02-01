@@ -4,13 +4,9 @@
 namespace guard {
 
 Guard::Guard() : ptr_ipc(nullptr) {
-  try {
-    ptr_ipc = std::make_unique<usbguard::IPCClient>(true);
-  } catch (usbguard::Exception &e) {
-    std::cerr << "Error connecting to USBGuard daemon \n"
-              << e.what() << std::endl;
-  }
+  ConnectToUsbGuard();
 }
+
 
 bool Guard::HealthStatus() const { return ptr_ipc && ptr_ipc->isConnected(); }
 
@@ -42,24 +38,22 @@ bool Guard::AllowOrBlockDevice(std::string id, bool allow, bool permanent) {
 
 ConfigStatus Guard::GetConfigStatus() {
   ConfigStatus config_status;
-  // ConfigStatus
-  //  TODO check status of Daemon (active + enabled)
   //  TODO if daemon is on active think about creating policy before enabling
-  if (!HealthStatus()) {
-
-    // TODO move to separate method
-    try {
-      ptr_ipc = std::make_unique<usbguard::IPCClient>(true);
-    } catch (usbguard::Exception &e) {
-      std::cerr << "Error connecting to USBGuard daemon \n"
-                << e.what() << std::endl;
-    }
-  }
+  if (!HealthStatus()) ConnectToUsbGuard();
   config_status.guard_daemon_OK = HealthStatus();
   return config_status;
 }
 
 // ---------------------- private ---------------------------
+void Guard::ConnectToUsbGuard() noexcept{
+  try {
+    ptr_ipc = std::make_unique<usbguard::IPCClient>(true);
+  } catch (usbguard::Exception &e) {
+    std::cerr << "Error connecting to USBGuard daemon \n"
+              << e.what() << std::endl;
+  }
+}
+
 
 } // namespace guard
 
