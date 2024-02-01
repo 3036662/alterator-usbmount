@@ -13,8 +13,10 @@ find_package(Boost REQUIRED)
 
 include(GNUInstallDirs)
 
-find_package(sdbus-c++ REQUIRED)
 
+# dbus + systemd
+find_package(sdbus-c++ REQUIRED)
+pkg_check_modules(SYSDTEMD REQUIRED systemd )
 
 
 # backend
