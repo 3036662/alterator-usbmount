@@ -69,4 +69,21 @@ void Test::Run1() {
       std::pair<std::string, std::string>{file5, "usb_rule"}};
   assert(map == expected_map);
   std::cout << "TEST1 ... OK" << std::endl;
+
+  
+
+}
+
+
+void Test::Run2(){
+  guard::ConfigStatus cs;
+  cs.CheckDaemon();
+  std::cout << " ACTIVE " << cs.guard_daemon_active
+            << " ENABLED " << cs.guard_daemon_enabled
+            << " DAEMON_OK " << cs.guard_daemon_OK 
+            << " UDEV_RULES_OK " << cs.udev_rules_OK<<std::endl;
+  assert(cs.guard_daemon_active == true);
+  assert(cs.guard_daemon_enabled == true);
+  std::cout << "TEST2 ... OK" << std::endl;  
+
 }
