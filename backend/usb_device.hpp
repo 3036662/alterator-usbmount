@@ -7,7 +7,7 @@
 
 /**
  * @class UsbDevice
- * @brief Represents and usb device
+ * @brief Represents a usb device
  */
 
 class UsbDevice : public SerializableForLisp<UsbDevice> {

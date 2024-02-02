@@ -7,7 +7,7 @@
 
 /**
  * @class MessageReader
- * @brief Reads message from alterator fronted
+ * @brief Reads message from alterator frontend
  *
  * Creates LispMessage objects ans sends them to MessageDispatcher
  */
