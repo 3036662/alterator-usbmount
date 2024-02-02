@@ -3,7 +3,8 @@
 #include <fstream>
 #include <iostream>
 #include <string>
-#include <sdbus-c++/sdbus-c++.h>
+#include "systemd_dbus.hpp"
+
 
 namespace guard {
 
@@ -11,34 +12,36 @@ namespace guard {
 // ConfigStatus
 
 ConfigStatus::ConfigStatus()
-    : udev_warnings{InspectUdevRules()}, udev_rules_OK{udev_warnings.empty()},
-      guard_daemon_OK{false} {
-  // TODO initialize guard_daemon_OK
+    : udev_warnings{InspectUdevRules()}, 
+      udev_rules_OK{udev_warnings.empty()},
+      guard_daemon_OK{false},
+      guard_daemon_enabled{false},
+      guard_daemon_active{false}{
+      CheckDaemon();
 }
 
 vecPairs ConfigStatus::SerializeForLisp() const {
   vecPairs res;
   res.emplace_back("udev", udev_rules_OK ? "OK" : "BAD");
   res.emplace_back("usbguard", guard_daemon_OK ? "OK" : "BAD");
+  res.emplace_back("usbguard_active", guard_daemon_active ? "ACTIVE" : "STOPPED");
+  res.emplace_back("usbguard_enabled", guard_daemon_enabled ? "ENABLED" : "DISABLED");
   return res;
 }
 
-void ConfigStatus::CheckDaemon(){
-  //std::unique_ptr<sdbus::IConnection>  connection = sdbus::createSystemBusConnection();
-  const std::string destinationName = "org.freedesktop.systemd1";
-  const std::string objectPath = "/org/freedesktop/systemd1";
-  const std::string interfaceName ="org.freedesktop.systemd1.Manager";
-  std::unique_ptr<sdbus::IProxy> concatenatorProxy = 
-                      sdbus::createProxy(destinationName, objectPath);
-  auto method = concatenatorProxy->createMethodCall(interfaceName, "GetUnitFileState");
-  method << "usbguard.service";
-  auto reply = concatenatorProxy->callMethod(method);  
-  std::string result;  
-  reply >> result;
-  std::cerr <<result;
-  // TODO - check active status too 
-  //"org.freedesktop.systemd1.Unit", "ActiveState";
-
+void ConfigStatus::CheckDaemon(){  
+    dbus_buindings::Systemd systemd;
+    std::optional<bool> enabled = systemd.IsUnitEnabled(usb_guard_daemon_name);
+    std::optional<bool> active = systemd.IsUnitActive(usb_guard_daemon_name);
+    if (enabled.has_value())
+       guard_daemon_enabled=enabled.value();
+    else
+      std::cerr << "[ERROR] Can't check if usbguard service is enabled" << std::endl;
+    if (active.has_value())
+       guard_daemon_active=active.value();
+    else
+      std::cerr << "[ERROR] Can't check if usbguard service is active" << std::endl;
+    guard_daemon_OK = guard_daemon_enabled && guard_daemon_active ? true : false;
 }
 
 /***********************************************************/

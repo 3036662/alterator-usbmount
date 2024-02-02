@@ -52,11 +52,24 @@
                     (ls_usbs)
                 )
                 ;else usbguard not active
-                (begin 
+                (begin
+                     (form-update-value "usbguard_enabled" (get-value 'usbguard_enabled status) )
+                     (form-update-value "usbguard_active" (get-value 'usbguard_active status))
                      (form-update-visibility "guard_status_ok" #f)
                      (form-update-visibility "guard_status_bad" #t)
-                     (form-update-visibility "list_prsnt_devices" #f)
-                     (form-update-visibility "usb_buttons" #f)
+                     ; if usbguard prosess is active
+                     (if (string=? "ACTIVE" (get-value 'usbguard_active status))
+                        (begin
+                            (form-update-visibility "list_prsnt_devices" #t)
+                            (ls_usbs)
+                        ) 
+                        ; else hide list of devices
+                        (begin
+                            (form-update-visibility "list_prsnt_devices" #f)
+                            (form-update-visibility "usb_buttons" #f)
+                        )
+                     )
+
                 )    
                    
            

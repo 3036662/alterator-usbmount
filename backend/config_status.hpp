@@ -24,6 +24,8 @@ public:
   std::unordered_map<std::string, std::string> udev_warnings;
   bool udev_rules_OK;
   bool guard_daemon_OK;
+  bool guard_daemon_enabled;
+  bool guard_daemon_active;
 
   /// @brief Constructor checks for udev rules and daemon status
   ConfigStatus();
@@ -33,7 +35,7 @@ public:
   vecPairs SerializeForLisp() const;
   void CheckDaemon();  
 private:
-  
+  const std::string usb_guard_daemon_name="usbguard.service";
 };
 
 /*************************************************************/

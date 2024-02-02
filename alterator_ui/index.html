@@ -18,7 +18,14 @@
             <svg>
               <circle cx="10" cy="10" r="8" fill="red" />
             </svg>
-            <span>UsbGuard service ... DISABLED</span>
+            <span>UsbGuard service ... </span> 
+              <span>Autorun is 
+              <input class="no_border" name="usbguard_enabled" readonly="readonly" size="10" />
+              </span> 
+              <span>Process is
+              <input class="no_border" name="usbguard_active" readonly="readonly" size="10"/>
+              </span>
+           
           </div>
           <!-- status udev is OK-->
           <div name="udev_status_ok" class="service_status">
