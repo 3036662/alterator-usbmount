@@ -29,7 +29,7 @@ vecPairs ConfigStatus::SerializeForLisp() const {
 }
 
 void ConfigStatus::CheckDaemon() {
-  dbus_buindings::Systemd systemd;
+  dbus_bindings::Systemd systemd;
   std::optional<bool> enabled = systemd.IsUnitEnabled(usb_guard_daemon_name);
   std::optional<bool> active = systemd.IsUnitActive(usb_guard_daemon_name);
   if (enabled.has_value())
