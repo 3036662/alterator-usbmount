@@ -42,7 +42,7 @@ void ConfigStatus::CheckDaemon() {
   else
     std::cerr << "[ERROR] Can't check if usbguard service is active"
               << std::endl;
-  guard_daemon_OK = guard_daemon_enabled && guard_daemon_active ? true : false;
+  guard_daemon_OK = guard_daemon_enabled && guard_daemon_active;
 }
 
 /***********************************************************/
