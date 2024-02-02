@@ -4,7 +4,7 @@
 #include <optional>
 #include <sdbus-c++/sdbus-c++.h>
 
-namespace dbus_buindings {
+namespace dbus_bindings {
 
 /**
  * @class Systemd

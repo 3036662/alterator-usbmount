@@ -2,7 +2,7 @@
 #include <boost/algorithm/string/predicate.hpp>
 #include <iostream>
 
-namespace dbus_buindings {
+namespace dbus_bindings {
 
 Systemd::Systemd() : connection{nullptr} { ConnectToSystemDbus(); }
 
