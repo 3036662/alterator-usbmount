@@ -1,10 +1,9 @@
 #include "config_status.hpp"
+#include "systemd_dbus.hpp"
 #include <algorithm>
 #include <fstream>
 #include <iostream>
 #include <string>
-#include "systemd_dbus.hpp"
-
 
 namespace guard {
 
@@ -12,36 +11,38 @@ namespace guard {
 // ConfigStatus
 
 ConfigStatus::ConfigStatus()
-    : udev_warnings{InspectUdevRules()}, 
-      udev_rules_OK{udev_warnings.empty()},
-      guard_daemon_OK{false},
-      guard_daemon_enabled{false},
-      guard_daemon_active{false}{
-      CheckDaemon();
+    : udev_warnings{InspectUdevRules()}, udev_rules_OK{udev_warnings.empty()},
+      guard_daemon_OK{false}, guard_daemon_enabled{false},
+      guard_daemon_active{false} {
+  CheckDaemon();
 }
 
 vecPairs ConfigStatus::SerializeForLisp() const {
   vecPairs res;
   res.emplace_back("udev", udev_rules_OK ? "OK" : "BAD");
   res.emplace_back("usbguard", guard_daemon_OK ? "OK" : "BAD");
-  res.emplace_back("usbguard_active", guard_daemon_active ? "ACTIVE" : "STOPPED");
-  res.emplace_back("usbguard_enabled", guard_daemon_enabled ? "ENABLED" : "DISABLED");
+  res.emplace_back("usbguard_active",
+                   guard_daemon_active ? "ACTIVE" : "STOPPED");
+  res.emplace_back("usbguard_enabled",
+                   guard_daemon_enabled ? "ENABLED" : "DISABLED");
   return res;
 }
 
-void ConfigStatus::CheckDaemon(){  
-    dbus_buindings::Systemd systemd;
-    std::optional<bool> enabled = systemd.IsUnitEnabled(usb_guard_daemon_name);
-    std::optional<bool> active = systemd.IsUnitActive(usb_guard_daemon_name);
-    if (enabled.has_value())
-       guard_daemon_enabled=enabled.value();
-    else
-      std::cerr << "[ERROR] Can't check if usbguard service is enabled" << std::endl;
-    if (active.has_value())
-       guard_daemon_active=active.value();
-    else
-      std::cerr << "[ERROR] Can't check if usbguard service is active" << std::endl;
-    guard_daemon_OK = guard_daemon_enabled && guard_daemon_active ? true : false;
+void ConfigStatus::CheckDaemon() {
+  dbus_buindings::Systemd systemd;
+  std::optional<bool> enabled = systemd.IsUnitEnabled(usb_guard_daemon_name);
+  std::optional<bool> active = systemd.IsUnitActive(usb_guard_daemon_name);
+  if (enabled.has_value())
+    guard_daemon_enabled = enabled.value();
+  else
+    std::cerr << "[ERROR] Can't check if usbguard service is enabled"
+              << std::endl;
+  if (active.has_value())
+    guard_daemon_active = active.value();
+  else
+    std::cerr << "[ERROR] Can't check if usbguard service is active"
+              << std::endl;
+  guard_daemon_OK = guard_daemon_enabled && guard_daemon_active ? true : false;
 }
 
 /***********************************************************/

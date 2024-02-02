@@ -33,9 +33,10 @@ public:
   /// @brief Serialize statuses
   /// @return vector of string patrs
   vecPairs SerializeForLisp() const;
-  void CheckDaemon();  
+  void CheckDaemon();
+
 private:
-  const std::string usb_guard_daemon_name="usbguard.service";
+  const std::string usb_guard_daemon_name = "usbguard.service";
 };
 
 /*************************************************************/

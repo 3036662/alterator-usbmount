@@ -3,10 +3,7 @@
 
 namespace guard {
 
-Guard::Guard() : ptr_ipc(nullptr) {
-  ConnectToUsbGuard();
-}
-
+Guard::Guard() : ptr_ipc(nullptr) { ConnectToUsbGuard(); }
 
 bool Guard::HealthStatus() const { return ptr_ipc && ptr_ipc->isConnected(); }
 
@@ -39,13 +36,14 @@ bool Guard::AllowOrBlockDevice(std::string id, bool allow, bool permanent) {
 ConfigStatus Guard::GetConfigStatus() {
   ConfigStatus config_status;
   //  TODO if daemon is on active think about creating policy before enabling
-  if (!HealthStatus()) ConnectToUsbGuard();
+  if (!HealthStatus())
+    ConnectToUsbGuard();
   config_status.guard_daemon_active = HealthStatus();
   return config_status;
 }
 
 // ---------------------- private ---------------------------
-void Guard::ConnectToUsbGuard() noexcept{
+void Guard::ConnectToUsbGuard() noexcept {
   try {
     ptr_ipc = std::make_unique<usbguard::IPCClient>(true);
   } catch (usbguard::Exception &e) {
@@ -53,7 +51,6 @@ void Guard::ConnectToUsbGuard() noexcept{
               << e.what() << std::endl;
   }
 }
-
 
 } // namespace guard
 

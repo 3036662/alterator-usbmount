@@ -30,10 +30,10 @@ bool MessageDispatcher::Dispatch(const LispMessage &msg) {
       std::cerr << "bad request for usb allow,doing nothing" << std::endl;
       return true;
     }
-    if (guard.AllowOrBlockDevice(msg.params.find("usb_id")->second, true)){
+    if (guard.AllowOrBlockDevice(msg.params.find("usb_id")->second, true)) {
       std::cout << mess_beg << "status" << WrapWithQuotes("OK") << mess_end;
     } else {
-      std::cout << mess_beg << "status" << WrapWithQuotes("FAIL") <<mess_end;
+      std::cout << mess_beg << "status" << WrapWithQuotes("FAIL") << mess_end;
     }
     return true;
   }
@@ -46,10 +46,10 @@ bool MessageDispatcher::Dispatch(const LispMessage &msg) {
       std::cerr << "bad request for usb allow,doing nothing" << std::endl;
       return true;
     }
-    if (guard.AllowOrBlockDevice(msg.params.find("usb_id")->second, false)){
+    if (guard.AllowOrBlockDevice(msg.params.find("usb_id")->second, false)) {
       std::cout << mess_beg << "status" << WrapWithQuotes("OK") << mess_end;
     } else {
-      std::cout << mess_beg << "status" << WrapWithQuotes("FAIL") <<mess_end;
+      std::cout << mess_beg << "status" << WrapWithQuotes("FAIL") << mess_end;
     }
     return true;
   }
