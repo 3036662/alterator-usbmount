@@ -7,6 +7,7 @@ add_executable(simple main.cpp
     usb_device.cpp usb_device.hpp
     guard.cpp guard.hpp
     config_status.cpp config_status.hpp
+    systemd_dbus.cpp systemd_dbus.hpp
     )
 
 include_directories(simple PUBLIC ${USBGUARD_INCLUDE_DIRS})

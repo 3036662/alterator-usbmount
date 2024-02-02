@@ -4,7 +4,9 @@ add_executable(test
                test.cpp 
                ../backend/utils.cpp
                ../backend/config_status.cpp
-               ../backend/guard.cpp)
+               ../backend/guard.cpp
+               ../backend/systemd_dbus.cpp
+               )
 target_include_directories(test PRIVATE ../backend)
 target_include_directories(test PRIVATE .)
 include_directories(test PUBLIC ${USBGUARD_INCLUDE_DIRS})
