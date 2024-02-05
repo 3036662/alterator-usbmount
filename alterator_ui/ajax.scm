@@ -25,7 +25,8 @@
 ; udev:     "OK" or BAD 
 (define (config_status_check)
    (let ((status  (removeFirstElement (woo-read "/simple/config_status")) ))
-           (if (string=? "OK" (get-value 'udev status)) ; if udev=OK
+           ; if udev=OK
+           (if (string=? "OK" (get-value 'udev status)) 
                 (begin
                     (form-update-visibility "udev_status_ok" #t)
                     (form-update-visibility "udev_config_warinigs" #f)
@@ -43,7 +44,8 @@
               
            ) ;endif
 
-           (if (string=? "OK" (get-value 'usbguard status)) ; if sbguard=OK
+           ;if usbguard=OK 
+           (if (string=? "OK" (get-value 'usbguard status)) ; 
                 (begin
                     (form-update-visibility "guard_status_ok" #t)
                     (form-update-visibility "guard_status_bad" #f)
@@ -69,14 +71,15 @@
                             (form-update-visibility "usb_buttons" #f)
                         )
                      )
-
                 )    
-                   
-           
            ) ; endif
+           
+           ;show allowed users and groups
+           (form-update-value "usbguard_users" (get-value 'allowed_users status)) 
+           (form-update-value "usbguard_groups" (get-value 'allowed_groups status)) 
 
-   )  
-)
+   )  ; //let
+) ; // config_status check
 
 ; unblock the selected device 
  (define (allow_device)

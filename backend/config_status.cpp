@@ -17,6 +17,7 @@ ConfigStatus::ConfigStatus()
       guard_daemon_active{false},
       daemon_config_file_path{GetDaemonConfigPath()} {
   CheckDaemon();
+  ParseDaemonConfig();
 }
 
 vecPairs ConfigStatus::SerializeForLisp() const {
@@ -27,6 +28,11 @@ vecPairs ConfigStatus::SerializeForLisp() const {
                    guard_daemon_active ? "ACTIVE" : "STOPPED");
   res.emplace_back("usbguard_enabled",
                    guard_daemon_enabled ? "ENABLED" : "DISABLED");
+  res.emplace_back("rules_file_exists",rules_files_exists ? "TRUE" : "FALSE" ); 
+
+  res.emplace_back("allowed_users",boost::join(ipc_allowed_users,", "));
+  res.emplace_back("allowed_groups",boost::join(ipc_allowed_groups,", "));
+
   return res;
 }
 
@@ -98,7 +104,6 @@ std::string ConfigStatus::GetDaemonConfigPath() const {
     std::cerr << "[ERROR] Can't find usbguard config file" << std::endl;
     std::cerr << ex.what() << std::endl;
   }
-
   return res;
 }
 
@@ -124,7 +129,6 @@ void ConfigStatus::ParseDaemonConfig() {
   std::string line;
   while (getline(f, line)) {
     boost::trim(line);
-
     // rule file path
     if (boost::starts_with(line, "RuleFile=")) {
       size_t pos = line.find('=');
@@ -213,7 +217,6 @@ void ConfigStatus::ParseDaemonConfig() {
       }
       continue;
     }
-
     line.clear();
   }
 
