@@ -14,7 +14,8 @@ namespace guard {
 ConfigStatus::ConfigStatus()
     : udev_warnings{InspectUdevRules()}, udev_rules_OK{udev_warnings.empty()},
       guard_daemon_OK{false}, guard_daemon_enabled{false},
-      guard_daemon_active{false} {
+      guard_daemon_active{false},
+      daemon_config_file_path{GetDaemonConfigPath()} {
   CheckDaemon();
 }
 
@@ -46,7 +47,7 @@ void ConfigStatus::CheckDaemon() {
   guard_daemon_OK = guard_daemon_enabled && guard_daemon_active;
 }
 
-std::string ConfigStatus::GetDamonConfigPath() const {
+std::string ConfigStatus::GetDaemonConfigPath() const {
   std::string res;
   const std::string full_path_to_unit =
       unit_dir_path + "/" + usb_guard_daemon_name;
@@ -99,6 +100,46 @@ std::string ConfigStatus::GetDamonConfigPath() const {
   }
 
   return res;
+}
+
+void ConfigStatus::ParseDaemonConfig() {
+  if (daemon_config_file_path.empty())
+    return;
+  std::ifstream f(daemon_config_file_path);
+  if (!f.is_open()) {
+    std::cerr << "[ERROR] Can't open daemon config file "
+              << daemon_config_file_path << std::endl;
+    return;
+  }
+  std::string line;
+  while (getline(f, line)) {
+    boost::trim(line);
+
+    // rule file path
+    if (boost::starts_with(line, "RuleFile=")) {
+      size_t pos = line.find('=');
+      if (pos != std::string::npos && ++pos < line.size()) {
+        std::string path_to_rules(line, pos);
+        boost::trim(path_to_rules);
+        std::cerr << "[INFO] Find path to rules file" << path_to_rules
+                  << std::endl;
+        if (!path_to_rules.empty()) {
+          daemon_rules_file_path = std::move(path_to_rules);
+          try {
+            rules_files_exists =
+                std::filesystem::exists(daemon_rules_file_path);
+          } catch (const std::exception &ex) {
+            std::cerr << "[ERROR] Can't check if rules file "
+                      << daemon_rules_file_path << " exists" << std::endl;
+          }
+        }
+      }
+    }
+
+    line.clear();
+  }
+
+  f.close();
 }
 
 /***********************************************************/

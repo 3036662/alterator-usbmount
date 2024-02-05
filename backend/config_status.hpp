@@ -19,6 +19,13 @@ namespace guard {
  * and UsbGuard Status
  * */
 class ConfigStatus : public SerializableForLisp<ConfigStatus> {
+
+private:
+  const std::string usb_guard_daemon_name = "usbguard.service";
+  const std::string unit_dir_path = "/lib/systemd/system";
+  const std::string usbguard_default_config_path =
+      "/etc/usbguard/usbguard-daemon.conf";
+
 public:
   // warning_info : filename
   std::unordered_map<std::string, std::string> udev_warnings;
@@ -26,6 +33,10 @@ public:
   bool guard_daemon_OK;
   bool guard_daemon_enabled;
   bool guard_daemon_active;
+  std::string daemon_config_file_path;
+  // filled by ParseDaemonConfig
+  std::string daemon_rules_file_path;
+  bool rules_files_exists;
 
   /// @brief Constructor checks for udev rules and daemon status
   ConfigStatus();
@@ -33,21 +44,21 @@ public:
   /// @brief Serialize statuses
   /// @return vector of string patrs
   vecPairs SerializeForLisp() const;
-
   /// @brief Checks the daemon status,fills status fields
   void CheckDaemon();
 
+private:
   /// @brief Return path for the  daemon .conf file
   /// @return A string path, empty string if failed
   /// @details usbguard.service is expected to be installed in
   /// /lib/systemd/system
-  std::string GetDamonConfigPath() const;
+  std::string GetDaemonConfigPath() const;
 
-private:
-  const std::string usb_guard_daemon_name = "usbguard.service";
-  const std::string unit_dir_path = "/lib/systemd/system";
-  const std::string usbguard_default_config_path =
-      "/etc/usbguard/usbguard-daemon.conf";
+  void ParseDaemonConfig();
+
+#ifdef UNIT_TEST
+  friend class ::Test;
+#endif
 };
 
 /*************************************************************/

@@ -85,8 +85,20 @@ void Test::Run2() {
 
 void Test::Run3() {
   guard::ConfigStatus cs;
-  std::string res = cs.GetDamonConfigPath();
+  std::string res = cs.GetDaemonConfigPath();
   std::cerr << "Config path is " << res << std::endl;
   assert(std::filesystem::exists(res));
   std::cout << "TEST3 ... OK" << std::endl;
+}
+
+void Test::Run4() {
+  guard::ConfigStatus cs;
+  cs.ParseDaemonConfig();
+  std::cerr << "Found rules file " << cs.daemon_rules_file_path << std::endl;
+  std::cerr << "Rules file exists = " << cs.rules_files_exists << std::endl;
+  assert(!cs.daemon_rules_file_path.empty() &&
+         cs.daemon_rules_file_path == "/etc/usbguard/rules.conf" &&
+         cs.rules_files_exists ==
+             std::filesystem::exists(cs.daemon_rules_file_path));
+  std::cout << "TEST4 ... OK" << std::endl;
 }

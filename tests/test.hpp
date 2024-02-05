@@ -18,4 +18,11 @@ public:
    * @details to pass this test usbguard package must be installed
    */
   void Run3();
+
+  /**
+   * @brief  Parse config file to find path to rules.file
+   * @details to pass this test usbguard package must be installed
+   * @warning Needs root privileges
+   */
+  void Run4();
 };
