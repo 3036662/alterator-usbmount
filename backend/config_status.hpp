@@ -33,10 +33,21 @@ public:
   /// @brief Serialize statuses
   /// @return vector of string patrs
   vecPairs SerializeForLisp() const;
+
+  /// @brief Checks the daemon status,fills status fields
   void CheckDaemon();
+
+  /// @brief Return path for the  daemon .conf file
+  /// @return A string path, empty string if failed
+  /// @details usbguard.service is expected to be installed in
+  /// /lib/systemd/system
+  std::string GetDamonConfigPath() const;
 
 private:
   const std::string usb_guard_daemon_name = "usbguard.service";
+  const std::string unit_dir_path = "/lib/systemd/system";
+  const std::string usbguard_default_config_path =
+      "/etc/usbguard/usbguard-daemon.conf";
 };
 
 /*************************************************************/

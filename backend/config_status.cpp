@@ -1,6 +1,7 @@
 #include "config_status.hpp"
 #include "systemd_dbus.hpp"
 #include <algorithm>
+#include <boost/algorithm/string.hpp>
 #include <fstream>
 #include <iostream>
 #include <string>
@@ -43,6 +44,61 @@ void ConfigStatus::CheckDaemon() {
     std::cerr << "[ERROR] Can't check if usbguard service is active"
               << std::endl;
   guard_daemon_OK = guard_daemon_enabled && guard_daemon_active;
+}
+
+std::string ConfigStatus::GetDamonConfigPath() const {
+  std::string res;
+  const std::string full_path_to_unit =
+      unit_dir_path + "/" + usb_guard_daemon_name;
+  try {
+    // open unit (.service file)
+    if (std::filesystem::exists(full_path_to_unit)) {
+      std::ifstream f(full_path_to_unit);
+      if (f.is_open()) {
+        std::string line;
+        // find ExecStart string
+        while (getline(f, line)) {
+          if (boost::algorithm::contains(line, "ExecStart")) {
+            std::vector<std::string> tokens;
+            // split by space, find next after -c
+            boost::split(tokens, line, [](const char c) { return c == ' '; });
+            auto it = std::find(tokens.begin(), tokens.end(), "-c");
+            if (it != tokens.end())
+              ++it;
+            if (it != tokens.end() && !it->empty()) {
+              boost::trim(*it);
+              if (std::filesystem::exists(*it)) {
+                res = std::move(*it);
+                std::cerr << "[INFO] Found config file for usbguard " << res
+                          << std::endl;
+                break;
+              } else {
+                std::cerr << "[WARNING] Can't find path to .conf file in "
+                             ".service file"
+                          << std::endl;
+                if (std::filesystem::exists(usbguard_default_config_path)) {
+                  std::cerr << "[WARINIG]"
+                            << "Default config found "
+                            << usbguard_default_config_path << std::endl;
+                  res = usbguard_default_config_path;
+                  break;
+                }
+              }
+            }
+          }
+          line.clear();
+        }
+        f.close();
+      } else {
+        std::cerr << "[ERROR] Can't read " << full_path_to_unit << std::endl;
+      }
+    }
+  } catch (const std::exception &ex) {
+    std::cerr << "[ERROR] Can't find usbguard config file" << std::endl;
+    std::cerr << ex.what() << std::endl;
+  }
+
+  return res;
 }
 
 /***********************************************************/
