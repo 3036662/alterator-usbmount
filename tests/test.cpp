@@ -1,6 +1,7 @@
 #include "guard.hpp"
 #include <algorithm>
 #include <cassert>
+#include <cstdlib>
 #include <filesystem>
 #include <iostream>
 #include <string>
@@ -74,6 +75,27 @@ void Test::Run1() {
 
 void Test::Run2() {
   guard::ConfigStatus cs;
+
+  if (std::system("systemctl stop usbguard")) {
+    throw std::logic_error("can't stop usbguard");
+  }
+  if (std::system("systemctl disable usbguard")) {
+    throw std::logic_error("can't stop usbguard");
+  }
+
+  cs.CheckDaemon();
+  std::cout << " ACTIVE " << cs.guard_daemon_active << " ENABLED "
+            << cs.guard_daemon_enabled << " DAEMON_OK " << cs.guard_daemon_OK
+            << " UDEV_RULES_OK " << cs.udev_rules_OK << std::endl;
+  assert(cs.guard_daemon_active == false);
+  assert(cs.guard_daemon_enabled == false);
+
+  if (std::system("systemctl start usbguard")) {
+    throw std::logic_error("can't start usbguard");
+  }
+  if (std::system("systemctl enable usbguard")) {
+    throw std::logic_error("can't enable usbguard");
+  }
   cs.CheckDaemon();
   std::cout << " ACTIVE " << cs.guard_daemon_active << " ENABLED "
             << cs.guard_daemon_enabled << " DAEMON_OK " << cs.guard_daemon_OK
@@ -101,4 +123,39 @@ void Test::Run4() {
          cs.rules_files_exists ==
              std::filesystem::exists(cs.daemon_rules_file_path));
   std::cout << "TEST4 ... OK" << std::endl;
+}
+
+void Test::Run5() {
+  guard::ConfigStatus cs;
+  cs.ParseDaemonConfig();
+  std::cerr << "Users found:" << std::endl;
+  for (const std::string &user : cs.ipc_allowed_users) {
+    std::cerr << user << std::endl;
+  }
+
+  const std::string path_to_users = "/etc/usbguard/IPCAccessControl.d/";
+  std::set<std::string> expected_set = {"root"};
+  assert(cs.ipc_allowed_users == expected_set);
+
+  if (std::system("usbguard add-user test")) {
+    throw std::logic_error("Can't add user to usbguard");
+  }
+  cs.ParseDaemonConfig();
+  for (const std::string &user : cs.ipc_allowed_users) {
+    std::cerr << user << std::endl;
+  }
+  expected_set.insert("test");
+  assert(cs.ipc_allowed_users == expected_set);
+
+  if (std::system("usbguard remove-user test")) {
+    throw std::logic_error("Can't add user to usbguard");
+  }
+  cs.ParseDaemonConfig();
+  for (const std::string &user : cs.ipc_allowed_users) {
+    std::cerr << user << std::endl;
+  }
+  expected_set.erase("test");
+  assert(cs.ipc_allowed_users == expected_set);
+
+  std::cerr << "TEST5 ... OK" << std::endl;
 }

@@ -7,9 +7,7 @@ public:
 
   /**
    * @brief  test daemon CheckConfig
-   * @details to pass this test systemctl enable usbguard
-   * systemctl enable usbguard
-   * systemctl start usbguard
+   * @details to pass this test must have root privileges
    */
   void Run2();
 
@@ -25,4 +23,12 @@ public:
    * @warning Needs root privileges
    */
   void Run4();
+
+  /**
+   * @brief  Parse config file to find allowed users
+   * @details to pass this test usbguard package must be installed with defualt
+   * config
+   * @warning Needs root privileges
+   */
+  void Run5();
 };

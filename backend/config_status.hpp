@@ -3,6 +3,7 @@
 #include "serializible_for_lisp.hpp"
 #include "types.hpp"
 #include "utils.hpp"
+#include <set>
 #include <unordered_map>
 
 #ifdef UNIT_TEST
@@ -37,6 +38,7 @@ public:
   // filled by ParseDaemonConfig
   std::string daemon_rules_file_path;
   bool rules_files_exists;
+  std::set<std::string> ipc_allowed_users;
 
   /// @brief Constructor checks for udev rules and daemon status
   ConfigStatus();

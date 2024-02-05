@@ -103,14 +103,23 @@ std::string ConfigStatus::GetDaemonConfigPath() const {
 }
 
 void ConfigStatus::ParseDaemonConfig() {
+
+  // cleanup
+  ipc_allowed_users.clear();
+  daemon_rules_file_path.clear();
+  rules_files_exists = false;
   if (daemon_config_file_path.empty())
     return;
+
+  // open config
   std::ifstream f(daemon_config_file_path);
   if (!f.is_open()) {
     std::cerr << "[ERROR] Can't open daemon config file "
               << daemon_config_file_path << std::endl;
     return;
   }
+
+  // parse
   std::string line;
   while (getline(f, line)) {
     boost::trim(line);
@@ -134,6 +143,56 @@ void ConfigStatus::ParseDaemonConfig() {
           }
         }
       }
+      continue;
+    }
+
+    // parse allowed user from conf file
+    if (boost::starts_with(line, "IPCAllowedUsers=")) {
+      size_t pos = line.find('=');
+      if (pos != std::string::npos && ++pos < line.size()) {
+        std::string users_string(line, pos);
+        boost::trim(users_string);
+        std::cerr << "[INFO] Found users in conf file " << line << std::endl;
+        // split by space and add to set
+        std::vector<std::string> splitted_string;
+        boost::split(splitted_string, users_string,
+                     [](const char c) { return c == ' '; });
+        for (std::string &str : splitted_string) {
+          boost::trim(str);
+          if (!str.empty()) {
+            ipc_allowed_users.insert(str);
+          }
+        }
+      }
+      continue;
+    }
+
+    // parse allowed users folder and find all files in folder
+    if (boost::starts_with(line, "IPCAccessControlFiles=")) {
+      size_t pos = line.find('=');
+      if (pos != std::string::npos && ++pos < line.size()) {
+        std::string path_to_folder(line, pos);
+        boost::trim(path_to_folder);
+        std::cerr << "[INFO] Found users control folder " << line << std::endl;
+        try {
+          std::filesystem::path fs_path_to_folder(path_to_folder);
+          std::vector<std::string> files =
+              FindAllFilesInDirRecursive(path_to_folder);
+          for (std::string &str : files) {
+            boost::trim(str);
+            if (!str.empty()) {
+              // std::cerr << "found file " << str <<std::endl;
+              ipc_allowed_users.insert(
+                  std::filesystem::path(str).filename().string());
+            }
+          }
+        } catch (const std::exception &ex) {
+          std::cerr << "Can't check users control folder" << path_to_folder
+                    << std::endl;
+          std::cerr << ex.what();
+        }
+      }
+      continue;
     }
 
     line.clear();
