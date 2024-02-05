@@ -159,3 +159,15 @@ void Test::Run5() {
 
   std::cerr << "TEST5 ... OK" << std::endl;
 }
+
+void Test::Run6() {
+  guard::ConfigStatus cs;
+  cs.ParseDaemonConfig();
+  std::cerr << "Groups found:" << std::endl;
+  for (const std::string &group : cs.ipc_allowed_groups) {
+    std::cerr << group << std::endl;
+  }
+  std::set<std::string> expected{"wheel"};
+  assert(cs.ipc_allowed_groups == expected);
+  std::cerr << "TEST6 ... OK" << std::endl;
+}

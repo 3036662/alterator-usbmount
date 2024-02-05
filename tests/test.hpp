@@ -31,4 +31,11 @@ public:
    * @warning Needs root privileges
    */
   void Run5();
+
+  /**
+   * @brief  Parse config file to find allowed groups
+   * @details Default group "wheel" is expected
+   * @warning Needs root privileges
+   */
+  void Run6();
 };

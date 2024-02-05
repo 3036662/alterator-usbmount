@@ -106,6 +106,7 @@ void ConfigStatus::ParseDaemonConfig() {
 
   // cleanup
   ipc_allowed_users.clear();
+  ipc_allowed_groups.clear();
   daemon_rules_file_path.clear();
   rules_files_exists = false;
   if (daemon_config_file_path.empty())
@@ -190,6 +191,24 @@ void ConfigStatus::ParseDaemonConfig() {
           std::cerr << "Can't check users control folder" << path_to_folder
                     << std::endl;
           std::cerr << ex.what();
+        }
+      }
+      continue;
+    }
+
+    // find all groups in config file
+    if (boost::starts_with(line, "IPCAllowedGroups=")) {
+      size_t pos = line.find('=');
+      if (pos != std::string::npos && ++pos < line.size()) {
+        std::vector<std::string> splitted_string;
+        std::string groups_string(line, pos);
+        boost::split(splitted_string, groups_string,
+                     [](const char c) { return c == ' '; });
+        for (std::string &str : splitted_string) {
+          boost::trim(str);
+          if (!str.empty()) {
+            ipc_allowed_groups.insert(str);
+          }
         }
       }
       continue;

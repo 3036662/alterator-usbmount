@@ -13,8 +13,11 @@ int main(int argc, char *argv[]) {
   // test4 passes only if usbguard is installed
   // needs root
   test.Run4();
-  // test4 passes only if usbguard is installed and config is default
+  // test5 passes only if usbguard is installed
   // needs root
   test.Run5();
+  // test6 passes only if usbguard is installed and config is default
+  // needs root
+  test.Run6();
   return 0;
 }

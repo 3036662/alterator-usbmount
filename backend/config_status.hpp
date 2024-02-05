@@ -39,6 +39,7 @@ public:
   std::string daemon_rules_file_path;
   bool rules_files_exists;
   std::set<std::string> ipc_allowed_users;
+  std::set<std::string> ipc_allowed_groups;
 
   /// @brief Constructor checks for udev rules and daemon status
   ConfigStatus();
