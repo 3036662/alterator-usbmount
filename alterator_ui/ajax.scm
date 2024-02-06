@@ -51,9 +51,10 @@
                     (form-update-visibility "guard_status_bad" #f)
                     (form-update-visibility "list_prsnt_devices" #t)
                     (form-update-visibility "usb_buttons" #t)
+                   ; (form-update-activity "checkbox_use_control" #t)
                     (ls_usbs)
                 )
-                ;else usbguard not active
+                ;else usbguard not totally fine
                 (begin
                      (form-update-value "usbguard_enabled" (get-value 'usbguard_enabled status) )
                      (form-update-value "usbguard_active" (get-value 'usbguard_active status))
@@ -63,17 +64,22 @@
                      (if (string=? "ACTIVE" (get-value 'usbguard_active status))
                         (begin
                             (form-update-visibility "list_prsnt_devices" #t)
+                     ;       (form-update-activity"checkbox_use_control" #t)
                             (ls_usbs)
                         ) 
                         ; else hide list of devices
                         (begin
                             (form-update-visibility "list_prsnt_devices" #f)
                             (form-update-visibility "usb_buttons" #f)
+                      ;      (form-update-activity "checkbox_use_control" #f)
                         )
                      )
                 )    
            ) ; endif
            
+           ; set checkbox checked if usbguard is active 
+           (form-update-value "checkbox_use_control_hidden" 
+                    (string=? "ACTIVE" (get-value 'usbguard_active status)))
            ;show allowed users and groups
            (form-update-value "usbguard_users" (get-value 'allowed_users status)) 
            (form-update-value "usbguard_groups" (get-value 'allowed_groups status)) 
@@ -104,8 +110,7 @@
  )
 
 (define (init)
- ; (ls_usbs) ; update list on init
-  (config_status_check) 
+  (config_status_check)
   (form-bind "btn_prsnt_scan" "click" ls_usbs)
   (form-bind "btn_prsnt_dev_add" "click" allow_device)
   (form-bind "btn_prsnt_dev_block" "click" block_device)

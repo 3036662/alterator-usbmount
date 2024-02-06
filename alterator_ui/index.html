@@ -2,6 +2,7 @@
 <html wf="none">
     <head>
       <link type="text/css" rel="stylesheet" href="/design/styles/alt_usb_guard.css" />
+      <script src="/design/scripts/alt-usb-guard.js" />
     </head>
     <body>
       <div class="config_check">
@@ -66,7 +67,12 @@
               <td><span class="alterator-label" name="name" /></td>
             </tbody>
           </table>
-          
+          <!-- checkbox  Use usb ports control-->
+          <div>
+            <input type="hidden" id="checkbox_use_control_hidden" name="checkbox_use_control_hidden" /> 
+            <input type="checkbox" id="checkbox_use_control" name="checkbox_use_control" />
+            <label for="use_usb_control">Use usb ports control</label> 
+          </div>
         </form>
       </div>
 

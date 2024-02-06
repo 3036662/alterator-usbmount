@@ -28,5 +28,11 @@ install(FILES
     ${CMAKE_SOURCE_DIR}/alterator_ui/alt_usb_guard.css
     DESTINATION "/usr/share/alterator/design/styles"
 )
+
+install(FILES
+    ${CMAKE_SOURCE_DIR}/alterator_ui/alt-usb-guard.js
+    DESTINATION "/usr/share/alterator/design/scripts"
+)
+
 install(CODE "execute_process(COMMAND service alteratord restart)")
 install(CODE "execute_process(COMMAND service ahttpd restart)")
