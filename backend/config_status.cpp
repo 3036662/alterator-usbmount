@@ -271,7 +271,9 @@ std::unordered_map<std::string, std::string> InspectUdevRules(
           tmp_str.clear();
           f.close();
 
-          if (found_usb && found_authorize) {
+          //if (found_usb && found_authorize) {
+         //a rule can ruin program behavior even if only authorized and no usb
+         if (found_authorize){   
             std::cerr << "Found file " << str_path << std::endl;
             res.emplace(str_path, "usb_rule");
           }

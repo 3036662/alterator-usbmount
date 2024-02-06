@@ -68,7 +68,8 @@ void Test::Run1() {
       guard::InspectUdevRules(&vec_mock);
   const std::unordered_map<std::string, std::string> expected_map{
       std::pair<std::string, std::string>{file1, "usb_rule"},
-      std::pair<std::string, std::string>{file5, "usb_rule"}};
+      std::pair<std::string, std::string>{file5, "usb_rule"},
+      std::pair<std::string, std::string>{file6, "usb_rule"}}; //even if only authorized
   assert(map == expected_map);
   std::cout << "TEST1 ... OK" << std::endl;
 }
