@@ -75,26 +75,32 @@
           </div>
         </form>
       </div>
-
+      <hr />
       <form method="POST">
-        <table class="alterator-listbox single-select" align="center" name="list_prsnt_devices">
-            <thead>
+        <table id="devices_list_table" class="alterator-listbox single-select" align="center" name="list_prsnt_devices">
+          <p>Connnected usb devices:</p>
+          <caption>List of devices</caption>  
+          <thead>
               <tr>
                 <th>N</th>
+                <th>Port</th>
+                <th>CC::SS::PP</th>
+                <th>VID</th>
+                <th>PID</th>
                 <th>Status</th>
                 <th>Name</th>
-                <th>ID</th>
-                <th>Port</th>
                 <th>Connect type</th>
                </tr>
                 </thead>
                 <tbody>              
                   <tr class="wrap">
                     <td><span class="alterator-label" name="name" /></td>
+                    <td><span class="alterator-label" name="label_prsnt_usb_port" /></td>
+                    <td><span class="alterator-label" name="label_prsnt_usb_class" /></td>
+                    <td><span class="alterator-label" name="label_prsnt_usb_vid" /></td>
+                    <td><span class="alterator-label" name="label_prsnt_usb_pid" /></td>
                     <td><span class="alterator-label" name="label_prsnt_usb_status" /></td>
                     <td><span class="alterator-label" name="label_prsnt_usb_name" /></td>
-                    <td><span class="alterator-label" name="label_prsnt_usb_id" /></td>
-                    <td><span class="alterator-label" name="label_prsnt_usb_port" /></td>
                     <td><span class="alterator-label" name="label_prsnt_usb_connection" /></td>
                   </tr>
                 </tbody>

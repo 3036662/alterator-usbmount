@@ -13,7 +13,7 @@ bool MessageDispatcher::Dispatch(const LispMessage &msg) {
   if (msg.action == "list" && msg.objects == "list_curr_usbs") {
     std::cerr << "dispatcher->list" << std::endl;
     //  std::vector<UsbDevice> vec_usb=fakeLibGetUsbList();
-    std::vector<UsbDevice> vec_usb = guard.ListCurrentUsbDevices();
+    std::vector<guard::UsbDevice> vec_usb = guard.ListCurrentUsbDevices();
     std::cout << mess_beg;
     for (const auto &usb : vec_usb) {
       std::cout << ToLisp(usb);

@@ -45,3 +45,11 @@
 .no_border{
     border:0px;
 }
+
+#devices_list_table caption{
+    background-color: white;
+    border: solid;
+    border-width: thin;
+    margin-bottom: 2px;
+    font-weight: 600;
+}

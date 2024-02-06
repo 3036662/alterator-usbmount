@@ -47,7 +47,7 @@ public:
   /// @brief Serialize statuses
   /// @return vector of string patrs
   vecPairs SerializeForLisp() const;
-  
+
   /// @brief Checks the daemon status,fills status fields
   void CheckDaemon();
 

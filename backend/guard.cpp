@@ -1,5 +1,6 @@
 #include "guard.hpp"
 #include "utils.hpp"
+#include <boost/algorithm/string.hpp>
 
 namespace guard {
 
@@ -11,12 +12,22 @@ std::vector<UsbDevice> Guard::ListCurrentUsbDevices() {
   std::vector<UsbDevice> res;
   if (!HealthStatus())
     return res;
+  // health is ok -> get all devices
   std::vector<usbguard::Rule> rules = ptr_ipc->listDevices(default_query);
   for (const usbguard::Rule &rule : rules) {
-    res.emplace_back(rule.getRuleID(), rule.targetToString(rule.getTarget()),
-                     rule.getName(), rule.getDeviceID().toString(),
-                     rule.getViaPort(), rule.getWithConnectType());
-    // std::cerr << rule.getRuleID() << ": " << rule.toString() << std::endl;
+    std::vector<std::string> i_types =
+        FoldUsbInterfacesList(rule.attributeWithInterface().toRuleString());
+
+    // TODO create for each type
+    for (const std::string &i_type : i_types) {
+      std::vector<std::string> vid_pid;
+      boost::split(vid_pid, rule.getDeviceID().toString(),
+                   [](const char c) { return c == ':'; });
+      res.emplace_back(rule.getRuleID(), rule.targetToString(rule.getTarget()),
+                       rule.getName(), vid_pid.size() > 0 ? vid_pid[0] : "",
+                       vid_pid.size() > 1 ? vid_pid[1] : "", rule.getViaPort(),
+                       rule.getWithConnectType(), i_type);
+    }
   }
   return res;
 }
@@ -42,7 +53,9 @@ ConfigStatus Guard::GetConfigStatus() {
   return config_status;
 }
 
+
 // ---------------------- private ---------------------------
+
 void Guard::ConnectToUsbGuard() noexcept {
   try {
     ptr_ipc = std::make_unique<usbguard::IPCClient>(true);
@@ -50,6 +63,60 @@ void Guard::ConnectToUsbGuard() noexcept {
     std::cerr << "Error connecting to USBGuard daemon \n"
               << e.what() << std::endl;
   }
+}
+
+// -----------------------------------------------------------
+
+std::vector<std::string>
+Guard::FoldUsbInterfacesList(std::string i_type) const {
+  boost::erase_first(i_type, "with-interface");
+  boost::trim(i_type);
+  std::vector<std::string> vec_i_types;
+  // if a multiple types in one string
+  if (i_type.find('{') != std::string::npos &&
+      i_type.find('}') != std::string::npos) {
+    std::vector<std::string> splitted;
+    boost::erase_all(i_type, "{");
+    boost::erase_all(i_type, "}");
+    boost::trim(i_type);
+    boost::split(splitted, i_type, [](const char c) { return c == ' '; });
+    // create sequence of usb types
+    std::vector<UsbType> vec_usb_types;
+    for (const std::string &el : splitted) {
+      try {
+        vec_usb_types.emplace_back(el);
+      } catch (const std::exception &e) {
+        std::cerr << "[ERROR] Can't parse usb type" << el << std::endl;
+        std::cerr << e.what() << '\n';
+      }
+    }
+    // fold is possible
+    // put to multiset bases
+    std::multiset<char> set;
+    for (const UsbType &usb_type : vec_usb_types) {
+      set.emplace(usb_type.base);
+    }
+    // if key is not unique create mask
+    auto it_unique_end = std::unique(
+        vec_usb_types.begin(), vec_usb_types.end(),
+        [](const UsbType &a, const UsbType &b) { return a.base == b.base; });
+    for (auto it = vec_usb_types.begin(); it != it_unique_end; ++it) {
+      size_t n = set.count(it->base);
+      std::string tmp = it->base_str;
+      if (n == 1) {
+        tmp += ':';
+        tmp += it->sub_str;
+        tmp += ':';
+        tmp += it->protocol_str;
+      } else {
+        tmp += ":*:*";
+      }
+      vec_i_types.emplace_back(std::move(tmp));
+    }
+  } else {
+    vec_i_types.push_back(std::move(i_type));
+  }
+  return vec_i_types;
 }
 
 } // namespace guard

@@ -171,3 +171,29 @@ void Test::Run6() {
   assert(cs.ipc_allowed_groups == expected);
   std::cerr << "TEST6 ... OK" << std::endl;
 }
+
+void Test::Run7() {
+  guard::Guard guard;
+  std::vector<std::string> res = guard.FoldUsbInterfacesList(
+      "with-interface { 0e:01:00 0e:02:00 0e:02:00 0e:02:00 0e:02:00 0e:02:00 "
+      "0e:02:00 0e:02:00 0e:02:00 }");
+  std::vector<std::string> exp = {"0e:*:*"};
+  assert(res == exp);
+  res = guard.FoldUsbInterfacesList("with-interface { 03:01:02 04:01:01 }");
+  exp = {"03:01:02", "04:01:01"};
+  assert(res == exp);
+  res = guard.FoldUsbInterfacesList("with-interface 09:00:00");
+  exp = {"09:00:00"};
+  assert(res == exp);
+  res = guard.FoldUsbInterfacesList("wsdsafsdga");
+  exp = {"wsdsafsdga"};
+  assert(res == exp);
+  res = guard.FoldUsbInterfacesList("");
+  exp = {""};
+  assert(res == exp);
+
+  res = guard.FoldUsbInterfacesList("with-interface { 03=01=:02 04:/1:01 }");
+  exp = {};
+  assert(res == exp);
+  std::cerr << "TEST7 .... OK" << std::endl;
+};

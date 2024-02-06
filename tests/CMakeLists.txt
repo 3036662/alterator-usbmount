@@ -3,6 +3,7 @@ add_executable(test
                run.cpp 
                test.cpp 
                ../backend/utils.cpp
+               ../backend/usb_device.cpp
                ../backend/config_status.cpp
                ../backend/guard.cpp
                ../backend/systemd_dbus.cpp

@@ -19,12 +19,13 @@ std::string WrapWithQuotes(const std::string &str) {
   return res;
 }
 
-std::vector<UsbDevice> fakeLibGetUsbList() {
-  std::vector<UsbDevice> res;
+std::vector<guard::UsbDevice> fakeLibGetUsbList() {
+  std::vector<guard::UsbDevice> res;
   for (int i = 0; i < 10; ++i) {
     std::string str_num = std::to_string(i);
-    res.emplace_back(i, "allowed", "name" + str_num, "id" + str_num,
-                     "port" + str_num, "conn" + str_num);
+    res.emplace_back(i, "allowed", "name" + str_num, "vid" + str_num,
+                     "pid" + str_num, "port" + str_num, "conn" + str_num,
+                     "00::00::00");
   }
   return res;
 }

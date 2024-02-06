@@ -38,4 +38,9 @@ public:
    * @warning Needs root privileges
    */
   void Run6();
+
+  /**
+   * @brief  Test folding of list of a interface to vector with masks
+   */
+  void Run7();
 };

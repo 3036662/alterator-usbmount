@@ -13,7 +13,7 @@ std::string WrapWithQuotes(const std::string &str);
 
 /// @brief Mock usb list just for develop and testing purposes
 /// @return Mocked vector of Usbdevice
-std::vector<UsbDevice> fakeLibGetUsbList();
+std::vector<guard::UsbDevice> fakeLibGetUsbList();
 
 /// @brief Exception-safe string to uint32_t conversion
 /// @param id String, containing number
