@@ -26,7 +26,7 @@ std::vector<UsbDevice> Guard::ListCurrentUsbDevices() {
       res.emplace_back(rule.getRuleID(), rule.targetToString(rule.getTarget()),
                        rule.getName(), vid_pid.size() > 0 ? vid_pid[0] : "",
                        vid_pid.size() > 1 ? vid_pid[1] : "", rule.getViaPort(),
-                       rule.getWithConnectType(), i_type);
+                       rule.getWithConnectType(), i_type, rule.getSerial(),rule.getHash());
     }
   }
   return res;
@@ -90,7 +90,7 @@ Guard::FoldUsbInterfacesList(std::string i_type) const {
         std::cerr << e.what() << '\n';
       }
     }
-    // fold is possible
+    // fold if possible
     // put to multiset bases
     std::multiset<char> set;
     for (const UsbType &usb_type : vec_usb_types) {

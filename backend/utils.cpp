@@ -25,7 +25,7 @@ std::vector<guard::UsbDevice> fakeLibGetUsbList() {
     std::string str_num = std::to_string(i);
     res.emplace_back(i, "allowed", "name" + str_num, "vid" + str_num,
                      "pid" + str_num, "port" + str_num, "conn" + str_num,
-                     "00::00::00");
+                     "00::00::00","serial"+str_num,"hash"+str_num);
   }
   return res;
 }
