@@ -57,7 +57,7 @@ private:
    * @return std::map<std::string,std::string> Vendor ID : Vendor Name
    */
   std::unordered_map<std::string, std::string>
-  MapVendorCodesToNames(const std::unordered_set<std::string> vendors);
+  MapVendorCodesToNames(const std::unordered_set<std::string> vendors) const;
 
 #ifdef UNIT_TEST
   friend class ::Test;

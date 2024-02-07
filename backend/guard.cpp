@@ -136,7 +136,7 @@ Guard::FoldUsbInterfacesList(std::string i_type) const {
 
 // ------------------------------------------------------------
 std::unordered_map<std::string, std::string>
-Guard::MapVendorCodesToNames(const std::unordered_set<std::string> vendors) {
+Guard::MapVendorCodesToNames(const std::unordered_set<std::string> vendors) const {
   std::unordered_map<std::string, std::string> res;
   const std::string path_to_usb_ids = "/usr/share/misc/usb.ids";
   try {
