@@ -7,6 +7,7 @@ add_executable(test
                ../backend/config_status.cpp
                ../backend/guard.cpp
                ../backend/systemd_dbus.cpp
+               ../backend/guard_rule.cpp
                )
 target_include_directories(test PRIVATE ../backend)
 target_include_directories(test PRIVATE .)
