@@ -24,6 +24,7 @@ public:
   std::string i_type;
   std::string sn;
   std::string hash;
+  std::string vendor_name;
 
   /// @brief Constructor for a UsbDevice
   /// @param num Just a number to display in the frontend
@@ -33,10 +34,12 @@ public:
   /// @param port_ Device port
   /// @param connection_ Connection type (for instance - hot-plug)
   /// @param i_type_ Interface type
+  /// @param sn_ Serial number
+  /// @param hash_ Hash
   UsbDevice(int num, const std::string &status_, const std::string &name_,
             const std::string &vid_, const std::string &pid_,
             const std::string &port_, const std::string &connection_,
-            const std::string &i_type_, const std::string& sn_,
+            const std::string &i_type_, const std::string &sn_,
             const std::string &hash_);
 
   UsbDevice(const UsbDevice &) = default;

@@ -9,9 +9,10 @@ UsbDevice::UsbDevice(int num, const std::string &status_,
                      const std::string &name_, const std::string &vid_,
                      const std::string &pid_, const std::string &port_,
                      const std::string &connection_, const std::string &i_type_,
-                     const std::string& sn_,  const std::string &hash_)
+                     const std::string &sn_, const std::string &hash_)
     : number(num), status(status_), name(name_), vid(vid_), pid(pid_),
-      port(port_), connection(connection_), i_type(i_type_),sn(sn_),hash(hash_) {}
+      port(port_), connection(connection_), i_type(i_type_), sn(sn_),
+      hash(hash_) {}
 
 vecPairs UsbDevice::SerializeForLisp() const {
   vecPairs res;
@@ -22,10 +23,10 @@ vecPairs UsbDevice::SerializeForLisp() const {
   res.emplace_back("label_prsnt_usb_pid", pid);
   res.emplace_back("label_prsnt_usb_status", status);
   res.emplace_back("label_prsnt_usb_name", name);
- // res.emplace_back("label_prsnt_usb_connection", connection);
+  // res.emplace_back("label_prsnt_usb_connection", connection);
   res.emplace_back("label_prsnt_usb_serial", sn);
   res.emplace_back("label_prsnt_usb_hash", hash);
-  
+  res.emplace_back("label_prsnt_usb_vendor", vendor_name);
   return res;
 }
 

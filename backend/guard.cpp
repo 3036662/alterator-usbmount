@@ -1,6 +1,7 @@
 #include "guard.hpp"
 #include "utils.hpp"
 #include <boost/algorithm/string.hpp>
+#include <unordered_set>
 
 namespace guard {
 
@@ -26,9 +27,24 @@ std::vector<UsbDevice> Guard::ListCurrentUsbDevices() {
       res.emplace_back(rule.getRuleID(), rule.targetToString(rule.getTarget()),
                        rule.getName(), vid_pid.size() > 0 ? vid_pid[0] : "",
                        vid_pid.size() > 1 ? vid_pid[1] : "", rule.getViaPort(),
-                       rule.getWithConnectType(), i_type, rule.getSerial(),rule.getHash());
+                       rule.getWithConnectType(), i_type, rule.getSerial(),
+                       rule.getHash());
     }
   }
+
+  // fill all vendor names with one read of file
+  std::unordered_set<std::string> vendors_to_search;
+  for (const UsbDevice &usb : res) {
+    vendors_to_search.insert(usb.vid);
+  }
+  std::unordered_map<std::string, std::string> vendors_names{
+      MapVendorCodesToNames(vendors_to_search)};
+  for (UsbDevice &usb : res) {
+    if (vendors_names.count(usb.vid)) {
+      usb.vendor_name = vendors_names[usb.vid];
+    }
+  }
+
   return res;
 }
 
@@ -52,7 +68,6 @@ ConfigStatus Guard::GetConfigStatus() {
   config_status.guard_daemon_active = HealthStatus();
   return config_status;
 }
-
 
 // ---------------------- private ---------------------------
 
@@ -86,7 +101,7 @@ Guard::FoldUsbInterfacesList(std::string i_type) const {
       try {
         vec_usb_types.emplace_back(el);
       } catch (const std::exception &e) {
-        std::cerr << "[ERROR] Can't parse usb type" << el << std::endl;
+        std::cerr << "[ERROR] Can't parse a usb type" << el << std::endl;
         std::cerr << e.what() << '\n';
       }
     }
@@ -96,7 +111,7 @@ Guard::FoldUsbInterfacesList(std::string i_type) const {
     for (const UsbType &usb_type : vec_usb_types) {
       set.emplace(usb_type.base);
     }
-    // if key is not unique create mask
+    // if a key is not unique, create a mask.
     auto it_unique_end = std::unique(
         vec_usb_types.begin(), vec_usb_types.end(),
         [](const UsbType &a, const UsbType &b) { return a.base == b.base; });
@@ -117,6 +132,42 @@ Guard::FoldUsbInterfacesList(std::string i_type) const {
     vec_i_types.push_back(std::move(i_type));
   }
   return vec_i_types;
+}
+
+// ------------------------------------------------------------
+std::unordered_map<std::string, std::string>
+Guard::MapVendorCodesToNames(const std::unordered_set<std::string> vendors) {
+  std::unordered_map<std::string, std::string> res;
+  const std::string path_to_usb_ids = "/usr/share/misc/usb.ids";
+  try {
+    if (std::filesystem::exists(path_to_usb_ids)) {
+      std::ifstream f(path_to_usb_ids);
+      if (f.is_open()) {
+        std::string line;
+        while (getline(f, line)) {
+          auto range = boost::find_first(line, "  ");
+          if (range) {
+            std::string vendor_id(line.begin(), range.begin());
+            if (vendors.count(vendor_id)) {
+              std::string vendor_name(range.end(), line.end());
+              res.emplace(std::move(vendor_id), std::move(vendor_name));
+            }
+          }
+          line.clear();
+        }
+        f.close();
+      } else {
+        std::cerr << "[WARNING] Can't open file" << path_to_usb_ids
+                  << std::endl;
+      }
+    } else {
+      std::cerr << "[WARNING] The file " << path_to_usb_ids << "doesn't exist";
+    }
+  } catch (const std::exception &ex) {
+    std::cerr << "[ERROR] Can't map vendor IDs to vendor names." << std::endl
+              << ex.what() << std::endl;
+  }
+  return res;
 }
 
 } // namespace guard

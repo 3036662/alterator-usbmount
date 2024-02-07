@@ -43,4 +43,9 @@ public:
    * @brief  Test folding of list of a interface to vector with masks
    */
   void Run7();
+
+  /**
+   * @brief  Test reading vendors from /usr/share/misc/usb.ids
+   */
+  void Run8();
 };

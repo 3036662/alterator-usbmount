@@ -23,5 +23,7 @@ int main(int argc, char *argv[]) {
   // 0e:02:00 0e:02:00 0e:02:00 0e:02:00 0e:02:00 0e:02:00 } folding t0
   // ["0e:*:*"] vector
   test.Run7();
+  // test usb vendor names lookup
+  test.Run8();
   return 0;
 }

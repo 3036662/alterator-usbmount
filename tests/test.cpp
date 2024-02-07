@@ -5,6 +5,8 @@
 #include <filesystem>
 #include <iostream>
 #include <string>
+#include <unordered_map>
+#include <unordered_set>
 
 void Test::Run1() {
   std::cout << "Test udev rules files search" << std::endl;
@@ -69,7 +71,8 @@ void Test::Run1() {
   const std::unordered_map<std::string, std::string> expected_map{
       std::pair<std::string, std::string>{file1, "usb_rule"},
       std::pair<std::string, std::string>{file5, "usb_rule"},
-      std::pair<std::string, std::string>{file6, "usb_rule"}}; //even if only authorized
+      std::pair<std::string, std::string>{
+          file6, "usb_rule"}}; // even if only authorized
   assert(map == expected_map);
   std::cout << "TEST1 ... OK" << std::endl;
 }
@@ -198,3 +201,24 @@ void Test::Run7() {
   assert(res == exp);
   std::cerr << "TEST7 .... OK" << std::endl;
 };
+
+void Test::Run8() {
+  guard::Guard guard;
+
+  std::unordered_set<std::string> vendors{"03e9", "03ea", "04c5", "06cd"};
+
+  std::unordered_map<std::string, std::string> expected{
+      {"03e9", "Thesys Microelectronics"},
+      {"03ea", "Data Broadcasting Corp."},
+      {"04c5", "Fujitsu, Ltd"},
+      {"06cd", "Keyspan"}};
+  assert(guard.MapVendorCodesToNames(vendors) == expected);
+
+  vendors.insert("06cf");
+  expected.emplace("06cf", "SpheronVR AG");
+  assert(guard.MapVendorCodesToNames(vendors) == expected);
+  vendors.insert("blablalbla");
+  assert(guard.MapVendorCodesToNames(vendors) == expected);
+  assert(guard.MapVendorCodesToNames(vendors).size() < vendors.size());
+  std::cerr << "TEST8  ... OK" << std::endl;
+}

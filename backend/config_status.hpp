@@ -70,7 +70,7 @@ private:
 
 /// @brief  inspect udev rules for suspicious files
 /// @param vec just for testing purposes
-/// @return map of string warning : file
+/// @return map of string file:warning
 std::unordered_map<std::string, std::string> InspectUdevRules(
 #ifdef UNIT_TEST
     const std::vector<std::string> *vec = nullptr
