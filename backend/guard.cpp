@@ -56,7 +56,16 @@ bool Guard::AllowOrBlockDevice(std::string id, bool allow, bool permanent) {
     return false;
   usbguard::Rule::Target policy =
       allow ? usbguard::Rule::Target::Allow : usbguard::Rule::Target::Block;
-  ptr_ipc->applyDevicePolicy(id_numeric, policy, permanent);
+  try{    
+    ptr_ipc->applyDevicePolicy(id_numeric, policy, permanent);
+  }
+  catch(const usbguard::Exception& ex){
+    std::cerr << "[ERROR] Can't add rule."  
+              << "May be rule conflict happened"
+              <<std::endl
+              << ex.what() <<std::endl;
+    return false;
+  }
   return true;
 }
 
