@@ -135,7 +135,7 @@ void ConfigStatus::ParseDaemonConfig() {
       if (pos != std::string::npos && ++pos < line.size()) {
         std::string path_to_rules(line, pos);
         boost::trim(path_to_rules);
-        std::cerr << "[INFO] Find path to rules file" << path_to_rules
+        std::cerr << "[INFO] Find path to rules file " << path_to_rules
                   << std::endl;
         if (!path_to_rules.empty()) {
           daemon_rules_file_path = std::move(path_to_rules);
@@ -240,7 +240,7 @@ std::unordered_map<std::string, std::string> InspectUdevRules(
     udev_paths = *vec;
 #endif
   for (const std::string &path : udev_paths) {
-    std::cerr << "Inspecting udev folder " << path << std::endl;
+    std::cerr << "[INFO] Inspecting udev folder " << path << std::endl;
     try {
       // find all files in folder
       std::vector<std::string> files =
