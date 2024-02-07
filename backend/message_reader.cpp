@@ -18,7 +18,7 @@ void MessageReader::Loop() {
 
   // read stdin loop
   while (std::getline(std::cin, line)) {
-    std::cerr << line << std::endl;
+    //std::cerr << line << std::endl;
     boost::trim(line);
 
     // message begin
