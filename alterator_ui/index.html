@@ -43,10 +43,10 @@
             <span>Udev rules ... WARNING</span>
           </div>
           <div class="config_check_header">
-            <p>Users allowed to change rules: 
+            <p>Users are allowed to change rules: 
               <input class="no_border" name="usbguard_users" readonly="readonly"  />
             </p>
-            <p>Groups allowed to change rules: 
+            <p>Groups are allowed to change rules: 
               <input class="no_border" name="usbguard_groups" readonly="readonly"  />
             </p> 
           </div>
@@ -111,11 +111,11 @@
                   </tr>
                 </tbody>
         </table>
-        <nobr name="usb_buttons">
-          <input type="button" name="btn_prsnt_scan" class="btn" value="Scan plugged-in USB devices"/>&nbsp;&nbsp;
-          <input type="button" name="btn_prsnt_dev_add" class="btn" value="Allow device"/>
-          <input type="button" name="btn_prsnt_dev_block" class="btn" value="Block device"/>
-        </nobr>
+        <div name="usb_buttons" class="usb_buttons">
+                  <input type="button" name="btn_prsnt_scan" class="btn" value="Scan plugged-in USB devices"/>&nbsp;&nbsp;
+                  <input type="button" name="btn_prsnt_dev_add" class="btn" value="Allow device"/>
+                  <input type="button" name="btn_prsnt_dev_block" class="btn" value="Block device"/>
+        </div>
       </form>
 
     </body>

@@ -53,3 +53,8 @@
     margin-bottom: 2px;
     font-weight: 600;
 }
+
+.usb_buttons{
+    float: right;
+    margin-top: 15px;
+}
