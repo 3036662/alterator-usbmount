@@ -48,4 +48,16 @@ public:
    * @brief  Test reading vendors from /usr/share/misc/usb.ids
    */
   void Run8();
+
+  /**
+   * @brief  test a raw string rule splitting
+   *
+   */
+  void Run9();
+
+  /**
+   * @brief Test a rule string parsing to a GuardRule object and backwards.
+   *
+   */
+  void Run10();
 };

@@ -1,4 +1,5 @@
 #include "guard.hpp"
+#include "guard_rule.hpp"
 #include <algorithm>
 #include <cassert>
 #include <cstdlib>
@@ -221,4 +222,170 @@ void Test::Run8() {
   assert(guard.MapVendorCodesToNames(vendors) == expected);
   assert(guard.MapVendorCodesToNames(vendors).size() < vendors.size());
   std::cerr << "TEST8  ... OK" << std::endl;
+}
+
+void Test::Run9() {
+  guard::GuardRule parser("allow");
+  {
+    std::vector<std::string> expected{"a", "b"};
+    assert(parser.SplitRawRule("a b") == expected);
+  }
+
+  {
+    std::vector<std::string> expected{"a", "b"};
+    assert(parser.SplitRawRule("a b ") == expected);
+  }
+
+  {
+    std::vector<std::string> expected{"a", "b"};
+    assert(parser.SplitRawRule("a    b ") == expected);
+  }
+
+  {
+    std::vector<std::string> expected{"a", "b"};
+    assert(parser.SplitRawRule("      a    b ") == expected);
+  }
+
+  {
+    std::vector<std::string> expected{"\"a b\"", "c"};
+    assert(parser.SplitRawRule("      \"a b\"    c ") == expected);
+  }
+
+  {
+    std::vector<std::string> expected{"\"a b\"", "\"c d e\"", "fff", "ggg"};
+    assert(parser.SplitRawRule("      \"a b\"    \"c d e\" fff     ggg ") ==
+           expected);
+  }
+
+  {
+    std::vector<std::string> expected{};
+    assert(parser.SplitRawRule("   ") == expected);
+  }
+
+  {
+    std::vector<std::string> expected{"\"\"", "\" \""};
+    assert(parser.SplitRawRule(" \"\"    \" \" ") == expected);
+  }
+  std::cerr << "TEST9 ...OK" << std::endl;
+}
+
+void Test::Run10() {
+  std::string str = "allow";
+  {
+    guard::GuardRule parser(str);
+    assert((parser.target == guard::Target::allow) && !parser.vid &&
+           !parser.pid && !parser.hash && !parser.device_name &&
+           !parser.serial && !parser.port && !parser.with_interface &&
+           !parser.cond);
+  }
+  str = "block id 8564:1000";
+  {
+    guard::GuardRule parser(str);
+    assert((parser.target == guard::Target::block) && *parser.vid == "8564" &&
+           *parser.pid == "1000" && !parser.hash && !parser.device_name &&
+           !parser.serial && !parser.port && !parser.with_interface &&
+           !parser.cond);
+  }
+  str = "block id 8564:*";
+  {
+    guard::GuardRule parser(str);
+    assert((parser.target == guard::Target::block) && *parser.vid == "8564" &&
+           *parser.pid == "*" && !parser.hash && !parser.device_name &&
+           !parser.serial && !parser.port && !parser.with_interface &&
+           !parser.cond);
+  }
+
+  str = "block id 8564:* hash 4Q3Ski/Lqi8RbTFr10zFlIpagY9AKVMszyzBQJVKE+c=";
+  {
+    guard::GuardRule parser(str);
+    assert((parser.target == guard::Target::block) && *parser.vid == "8564" &&
+           *parser.pid == "*" &&
+           *parser.hash == "4Q3Ski/Lqi8RbTFr10zFlIpagY9AKVMszyzBQJVKE+c=" &&
+           !parser.device_name && !parser.serial && !parser.port &&
+           !parser.with_interface && !parser.cond);
+  }
+
+  str = "block hash 4Q3Ski/Lqi8RbTFr10zFlIpagY9AKVMszyzBQJVKE+c=";
+  {
+    guard::GuardRule parser(str);
+    assert((parser.target == guard::Target::block) && !parser.vid &&
+           !parser.pid &&
+           *parser.hash == "4Q3Ski/Lqi8RbTFr10zFlIpagY9AKVMszyzBQJVKE+c=" &&
+           !parser.device_name && !parser.serial && !parser.port &&
+           !parser.with_interface && !parser.cond);
+  }
+
+  // name
+  str = "block hash 4Q3Ski/Lqi8RbTFr10zFlIpagY9AKVMszyzBQJVKE+c= name \"USB "
+        "name   _      Lastname\" ";
+  {
+    guard::GuardRule parser(str);
+    assert((parser.target == guard::Target::block) && !parser.vid &&
+           !parser.pid &&
+           *parser.hash == "4Q3Ski/Lqi8RbTFr10zFlIpagY9AKVMszyzBQJVKE+c=" &&
+           *parser.device_name == "\"USB name   _      Lastname\"" &&
+           !parser.serial && !parser.port && !parser.with_interface &&
+           !parser.cond);
+  }
+
+  str = "block hash 4Q3Ski/Lqi8RbTFr10zFlIpagY9AKVMszyzBQJVKE+c= name \"USB "
+        "name   _      Lastname\"  serial \"4098lkjmd\"  ";
+  {
+    guard::GuardRule parser(str);
+    assert((parser.target == guard::Target::block) && !parser.vid &&
+           !parser.pid &&
+           *parser.hash == "4Q3Ski/Lqi8RbTFr10zFlIpagY9AKVMszyzBQJVKE+c=" &&
+           *parser.device_name == "\"USB name   _      Lastname\"" &&
+           *parser.serial == "\"4098lkjmd\"" && !parser.port &&
+           !parser.with_interface && !parser.cond);
+  }
+
+  // exceptions
+
+  str = "block hash 4Q3Sk";
+  {
+    try {
+      guard::GuardRule parser(str);
+    } catch (const std::logic_error &ex) {
+      std::cerr << "Catched expected exception" << std::endl;
+      assert(std::string(ex.what()) == "Cant parse rule string");
+    }
+  }
+
+  str = " ";
+  {
+    try {
+      guard::GuardRule parser(str);
+    } catch (const std::logic_error &ex) {
+      std::cerr << "Catched expected exception" << std::endl;
+      assert(std::string(ex.what()) == "Cant parse rule string");
+    }
+  }
+
+  str = "";
+  {
+    try {
+      guard::GuardRule parser(str);
+    } catch (const std::logic_error &ex) {
+      std::cerr << "Catched expected exception" << std::endl;
+      assert(std::string(ex.what()) == "Cant parse rule string");
+    }
+  }
+
+  // one port
+  str = "allow via-port \"1-2\"";
+  {
+    std::cerr << "START" << std::endl;
+    guard::GuardRule parser(str);
+    std::vector<std::string> ports_expected{"\"1-2\""};
+    std::pair<guard::RuleOperator, std::vector<std::string>> expected_port{
+        guard::RuleOperator::no_operator, ports_expected};
+
+    assert(parser.target == guard::Target::allow && !parser.vid &&
+           !parser.pid && !parser.hash && !parser.device_name &&
+           !parser.serial && *parser.port == expected_port &&
+           !parser.with_interface && !parser.cond);
+  }
+
+  std::cerr << "TEST10 .... OK" << std::endl;
 }

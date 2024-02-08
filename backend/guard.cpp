@@ -56,14 +56,12 @@ bool Guard::AllowOrBlockDevice(std::string id, bool allow, bool permanent) {
     return false;
   usbguard::Rule::Target policy =
       allow ? usbguard::Rule::Target::Allow : usbguard::Rule::Target::Block;
-  try{    
+  try {
     ptr_ipc->applyDevicePolicy(id_numeric, policy, permanent);
-  }
-  catch(const usbguard::Exception& ex){
-    std::cerr << "[ERROR] Can't add rule."  
-              << "May be rule conflict happened"
-              <<std::endl
-              << ex.what() <<std::endl;
+  } catch (const usbguard::Exception &ex) {
+    std::cerr << "[ERROR] Can't add rule."
+              << "May be rule conflict happened" << std::endl
+              << ex.what() << std::endl;
     return false;
   }
   return true;
@@ -144,8 +142,8 @@ Guard::FoldUsbInterfacesList(std::string i_type) const {
 }
 
 // ------------------------------------------------------------
-std::unordered_map<std::string, std::string>
-Guard::MapVendorCodesToNames(const std::unordered_set<std::string> vendors) const {
+std::unordered_map<std::string, std::string> Guard::MapVendorCodesToNames(
+    const std::unordered_set<std::string> vendors) const {
   std::unordered_map<std::string, std::string> res;
   const std::string path_to_usb_ids = "/usr/share/misc/usb.ids";
   try {
@@ -154,6 +152,11 @@ Guard::MapVendorCodesToNames(const std::unordered_set<std::string> vendors) cons
       if (f.is_open()) {
         std::string line;
         while (getline(f, line)) {
+          // not interested in strings starting with tab
+          if (!line.empty() && line[0] == '\t') {
+            line.clear();
+            continue;
+          }
           auto range = boost::find_first(line, "  ");
           if (range) {
             std::string vendor_id(line.begin(), range.begin());
