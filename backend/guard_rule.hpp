@@ -83,7 +83,7 @@ class GuardRule {
       {RuleOperator::none_of, "none-of"},
       {RuleOperator::equals, "equals"},
       {RuleOperator::equals_ordered, "equals-ordered"},
-      {RuleOperator::no_operator,""}};
+      {RuleOperator::no_operator, ""}};
 
   const size_t usbguard_hash_length = 44;
 
@@ -164,11 +164,9 @@ private:
   std::optional<std::pair<RuleOperator, std::vector<RuleWithBool>>>
   ParseConditions(const std::vector<std::string> &splitted);
 
-
   RuleWithBool ParseOneCondition(
-    std::vector<std::string>::const_iterator it_range_beg,
-    std::vector<std::string>::const_iterator it_range_end  
-    ) const;
+      std::vector<std::string>::const_iterator &it_range_beg,
+      std::vector<std::string>::const_iterator it_range_end) const;
 
   std::string ParseConditionParameter(
       std::vector<std::string>::const_iterator it_start,
@@ -177,7 +175,7 @@ private:
 
   RuleConditions ConvertToConditionWithParam(RuleConditions cond) const;
 
-  std::string ConditionsToString()const;
+  std::string ConditionsToString() const;
 
 #ifdef UNIT_TEST
   friend class ::Test;

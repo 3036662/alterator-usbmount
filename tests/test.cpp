@@ -387,11 +387,12 @@ void Test::Run10() {
   }
 
   // two ports
-  str = "allow via-port all-of {" +WrapWithQuotes("1-2")+" "+ WrapWithQuotes("2-2") + "}";
+  str = "allow via-port all-of {" + WrapWithQuotes("1-2") + " " +
+        WrapWithQuotes("2-2") + "}";
   {
-    //std::cerr << "START" << std::endl;
+    // std::cerr << "START" << std::endl;
     guard::GuardRule parser(str);
-    std::vector<std::string> ports_expected{"\"1-2\"","\"2-2\""};
+    std::vector<std::string> ports_expected{"\"1-2\"", "\"2-2\""};
     std::pair<guard::RuleOperator, std::vector<std::string>> expected_port{
         guard::RuleOperator::all_of, ports_expected};
 
@@ -401,64 +402,61 @@ void Test::Run10() {
            !parser.with_interface && !parser.cond);
   }
 
-  str = "allow via-port all-of {" +WrapWithQuotes("1-2")+" "+ WrapWithQuotes("2-2") + "";
+  str = "allow via-port all-of {" + WrapWithQuotes("1-2") + " " +
+        WrapWithQuotes("2-2") + "";
   {
-    //std::cerr << "START" << std::endl;
+    // std::cerr << "START" << std::endl;
     try {
       guard::GuardRule parser(str);
-    }
-    catch(const std::logic_error& ex){
+    } catch (const std::logic_error &ex) {
       std::cerr << "Catched expected exception" << std::endl;
-      std::cerr << ex.what()<<std::endl;
+      std::cerr << ex.what() << std::endl;
     }
   }
 
-   // two ports one interface
-  str = "allow via-port all-of {" +WrapWithQuotes("1-2")+" "+ WrapWithQuotes("2-2") + "} with-interface 08:06:50";
+  // two ports one interface
+  str = "allow via-port all-of {" + WrapWithQuotes("1-2") + " " +
+        WrapWithQuotes("2-2") + "} with-interface 08:06:50";
   {
-    //std::cerr << "START" << std::endl;
+    // std::cerr << "START" << std::endl;
     guard::GuardRule parser(str);
-    std::vector<std::string> ports_expected{"\"1-2\"","\"2-2\""};
+    std::vector<std::string> ports_expected{"\"1-2\"", "\"2-2\""};
     std::pair<guard::RuleOperator, std::vector<std::string>> expected_port{
         guard::RuleOperator::all_of, ports_expected};
 
-    std::vector<std::string> interface_expected={"08:06:50"};
+    std::vector<std::string> interface_expected = {"08:06:50"};
     std::pair<guard::RuleOperator, std::vector<std::string>> expected_interface{
         guard::RuleOperator::no_operator, interface_expected};
 
     assert(parser.target == guard::Target::allow && !parser.vid &&
            !parser.pid && !parser.hash && !parser.device_name &&
            !parser.serial && *parser.port == expected_port &&
-           *parser.with_interface == expected_interface && 
-           !parser.cond);
+           *parser.with_interface == expected_interface && !parser.cond);
   }
 
-
-   // two ports three interfaces
-  str = "allow via-port all-of {" +WrapWithQuotes("1-2")+" "+ WrapWithQuotes("2-2") + "} with-interface none-of{08:06:50 07:*:*}";
+  // two ports three interfaces
+  str = "allow via-port all-of {" + WrapWithQuotes("1-2") + " " +
+        WrapWithQuotes("2-2") + "} with-interface none-of{08:06:50 07:*:*}";
   {
     guard::GuardRule parser(str);
-    std::vector<std::string> ports_expected{"\"1-2\"","\"2-2\""};
+    std::vector<std::string> ports_expected{"\"1-2\"", "\"2-2\""};
     std::pair<guard::RuleOperator, std::vector<std::string>> expected_port{
         guard::RuleOperator::all_of, ports_expected};
 
-    std::vector<std::string> interface_expected={"08:06:50","07:*:*"};
+    std::vector<std::string> interface_expected = {"08:06:50", "07:*:*"};
     std::pair<guard::RuleOperator, std::vector<std::string>> expected_interface{
         guard::RuleOperator::none_of, interface_expected};
 
     assert(parser.target == guard::Target::allow && !parser.vid &&
            !parser.pid && !parser.hash && !parser.device_name &&
            !parser.serial && *parser.port == expected_port &&
-           *parser.with_interface == expected_interface && 
-           !parser.cond);
+           *parser.with_interface == expected_interface && !parser.cond);
   }
 
+  // conditioins
+  std::cerr << "[TEST] START CONDITIONS TEST" << std::endl;
 
-// conditioins
-std::cerr << "[TEST] START CONDITIONS TEST" <<std::endl;
-
-
-// clang-format off
+  // clang-format off
   using namespace guard;
 
 std::cerr << "[TEST] Localtime time with parameter" <<std::endl;
@@ -570,6 +568,28 @@ std::cerr << "[TEST] rule-evaluated time with no parameter" <<std::endl;
     assert(cond_result == expected);
   }
 
+  std::cerr << "[TEST] one-of  with sequense of coditions" <<std::endl;
+  str = "allow if one-of{!rule-evaluated(HH:MM:SS) true}";
+  {
+    GuardRule parser(str);
+    std::string cond_result=parser.ConditionsToString();
+    std::string expected="one-of{!rule-evaluated(HH:MM:SS) true}";
+    std::cerr <<cond_result <<"==" << expected<<std::endl;
+    assert(cond_result == expected);
+  }
+
+  std::cerr << "[TEST] id, none-of  with sequense of coditions" <<std::endl;
+  str = "allow id 8564:1000 if one-of{!rule-evaluated(HH:MM:SS) true}";
+  {
+    GuardRule parser(str);
+    std::string cond_result=parser.ConditionsToString();
+    std::string expected="one-of{!rule-evaluated(HH:MM:SS) true}";
+    std::cerr <<cond_result <<"==" << expected<<std::endl;
+    assert(cond_result == expected);
+    assert(parser.target == Target::allow);
+    assert(*parser.vid=="8564");
+    assert(*parser.pid=="1000");
+  }
 
 
   std::cerr << "TEST10 .... OK" << std::endl;
