@@ -12,10 +12,10 @@
 
 namespace guard {
 
+// clang-format off
+
 /// @brief Target ::= allow | block | reject
 enum class Target { allow, block, reject };
-
-// clang-format off
 
 /**
  * @brief Operators used in usbguard rules
@@ -61,34 +61,17 @@ using RuleWithBool = std::pair<bool, RuleWithOptionalParam>;
  */
 class GuardRule {
 
-  const std::map<Target, std::string> map_target{{Target::allow, "allow"},
-                                                 {Target::block, "block"},
-                                                 {Target::reject, "reject"}};
-  const std::map<RuleConditions, std::string> map_conditions{
-      {RuleConditions::localtime, "localtime"},
-      {RuleConditions::allowed_matches, "allowed-matches"},
-      {RuleConditions::rule_applied, "rule-applied"},
-      {RuleConditions::rule_applied_past, "rule-applied("},
-      {RuleConditions::rule_evaluated, "rule-evaluated"},
-      {RuleConditions::rule_evaluated_past, "rule-evaluated("},
-      {RuleConditions::random, "random"},
-      {RuleConditions::random_with_propability, "random("},
-      {RuleConditions::always_true, "true"},
-      {RuleConditions::always_false, "false"},
-      {RuleConditions::no_condition, ""}};
-
-  const std::map<RuleOperator, std::string> map_operator{
-      {RuleOperator::all_of, "all-of"},
-      {RuleOperator::one_of, "one-of"},
-      {RuleOperator::none_of, "none-of"},
-      {RuleOperator::equals, "equals"},
-      {RuleOperator::equals_ordered, "equals-ordered"},
-      {RuleOperator::no_operator, ""}};
-
-  const size_t usbguard_hash_length = 44;
+  /// @brief Maps Target enum to a string.
+  const std::map<Target, std::string> map_target;
+  /// @brief Maps RuleConditions enum to a string.
+  const std::map<RuleConditions, std::string> map_conditions;
+  /// @brief Maps RuleOperator enum to a string.
+  const std::map<RuleOperator, std::string> map_operator;
+  /// @brief Usbguard hash string size.
+  const size_t usbguard_hash_length;
 
 public:
-  int number; /// number of line (from the beginnig of file)
+  int number = 0; ///@brief number of line (from the beginnig of file)
   Target target;
   std::optional<std::string> vid;
   std::optional<std::string> pid;
@@ -164,17 +147,54 @@ private:
   std::optional<std::pair<RuleOperator, std::vector<RuleWithBool>>>
   ParseConditions(const std::vector<std::string> &splitted);
 
+  /**
+   * @brief Parses one condition with or without params
+   *
+   * @param it_range_beg An iterator, pointing to a token where to start.
+   * @param it_range_end An iterator, pointing to the end of token sequence.
+   * @return !Rule -> <false,Rule> | Rule -> <true,Rule>
+   * @warning Changes a velue of begin iterator.
+   * A way to inform the calling function how many tokens were read during
+   * a parse process.
+   */
   RuleWithBool ParseOneCondition(
       std::vector<std::string>::const_iterator &it_range_beg,
       std::vector<std::string>::const_iterator it_range_end) const;
 
+  /**
+   * @brief Parses a condition parameter
+   * A parameter is expected to be enclosed in round braces.
+   *
+   * @param it_start An iterator, pointing to a token where to start. "("
+   * @param it_end  An iterator, pointing to the end of token sequence.
+   * @return A string value of parameter.
+   */
   std::string ParseConditionParameter(
       std::vector<std::string>::const_iterator it_start,
       std::vector<std::string>::const_iterator it_end) const;
+
+  /**
+   * @brief Checks if a condition is allowed to have parameters.
+   *
+   * @param cond RuleConditions
+   * @return true
+   * @return false
+   */
   bool CanConditionHaveParams(RuleConditions cond) const;
 
+  /**
+   * @brief Choose an appropriate emun for RuleConditions
+   * in case it has parameters.
+   * @param cond
+   * @return RuleConditions
+   */
   RuleConditions ConvertToConditionWithParam(RuleConditions cond) const;
 
+  /**
+   * @brief Build a condition string from this object.
+   *
+   * @return std::string
+   */
   std::string ConditionsToString() const;
 
 #ifdef UNIT_TEST

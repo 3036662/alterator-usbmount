@@ -7,15 +7,40 @@
 
 namespace guard {
 
-GuardRule::GuardRule(std::string raw_str) {
+/******************************************************************************/
+
+GuardRule::GuardRule(std::string raw_str)
+    : map_target{{Target::allow, "allow"},
+                 {Target::block, "block"},
+                 {Target::reject, "reject"}},
+      map_conditions{{RuleConditions::localtime, "localtime"},
+                     {RuleConditions::allowed_matches, "allowed-matches"},
+                     {RuleConditions::rule_applied, "rule-applied"},
+                     {RuleConditions::rule_applied_past, "rule-applied("},
+                     {RuleConditions::rule_evaluated, "rule-evaluated"},
+                     {RuleConditions::rule_evaluated_past, "rule-evaluated("},
+                     {RuleConditions::random, "random"},
+                     {RuleConditions::random_with_propability, "random("},
+                     {RuleConditions::always_true, "true"},
+                     {RuleConditions::always_false, "false"},
+                     {RuleConditions::no_condition, ""}},
+      map_operator{{RuleOperator::all_of, "all-of"},
+                   {RuleOperator::one_of, "one-of"},
+                   {RuleOperator::none_of, "none-of"},
+                   {RuleOperator::equals, "equals"},
+                   {RuleOperator::equals_ordered, "equals-ordered"},
+                   {RuleOperator::no_operator, ""}},
+      usbguard_hash_length{44} {
+
   std::logic_error ex("Cant parse rule string");
-  // find all quoted substrings
+  // Split string to tokens.
   std::vector<std::string> splitted{SplitRawRule(raw_str)};
   if (splitted.empty())
     throw ex;
 
-  // map strings to values
-  // target is mandatory
+  // Map strings to values.
+  // ----------------------------------------
+  // The target is mandatory.
   auto it_target = std::find_if(
       map_target.cbegin(), map_target.cend(),
       [&splitted](const auto &el) { return el.second == splitted[0]; });
@@ -26,6 +51,7 @@ GuardRule::GuardRule(std::string raw_str) {
   if (splitted.size() == 1)
     return;
 
+  // ----------------------------------------
   // id
   std::optional<std::string> str_id =
       ParseToken(splitted, "id", [](const std::string &val) {
@@ -41,6 +67,10 @@ GuardRule::GuardRule(std::string raw_str) {
       throw ex;
   }
 
+  // ----------------------------------------
+  // Hash, device_name, serial, port, and with_interface may or may not exist in
+  // the string. default_predicat - Function is the default behavior of values
+  // validating.
   std::function<bool(const std::string &)> default_predicat =
       [this](const std::string &val) { return !IsReservedWord(val); };
   hash = ParseToken(splitted, "hash", [this](const std::string &val) {
@@ -54,15 +84,18 @@ GuardRule::GuardRule(std::string raw_str) {
         return val.size() > 2 && val.find(':') != std::string::npos;
       });
 
+  // Conditions may or may not exist in the string.
   cond = ParseConditions(splitted);
 }
+
+/******************************************************************************/
 
 std::vector<std::string> GuardRule::SplitRawRule(std::string raw_str) {
   boost::trim(raw_str);
   std::vector<std::string> res;
   if (raw_str.empty())
     return res;
-  // Wrap all curly braces and exclamation points with spaces
+  // Wrap all curly and round braces and exclamation points with spaces
   {
     std::string tmp;
     for (auto it = raw_str.begin(); it != raw_str.end(); ++it) {
@@ -79,6 +112,8 @@ std::vector<std::string> GuardRule::SplitRawRule(std::string raw_str) {
     std::swap(raw_str, tmp);
   }
 
+  // Split string with spaces.
+  // I current space is a part of a quoted string - skip it.
   auto it_slow = raw_str.begin();
   auto it_fast = it_slow;
   ++it_fast;
@@ -96,18 +131,18 @@ std::vector<std::string> GuardRule::SplitRawRule(std::string raw_str) {
     if (it_fast != raw_str.end())
       ++it_fast;
   }
-  if (it_fast == raw_str.end() && !dont_split && it_slow < it_fast) {
+  if (it_fast == raw_str.end() && !dont_split && it_slow < it_fast)
     res.emplace_back(it_slow, it_fast);
-  }
-  for (std::string &s : res) {
+  for (std::string &s : res)
     boost::trim(s);
-  }
   for (auto it = res.begin(); it != res.end(); ++it) {
     if (it->empty())
       res.erase(it);
   }
   return res;
 }
+
+/******************************************************************************/
 
 bool GuardRule::IsReservedWord(const std::string &str) {
   if (str.empty())
@@ -122,8 +157,14 @@ bool GuardRule::IsReservedWord(const std::string &str) {
                    [&str](const auto &pair) { return pair.second == str; }) !=
       map_conditions.cend())
     return true;
+  if (std::find_if(map_operator.cbegin(), map_operator.cend(),
+                   [&str](const auto &pair) { return pair.second == str; }) !=
+      map_operator.cend())
+    return true;
   return false;
 }
+
+/******************************************************************************/
 
 std::optional<std::string>
 GuardRule::ParseToken(const std::vector<std::string> &splitted,
@@ -144,6 +185,8 @@ GuardRule::ParseToken(const std::vector<std::string> &splitted,
 
   return res;
 }
+
+/******************************************************************************/
 
 std::optional<std::pair<RuleOperator, std::vector<std::string>>>
 GuardRule::ParseTokenWithOperator(
@@ -171,13 +214,10 @@ GuardRule::ParseTokenWithOperator(
         });
 
     have_operator = it_operator != map_operator.cend();
-    // std::cerr << "have_operator " << have_operator << std::endl;
     //  If no operator is found, parse as usual param - value
     if (!have_operator) {
       std::optional<std::string> tmp_value =
           ParseToken(splitted, name, predicat);
-      // std::cerr << "tmp_value has value" << tmp_value.has_value()
-      //           << std::endl;
       if (tmp_value) {
         res = {RuleOperator::no_operator, {}};
         res->second.push_back(*tmp_value);
@@ -204,7 +244,6 @@ GuardRule::ParseTokenWithOperator(
       auto it_val = it_range_begin;
       ++it_val;
       while (it_val != it_range_end) {
-        // std::cerr << "Push "<< *it_val << std::endl;
         res->second.emplace_back(*it_val);
         ++it_val;
       }
@@ -212,6 +251,8 @@ GuardRule::ParseTokenWithOperator(
   }
   return res;
 }
+
+/******************************************************************************/
 
 std::optional<std::pair<RuleOperator, std::vector<RuleWithBool>>>
 GuardRule::ParseConditions(const std::vector<std::string> &splitted) {
@@ -273,10 +314,10 @@ GuardRule::ParseConditions(const std::vector<std::string> &splitted) {
     }
     res = {op, std::move(tmp)};
   }
-
-  std::cerr << "Result has value" << res.has_value() << std::endl;
   return res;
 }
+
+/******************************************************************************/
 
 RuleWithBool GuardRule::ParseOneCondition(
     std::vector<std::string>::const_iterator &it_range_beg,
@@ -286,7 +327,6 @@ RuleWithBool GuardRule::ParseOneCondition(
   std::logic_error ex("Cant parse conditions");
   // Check for exclamation point
   bool exclamation_point = *it_range_beg == "!"; // goes to result
-  std::cerr << "has ! =" << exclamation_point << std::endl;
   if (exclamation_point) {
     ++it_range_beg;
   }
@@ -303,11 +343,9 @@ RuleWithBool GuardRule::ParseOneCondition(
   if (it_condition == map_conditions.cend())
     throw ex;
   RuleConditions condition = it_condition->first; // goes to result
-  std::cerr << "Cond Found = " << it_condition->second << std::endl;
 
   // Check if condition may have parameters
   bool may_have_params = CanConditionHaveParams(condition);
-  std::cerr << "Condition may have params " << may_have_params << std::endl;
   // The condition, exclamation and may_have parameters are known
   // Check if there any parameters
   ++it_range_beg;
@@ -339,6 +377,8 @@ RuleWithBool GuardRule::ParseOneCondition(
   return res;
 }
 
+/******************************************************************************/
+
 bool GuardRule::CanConditionHaveParams(RuleConditions cond) const {
   return cond == RuleConditions::localtime ||
          cond == RuleConditions::allowed_matches ||
@@ -348,6 +388,8 @@ bool GuardRule::CanConditionHaveParams(RuleConditions cond) const {
          cond == RuleConditions::rule_evaluated_past ||
          cond == RuleConditions::random;
 }
+
+/******************************************************************************/
 
 std::string GuardRule::ParseConditionParameter(
     std::vector<std::string>::const_iterator it_start,
@@ -370,6 +412,8 @@ std::string GuardRule::ParseConditionParameter(
   return *it_start;
 }
 
+/******************************************************************************/
+
 RuleConditions
 GuardRule::ConvertToConditionWithParam(RuleConditions cond) const {
   if (cond == RuleConditions::rule_applied)
@@ -380,6 +424,8 @@ GuardRule::ConvertToConditionWithParam(RuleConditions cond) const {
     return RuleConditions::random_with_propability;
   return cond;
 }
+
+/******************************************************************************/
 
 std::string GuardRule::ConditionsToString() const {
   std::string res;
@@ -411,13 +457,3 @@ std::string GuardRule::ConditionsToString() const {
 }
 
 } // namespace guard
-
-/*
-allow
-id 1d6b:0003
-serial "0000:00:0d.0"
-name "xHCI Host Controller"
-hash "4Q3Ski/Lqi8RbTFr10zFlIpagY9AKVMszyzBQJVKE+c="
-parent-hash "Y1kBdG1uWQr5CjULQs7uh2F6pHgFb6VDHcWLk83v+tE="
-with-interface 09:00:00 with-connect-type ""
-*/
