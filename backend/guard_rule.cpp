@@ -41,21 +41,20 @@ GuardRule::GuardRule(std::string raw_str) {
       throw ex;
   }
 
+  std::function<bool(const std::string &)> default_predicat =
+      [this](const std::string &val) { return !IsReservedWord(val); };
   hash = ParseToken(splitted, "hash", [this](const std::string &val) {
     return val.size() == usbguard_hash_length;
   });
+  device_name = ParseToken(splitted, "name", default_predicat);
+  serial = ParseToken(splitted, "serial", default_predicat);
+  port = ParseTokenWithOperator(splitted, "via-port", default_predicat);
+  with_interface = ParseTokenWithOperator(
+      splitted, "with-interface", [](const std::string &val) {
+        return val.size() > 2 && val.find(':') != std::string::npos;
+      });
 
-  device_name = ParseToken(splitted, "name", [this](const std::string &val) {
-    return !IsReservedWord(val);
-  });
-
-  serial = ParseToken(splitted, "serial", [this](const std::string &val) {
-    return !IsReservedWord(val);
-  });
-
-  port = ParseTokenWithOperator(
-      splitted, "via-port",
-      [this](const std::string &val) { return !IsReservedWord(val); });
+  cond = ParseConditions(splitted);   
 }
 
 std::vector<std::string> GuardRule::SplitRawRule(std::string raw_str) {
@@ -63,6 +62,23 @@ std::vector<std::string> GuardRule::SplitRawRule(std::string raw_str) {
   std::vector<std::string> res;
   if (raw_str.empty())
     return res;
+  // Wrap all curly braces and exclamation points with spaces
+  {
+    std::string tmp;
+    for (auto it = raw_str.begin(); it != raw_str.end(); ++it) {
+      bool wrap =
+          *it == '{' || *it == '}' || *it == '!' || *it == '(' || *it == ')';
+      if (wrap) {
+        tmp.push_back(' ');
+      }
+      tmp.push_back(*it);
+      if (wrap) {
+        tmp.push_back(' ');
+      }
+    }
+    std::swap(raw_str, tmp);
+  }
+
   auto it_slow = raw_str.begin();
   auto it_fast = it_slow;
   ++it_fast;
@@ -121,7 +137,7 @@ GuardRule::ParseToken(const std::vector<std::string> &splitted,
     if (it_name_param != splitted.cend() && predicat(*it_name_param)) {
       res = *it_name_param;
     } else {
-      std::cerr << "[ERROR] Parsing hash error" << std::endl;
+      std::cerr << "[ERROR] Parsing error" << std::endl;
       throw ex;
     }
   }
@@ -135,68 +151,232 @@ GuardRule::ParseTokenWithOperator(
     std::function<bool(const std::string &)> predicat) const {
   std::logic_error ex("Cant parse rule string");
   std::optional<std::pair<RuleOperator, std::vector<std::string>>> res;
-  // find out if there is any operator
+
   bool have_operator{false};
   auto it_name = std::find(splitted.cbegin(), splitted.cend(), name);
   if (it_name != splitted.cend()) {
     auto it_name_param1 = std::move(++it_name);
     // if a value exists -> check may be it is an operator
-    if (it_name_param1 != splitted.cend()) {
-      std::cerr << "it_name_param1" << *it_name_param1 << std::endl;
-      // check if first param is an operator
-      auto it_operator = std::find_if(
-          map_operator.cbegin(), map_operator.cend(),
-          [&it_name_param1](const std::pair<RuleOperator, std::string> &val) {
-            return val.second == *it_name_param1;
-          });
-
-      have_operator = it_operator != map_operator.cend();
-      std::cerr << "have_operator " << have_operator << std::endl;
-      // If no operator is found, parse as usual param - value
-      if (!have_operator) {
-        std::optional<std::string> tmp_value =
-            ParseToken(splitted, name, predicat);
-        std::cerr << "tmp_value has value" << tmp_value.has_value()
-                  << std::endl;
-        if (tmp_value) {
-          res = {RuleOperator::no_operator, {}};
-          res->second.push_back(*tmp_value);
-        }
-      }
-      // If an operator is found,an array of values is expected.
-      else {
-        res = {it_operator->first, {}}; // Create a pair with an empty vector.
-        auto it_range_begin = it_name_param1;
-        ++it_range_begin;
-        // if no array found -> throw exception
-        if (it_range_begin == splitted.cend() || *it_range_begin != "{") {
-          std::cerr << "[ERROR] Error parsing values for " << name << " param."
-                    << std::endl;
-          throw ex;
-        }
-        auto it_range_end = std::find(it_range_begin, splitted.cend(), "}");
-        if (it_range_end == splitted.cend()) {
-          std::cerr << "[ERROR] A closing \"}\" expectend for sequence."
-                    << std::endl;
-          throw ex;
-        }
-        // fill result with values
-        auto it_val = it_range_begin;
-        ++it_val;
-        while (it_val != it_range_end) {
-          res->second.emplace_back(*it_val);
-          ++it_val;
-        }
-      }
-    }
-    // No values found for this param
-    else {
-      std::cerr << "[ERROR] Parsing hash error. No values for param " << name
+    if (it_name_param1 == splitted.cend()) {
+      std::cerr << "[ERROR] Parsing error. No values for param " << name
                 << " found." << std::endl;
       throw ex;
     }
+    // std::cerr << "it_name_param1 " << *it_name_param1 << std::endl;
+    //  check if first param is an operator
+    auto it_operator = std::find_if(
+        map_operator.cbegin(), map_operator.cend(),
+        [&it_name_param1](const std::pair<RuleOperator, std::string> &val) {
+          return val.second == *it_name_param1;
+        });
+
+    have_operator = it_operator != map_operator.cend();
+    // std::cerr << "have_operator " << have_operator << std::endl;
+    //  If no operator is found, parse as usual param - value
+    if (!have_operator) {
+      std::optional<std::string> tmp_value =
+          ParseToken(splitted, name, predicat);
+      // std::cerr << "tmp_value has value" << tmp_value.has_value()
+      //           << std::endl;
+      if (tmp_value) {
+        res = {RuleOperator::no_operator, {}};
+        res->second.push_back(*tmp_value);
+      }
+    }
+    // If an operator is found,an array of values is expected.
+    else {
+      res = {it_operator->first, {}}; // Create a pair with an empty vector.
+      auto it_range_begin = it_name_param1;
+      ++it_range_begin;
+      // if no array found -> throw exception
+      if (it_range_begin == splitted.cend() || *it_range_begin != "{") {
+        std::cerr << "[ERROR] Error parsing values for " << name << " param."
+                  << std::endl;
+        throw ex;
+      }
+      auto it_range_end = std::find(it_range_begin, splitted.cend(), "}");
+      if (it_range_end == splitted.cend()) {
+        std::cerr << "[ERROR] A closing \"}\" expectend for sequence."
+                  << std::endl;
+        throw ex;
+      }
+      // fill result with values
+      auto it_val = it_range_begin;
+      ++it_val;
+      while (it_val != it_range_end) {
+        // std::cerr << "Push "<< *it_val << std::endl;
+        res->second.emplace_back(*it_val);
+        ++it_val;
+      }
+    }
   }
   return res;
+}
+
+std::optional<std::pair<RuleOperator, std::vector<RuleWithBool>>>
+GuardRule::ParseConditions(const std::vector<std::string> &splitted) {
+  std::logic_error ex("Cant parse conditions");
+  std::optional<std::pair<RuleOperator, std::vector<RuleWithBool>>> res;
+  // ------------------------------------------------------
+  // Check if there are any conditions
+  auto it_if_operator = std::find(splitted.cbegin(), splitted.cend(), "if");
+  if (it_if_operator == splitted.cend())
+    return std::nullopt;
+  // Check if there any operator
+  bool have_operator{false};
+  auto it_param1 = std::move(++it_if_operator);
+  if (it_param1 == splitted.cend()) {
+    std::cerr << "[ERROR] No value was found for condition" << std::endl;
+    throw ex;
+  }
+  auto it_operator = std::find_if(
+      map_operator.cbegin(), map_operator.cend(),
+      [&it_param1](const std::pair<RuleOperator, std::string> &val) {
+        return val.second == *it_param1;
+      });
+  have_operator = it_operator != map_operator.cend();
+  std::cerr << "Has operator " << have_operator <<std::endl;  
+  
+  // ------------------------------------------------------  
+  // No operator was found
+  if (!have_operator) {
+
+
+
+    // Check for exclamation point
+    bool exclamation_point = *it_param1 == "!"; // goes to result
+    std::cerr << "has ! ="<<exclamation_point<<std::endl;
+    if (exclamation_point) {
+      ++it_param1;
+    }
+    if (it_param1 == splitted.cend())
+      throw ex;
+    auto it_condition =
+        std::find_if(map_conditions.cbegin(), map_conditions.cend(),
+                     [&it_param1](const auto &pair) {
+                       return boost::contains(pair.second, *it_param1);
+                     });
+    if (it_condition == map_conditions.cend())
+      throw ex;
+    RuleConditions condition = it_condition->first; // goes to result
+    std::cerr << "Cond Found = "<< it_condition->second <<std::endl;
+
+    // Check if condition may have parameters
+    bool may_have_params = CanConditionHaveParams(condition);
+    std::cerr << "Condition may have params "<<may_have_params << std::endl;
+    // The condition, exclamation and may_have parameters are known
+    // Check if there any parameters
+    ++it_param1;
+    // some params found
+    if (it_param1 != splitted.cend()) { 
+      /* Conditions are the last block of rule string
+       * So, if a condition can not have any parameters, existance of any
+       * parameters means an error. */
+      if (!may_have_params) {
+        std::cerr << "[ERROR] Condition "
+                  << map_conditions.find(condition)->second
+                  << " can't have parameters." << std::endl;
+        throw ex;
+      }
+      std::string par_value =
+          ParseConditionParameter(it_param1, splitted.cend());
+      condition = ConvertToConditionWithParam(condition);
+      RuleWithOptionalParam rule_with_param{condition, par_value};
+      RuleWithBool rule_with_bool = {!exclamation_point, rule_with_param};
+
+
+
+      std::vector<RuleWithBool> tmp;
+      tmp.push_back(std::move(rule_with_bool));
+      res = {RuleOperator::no_operator, std::move(tmp)};
+    }
+    // no parameters found
+    else{
+        RuleWithOptionalParam rule_with_param{condition, std::nullopt};
+        RuleWithBool rule_with_bool = {!exclamation_point, rule_with_param};
+        std::vector<RuleWithBool> tmp;
+        tmp.push_back(std::move(rule_with_bool));
+        res = {RuleOperator::no_operator, std::move(tmp)};
+        std::cerr <<"Sent result withour params"<<std::endl;
+    }
+  }
+  std::cerr << "Result has value"<< res.has_value() <<std::endl;
+  return res;
+}
+
+RuleWithBool GuardRule::ParseOneCondition(
+    std::vector<std::string>::const_iterator it_range_beg,
+    std::vector<std::string>::const_iterator it_range_end  
+    ) const{
+
+
+}
+
+
+
+bool GuardRule::CanConditionHaveParams(RuleConditions cond) const {
+  return cond == RuleConditions::localtime ||
+         cond == RuleConditions::allowed_matches ||
+         cond == RuleConditions::rule_applied ||
+         cond == RuleConditions::rule_applied_past ||
+         cond == RuleConditions::rule_evaluated ||
+         cond == RuleConditions::rule_evaluated_past ||
+         cond == RuleConditions::random;
+}
+
+std::string GuardRule::ParseConditionParameter(
+    std::vector<std::string>::const_iterator it_start,
+    std::vector<std::string>::const_iterator it_end) const {
+  std::logic_error ex("Can't parse parameters for condition");
+  // Parse parameters.
+  auto it_open_round_brace = it_start;
+  if (*it_open_round_brace != "(") {
+    throw ex;
+  }
+  ++it_start;
+  if (it_start == it_end) {
+    throw ex;
+  }
+  auto it_close_round_brace = it_start;
+  ++it_close_round_brace;
+  if (it_close_round_brace == it_end || *it_close_round_brace != ")") {
+    throw ex;
+  }
+  return *it_start;
+}
+
+RuleConditions GuardRule::ConvertToConditionWithParam(RuleConditions cond) const {
+  if (cond == RuleConditions::rule_applied)
+    return RuleConditions::rule_applied_past;
+  if (cond == RuleConditions::rule_evaluated)
+    return RuleConditions::rule_evaluated_past;
+  if (cond == RuleConditions::random)
+    return RuleConditions::random_with_propability;
+  return cond;
+}
+
+std::string GuardRule::ConditionsToString() const{
+    std::string res;
+    if (!cond) return "no conditions \n";
+    if (map_operator.count(cond->first)){
+        res+=map_operator.at(cond->first);
+        if (cond->first != RuleOperator::no_operator)
+            res+=" ";
+    }
+    int counter=0;
+    for (const auto& rule_with_bool: cond->second){   
+        if (!map_conditions.count(rule_with_bool.second.first)) continue;
+        if (counter) res+=" ";
+        if (!rule_with_bool.first)
+            res+='!';
+        res+=map_conditions.at(rule_with_bool.second.first);
+        if (rule_with_bool.second.second){
+            res+=*rule_with_bool.second.second;
+            res+=")";
+        }
+        ++counter;    
+    }
+    return res;
 }
 
 } // namespace guard

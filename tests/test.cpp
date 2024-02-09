@@ -375,7 +375,6 @@ void Test::Run10() {
   // one port
   str = "allow via-port \"1-2\"";
   {
-    std::cerr << "START" << std::endl;
     guard::GuardRule parser(str);
     std::vector<std::string> ports_expected{"\"1-2\""};
     std::pair<guard::RuleOperator, std::vector<std::string>> expected_port{
@@ -386,6 +385,192 @@ void Test::Run10() {
            !parser.serial && *parser.port == expected_port &&
            !parser.with_interface && !parser.cond);
   }
+
+  // two ports
+  str = "allow via-port all-of {" +WrapWithQuotes("1-2")+" "+ WrapWithQuotes("2-2") + "}";
+  {
+    //std::cerr << "START" << std::endl;
+    guard::GuardRule parser(str);
+    std::vector<std::string> ports_expected{"\"1-2\"","\"2-2\""};
+    std::pair<guard::RuleOperator, std::vector<std::string>> expected_port{
+        guard::RuleOperator::all_of, ports_expected};
+
+    assert(parser.target == guard::Target::allow && !parser.vid &&
+           !parser.pid && !parser.hash && !parser.device_name &&
+           !parser.serial && *parser.port == expected_port &&
+           !parser.with_interface && !parser.cond);
+  }
+
+  str = "allow via-port all-of {" +WrapWithQuotes("1-2")+" "+ WrapWithQuotes("2-2") + "";
+  {
+    //std::cerr << "START" << std::endl;
+    try {
+      guard::GuardRule parser(str);
+    }
+    catch(const std::logic_error& ex){
+      std::cerr << "Catched expected exception" << std::endl;
+      std::cerr << ex.what()<<std::endl;
+    }
+  }
+
+   // two ports one interface
+  str = "allow via-port all-of {" +WrapWithQuotes("1-2")+" "+ WrapWithQuotes("2-2") + "} with-interface 08:06:50";
+  {
+    //std::cerr << "START" << std::endl;
+    guard::GuardRule parser(str);
+    std::vector<std::string> ports_expected{"\"1-2\"","\"2-2\""};
+    std::pair<guard::RuleOperator, std::vector<std::string>> expected_port{
+        guard::RuleOperator::all_of, ports_expected};
+
+    std::vector<std::string> interface_expected={"08:06:50"};
+    std::pair<guard::RuleOperator, std::vector<std::string>> expected_interface{
+        guard::RuleOperator::no_operator, interface_expected};
+
+    assert(parser.target == guard::Target::allow && !parser.vid &&
+           !parser.pid && !parser.hash && !parser.device_name &&
+           !parser.serial && *parser.port == expected_port &&
+           *parser.with_interface == expected_interface && 
+           !parser.cond);
+  }
+
+
+   // two ports three interfaces
+  str = "allow via-port all-of {" +WrapWithQuotes("1-2")+" "+ WrapWithQuotes("2-2") + "} with-interface none-of{08:06:50 07:*:*}";
+  {
+    guard::GuardRule parser(str);
+    std::vector<std::string> ports_expected{"\"1-2\"","\"2-2\""};
+    std::pair<guard::RuleOperator, std::vector<std::string>> expected_port{
+        guard::RuleOperator::all_of, ports_expected};
+
+    std::vector<std::string> interface_expected={"08:06:50","07:*:*"};
+    std::pair<guard::RuleOperator, std::vector<std::string>> expected_interface{
+        guard::RuleOperator::none_of, interface_expected};
+
+    assert(parser.target == guard::Target::allow && !parser.vid &&
+           !parser.pid && !parser.hash && !parser.device_name &&
+           !parser.serial && *parser.port == expected_port &&
+           *parser.with_interface == expected_interface && 
+           !parser.cond);
+  }
+
+
+// conditioins
+std::cerr << "[TEST] START CONDITIONS TEST" <<std::endl;
+
+
+// clang-format off
+  using namespace guard;
+
+std::cerr << "[TEST] Localtime time with parameter" <<std::endl;
+  str = "allow if localtime(00:00-12:00)";
+  {
+    GuardRule parser(str);
+    RuleWithOptionalParam rule_with_param(RuleConditions::localtime,"00:00-12:00");
+    RuleWithBool rule_with_bool {true,rule_with_param};
+    std::vector<RuleWithBool> vec;
+    vec.push_back(rule_with_bool);
+    std::pair<RuleOperator,std::vector<RuleWithBool>> pair {RuleOperator::no_operator,vec};
+
+
+    assert(parser.target ==guard::Target::allow &&
+          !parser.pid &&
+          !parser.hash &&
+          !parser.device_name &&
+          !parser.serial &&
+          !parser.port &&
+          !parser.with_interface &&
+          parser.cond == pair
+    );
+
+  }
+
+  //******************************************************************
+  std::cerr << "[TEST] Localtime time with unclosed braces " <<std::endl;
+  str = "allow if localtime(00:00-12:00";
+  {
+     bool cought{false};
+    try{
+      GuardRule parser(str);
+    }
+    catch (const std::logic_error& ex){
+      std::cerr << "[TEST] Cought an expected exception." <<std::endl;
+      cought =true;
+    }
+    assert(cought);
+  }
+  //******************************************************************
+  std::cerr << "[TEST] Localtime time with unclosed braces " <<std::endl;
+  str = "allow if localtime)00:00-12:00)";
+  
+  {
+    bool cought{false};
+    try{
+      GuardRule parser(str);
+    }
+    catch (const std::logic_error& ex){
+      std::cerr << "[TEST] Cought an expected exception." <<std::endl;
+      cought =true;
+    }
+    assert(cought);
+  }
+
+  //******************************************************************
+
+std::cerr << "[TEST] rule-applied time without parameter" <<std::endl;
+  str = "allow if !rule-applied";
+  {
+    GuardRule parser(str);
+    RuleWithOptionalParam rule_with_param(RuleConditions::rule_applied,std::nullopt);
+    RuleWithBool rule_with_bool {false,rule_with_param};
+    std::vector<RuleWithBool> vec;
+    vec.push_back(rule_with_bool);
+    std::pair<RuleOperator,std::vector<RuleWithBool>> pair {RuleOperator::no_operator,vec};
+
+    std::cerr << parser.ConditionsToString()<<std::endl;
+
+    assert(parser.target ==guard::Target::allow &&
+          !parser.pid &&
+          !parser.hash &&
+          !parser.device_name &&
+          !parser.serial &&
+          !parser.port &&
+          !parser.with_interface &&
+          parser.cond == pair
+    );
+  }
+
+
+std::cerr << "[TEST] rule-applied time with parameter" <<std::endl;
+  str = "allow if !rule-applied(HH__SMM_MM)";
+  {
+    GuardRule parser(str);
+    std::string cond_result=parser.ConditionsToString();
+    std::string expected="!rule-applied(HH__SMM_MM)";
+    std::cerr <<cond_result <<"==" << expected<<std::endl;
+    assert(cond_result == expected);
+  }
+
+std::cerr << "[TEST] rule-evaluated time with no parameter" <<std::endl;
+  str = "allow if !rule-evaluated";
+  {
+    GuardRule parser(str);
+    std::string cond_result=parser.ConditionsToString();
+    std::string expected="!rule-evaluated";
+    std::cerr <<cond_result <<"==" << expected<<std::endl;
+    assert(cond_result == expected);
+  }
+
+  std::cerr << "[TEST] rule-evaluated with  parameters" <<std::endl;
+  str = "allow if rule-evaluated(HH:MM:SS)";
+  {
+    GuardRule parser(str);
+    std::string cond_result=parser.ConditionsToString();
+    std::string expected="rule-evaluated(HH:MM:SS)";
+    std::cerr <<cond_result <<"==" << expected<<std::endl;
+    assert(cond_result == expected);
+  }
+
+
 
   std::cerr << "TEST10 .... OK" << std::endl;
 }

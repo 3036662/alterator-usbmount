@@ -50,12 +50,17 @@ enum class RuleConditions {
 
 // clang-format on
 
+using RuleWithOptionalParam =
+    std::pair<RuleConditions, std::optional<std::string>>;
+using RuleWithBool = std::pair<bool, RuleWithOptionalParam>;
+
 /**
  * @brief Parse and store rules from usbguard rules.conf file
  * @class GuardRule
  * @throws Constructor - std::logical_error
  */
 class GuardRule {
+
   const std::map<Target, std::string> map_target{{Target::allow, "allow"},
                                                  {Target::block, "block"},
                                                  {Target::reject, "reject"}};
@@ -69,13 +74,16 @@ class GuardRule {
       {RuleConditions::random, "random"},
       {RuleConditions::random_with_propability, "random("},
       {RuleConditions::always_true, "true"},
-      {RuleConditions::always_false, "false"}};
+      {RuleConditions::always_false, "false"},
+      {RuleConditions::no_condition, ""}};
+
   const std::map<RuleOperator, std::string> map_operator{
       {RuleOperator::all_of, "all-of"},
       {RuleOperator::one_of, "one-of"},
       {RuleOperator::none_of, "none-of"},
       {RuleOperator::equals, "equals"},
-      {RuleOperator::equals_ordered, "equals-ordered"}};
+      {RuleOperator::equals_ordered, "equals-ordered"},
+      {RuleOperator::no_operator,""}};
 
   const size_t usbguard_hash_length = 44;
 
@@ -88,10 +96,9 @@ public:
   std::optional<std::string> device_name;
   std::optional<std::string> serial;
   std::optional<std::pair<RuleOperator, std::vector<std::string>>> port;
-  std::optional<std::pair<RuleOperator, std::vector<UsbType>>> with_interface;
-  std::optional<
-      std::pair<RuleOperator, std::vector<std::pair<RuleConditions, bool>>>>
-      cond;
+  std::optional<std::pair<RuleOperator, std::vector<std::string>>>
+      with_interface;
+  std::optional<std::pair<RuleOperator, std::vector<RuleWithBool>>> cond;
 
   /**
    * @brief Construct a new Guard Rule object
@@ -146,6 +153,31 @@ private:
   ParseTokenWithOperator(
       const std::vector<std::string> &splitted, const std::string &name,
       std::function<bool(const std::string &)> predicat) const;
+
+  /**
+   * @brief Parse conditions
+   *
+   * @param splitted Vector - a splitted rule string.
+   * @return std::optional<
+   * std::pair<RuleOperator, std::vector<std::pair<RuleConditions, bool>>>>
+   */
+  std::optional<std::pair<RuleOperator, std::vector<RuleWithBool>>>
+  ParseConditions(const std::vector<std::string> &splitted);
+
+
+  RuleWithBool ParseOneCondition(
+    std::vector<std::string>::const_iterator it_range_beg,
+    std::vector<std::string>::const_iterator it_range_end  
+    ) const;
+
+  std::string ParseConditionParameter(
+      std::vector<std::string>::const_iterator it_start,
+      std::vector<std::string>::const_iterator it_end) const;
+  bool CanConditionHaveParams(RuleConditions cond) const;
+
+  RuleConditions ConvertToConditionWithParam(RuleConditions cond) const;
+
+  std::string ConditionsToString()const;
 
 #ifdef UNIT_TEST
   friend class ::Test;
