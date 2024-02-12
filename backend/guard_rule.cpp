@@ -608,7 +608,7 @@ std::string GuardRule::InterfacesToString() const{
    // VID::PID
    if (level == StrictnessLevel::vid_pid){
       res.emplace_back("lbl_rule_vid",vid.has_value() ? EscapeQuotes(*vid): "");
-      res.emplace_back("lbl_rule_vendor","TODO");
+      res.emplace_back("lbl_rule_vendor",vendor_name.has_value() ? EscapeQuotes(*vendor_name):"");
       res.emplace_back("lbl_rule_pid",pid.has_value() ? EscapeQuotes(*pid):"");
       res.emplace_back("lbl_rule_product",device_name.has_value() ? EscapeQuotes(*device_name):"");
       res.emplace_back("lbl_rule_port",port.has_value() ? EscapeQuotes(PortsToString()) :"");

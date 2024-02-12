@@ -94,6 +94,7 @@ public:
   std::optional<std::string> conn_type;
   std::optional<std::pair<RuleOperator, std::vector<RuleWithBool>>> cond;
   StrictnessLevel level = StrictnessLevel::hash;
+  std::optional<std::string> vendor_name;
 
   /**
    * @brief Construct a new Guard Rule object
