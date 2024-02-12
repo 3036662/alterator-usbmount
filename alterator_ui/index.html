@@ -94,8 +94,8 @@
                 <th>Status</th>
                 <!-- <th>Connect type</th> -->
                </tr>
-                </thead>
-                <tbody>              
+          </thead>
+          <tbody>              
                   <tr class="wrap">
                     <td><span class="alterator-label" name="name" /></td>
                     <td><span class="alterator-label" name="label_prsnt_usb_port" /></td>
@@ -109,12 +109,101 @@
                     <td><span class="alterator-label" name="label_prsnt_usb_status" /></td>
                    <!-- <td><span class="alterator-label" name="label_prsnt_usb_connection" /></td>-->
                   </tr>
-                </tbody>
+          </tbody>
         </table>
-        <div name="usb_buttons" class="usb_buttons">
+        <div name="usb_buttons" class="right_buttons">
                   <input type="button" name="btn_prsnt_scan" class="btn" value="Scan plugged-in USB devices"/>&nbsp;&nbsp;
                   <input type="button" name="btn_prsnt_dev_add" class="btn" value="Allow device"/>
                   <input type="button" name="btn_prsnt_dev_block" class="btn" value="Block device"/>
+        </div>
+      </form>
+      <!-- Rules by interface-->
+      <form name="form_list_interface_rules" class="form_rules" method="POST">
+        <table class="alterator-listbox single-select" align="center" name="list_interface_rules">
+          <caption>Masks CC::SS::PP</caption>
+          <thead>
+            <tr>
+              <th>N</th>
+              <th>CC::SS::PP</th>
+              <th>Description</th>
+              <th>Port</th>
+              <th>Allow</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr class="wrap">
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+            </tr>
+          </tbody>
+        </table>
+        <div name="list_interface_rules_buttons" class="right_buttons">
+          <input type="button" name="btn_load_interface_rules" class="btn" value="Load from file"/>
+          <input type="button" name="btn_prsnt_dev_add" class="btn" value="Add"/>
+          <input type="button" name="btn_prsnt_dev_block" class="btn" value="Delete"/>
+        </div>
+      </form>
+      <!-- VID/PID Rules -->
+      <form name="form_list_vidpid_rules" class="form_rules" method="POST">
+        <table class="alterator-listbox single-select" align="center" name="list_vidpid_rules">
+          <caption>Masks VID::PID</caption>
+          <thead>
+            <tr>
+              <th>N</th>
+              <th>VID</th>
+              <th>Vendor</th>
+              <th>PID</th>
+              <th>Product</th>
+              <th>Port</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr class="wrap">
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+            </tr>
+          </tbody>
+        </table>
+        <div name="list_vidpid_rules_buttons" class="right_buttons">
+          <input type="button" name="btn_load_interface_rules" class="btn" value="Load from file"/>
+          <input type="button" name="btn_prsnt_dev_add" class="btn" value="Add"/>
+          <input type="button" name="btn_prsnt_dev_block" class="btn" value="Delete"/>
+        </div>
+      </form>
+      <!-- Rules by hash-->
+      <form name="form_list_hash_rules" class="form_rules" method="POST">
+        <table class="alterator-listbox single-select" align="center" name="list_interface_rules">
+          <caption>Mask Hash</caption>
+          <thead>
+            <tr>
+              <th>N</th>
+              <th>Hash</th>
+              <th>Description</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr class="wrap">
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+            </tr>
+          </tbody>
+        </table>
+        <div name="list_hash_rules_buttons" class="right_buttons">
+          <input type="button" name="btn_load_vidpid_rules" class="btn" value="Load from file"/>
+          <input type="button" name="btn_prsnt_dev_add" class="btn" value="Add"/>
+          <input type="button" name="btn_prsnt_dev_block" class="btn" value="Delete"/>
         </div>
       </form>
 

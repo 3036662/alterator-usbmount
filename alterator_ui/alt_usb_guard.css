@@ -46,7 +46,7 @@
     border:0px;
 }
 
-#devices_list_table caption{
+.alterator-listbox caption{
     background-color: white;
     border: solid;
     border-width: thin;
@@ -54,7 +54,11 @@
     font-weight: 600;
 }
 
-.usb_buttons{
+.right_buttons{
     float: right;
     margin-top: 15px;
+}
+
+.form_rules{
+    margin-top: 50px;
 }
