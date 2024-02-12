@@ -1,11 +1,11 @@
 #pragma once
 
+#include "guard_rule.hpp"
 #include "serializible_for_lisp.hpp"
 #include "types.hpp"
 #include "utils.hpp"
 #include <set>
 #include <unordered_map>
-#include "guard_rule.hpp"
 
 #ifdef UNIT_TEST
 #include "test.hpp"
@@ -52,7 +52,7 @@ public:
   /// @brief Checks the daemon status,fills status fields
   void CheckDaemon();
 
-  std::vector<GuardRule> parseGuardRulesFile() const; 
+  std::vector<GuardRule> parseGuardRulesFile() const;
 
 private:
   /// @brief Return path for the  daemon .conf file

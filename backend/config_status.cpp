@@ -30,10 +30,10 @@ vecPairs ConfigStatus::SerializeForLisp() const {
                    guard_daemon_active ? "ACTIVE" : "STOPPED");
   res.emplace_back("usbguard_enabled",
                    guard_daemon_enabled ? "ENABLED" : "DISABLED");
-  res.emplace_back("rules_file_exists",rules_files_exists ? "TRUE" : "FALSE" ); 
+  res.emplace_back("rules_file_exists", rules_files_exists ? "TRUE" : "FALSE");
 
-  res.emplace_back("allowed_users",boost::join(ipc_allowed_users,", "));
-  res.emplace_back("allowed_groups",boost::join(ipc_allowed_groups,", "));
+  res.emplace_back("allowed_users", boost::join(ipc_allowed_users, ", "));
+  res.emplace_back("allowed_groups", boost::join(ipc_allowed_groups, ", "));
 
   return res;
 }
@@ -230,47 +230,47 @@ void ConfigStatus::ParseDaemonConfig() {
 }
 
 /***********************************************************/
-std::vector<GuardRule> ConfigStatus::parseGuardRulesFile() const{
-    std::vector<GuardRule> res;
-    try{
-      if (!std::filesystem::exists(daemon_rules_file_path)){
-        std::cerr << "[WATINIG] The rules file for usbguard doesn't exist." <<std::endl;
-        return res;
-      }
-    }
-    catch(const std::exception &ex){
-      std::cerr <<"[ERROR] Can't parse rules file "<< daemon_rules_file_path <<std::endl;
+std::vector<GuardRule> ConfigStatus::parseGuardRulesFile() const {
+  std::vector<GuardRule> res;
+  try {
+    if (!std::filesystem::exists(daemon_rules_file_path)) {
+      std::cerr << "[WATINIG] The rules file for usbguard doesn't exist."
+                << std::endl;
       return res;
     }
-    std::ifstream file(daemon_rules_file_path);
-    if (!file.is_open()){
-      std::cerr << "[ERROR] Can't open file "<< daemon_rules_file_path <<std::endl;
-      return res;
-    }
-    // Parse the file
-    std::string line;
-    int counter=0;
-    int counter_fails=0;
-    while (std::getline(file,line)){
-      try{
-          res.emplace_back(GuardRule(line));
-          res.back().number=counter;
-          ++counter;
-      }
-      catch (const std::logic_error& ex){
-        std::cerr <<"[ERROR] Can't parse the rule "<< line <<std::endl;
-        ++counter_fails;
-      }
-      line.clear();
-    }
-    file.close();
-
-    std::cerr << "[INFO] Parsed "<< res.size() << " rules."
-              <<" Failed "<< counter_fails << std::endl;
-
+  } catch (const std::exception &ex) {
+    std::cerr << "[ERROR] Can't parse rules file " << daemon_rules_file_path
+              << std::endl;
     return res;
-}
+  }
+  std::ifstream file(daemon_rules_file_path);
+  if (!file.is_open()) {
+    std::cerr << "[ERROR] Can't open file " << daemon_rules_file_path
+              << std::endl;
+    return res;
+  }
+  // Parse the file
+  std::string line;
+  int counter = 0;
+  int counter_fails = 0;
+  while (std::getline(file, line)) {
+    try {
+      res.emplace_back(GuardRule(line));
+      res.back().number = counter;
+      ++counter;
+    } catch (const std::logic_error &ex) {
+      std::cerr << "[ERROR] Can't parse the rule " << line << std::endl;
+      ++counter_fails;
+    }
+    line.clear();
+  }
+  file.close();
 
+  std::cerr << "[INFO] Parsed " << res.size() << " rules."
+            << " Failed " << counter_fails << std::endl;
+
+  return res;
+}
 
 /***********************************************************/
 // non-friend funcions
@@ -320,9 +320,9 @@ std::unordered_map<std::string, std::string> InspectUdevRules(
           tmp_str.clear();
           f.close();
 
-          //if (found_usb && found_authorize) {
-         //a rule can ruin program behavior even if only authorized and no usb
-         if (found_authorize){   
+          // if (found_usb && found_authorize) {
+          // a rule can ruin program behavior even if only authorized and no usb
+          if (found_authorize) {
             std::cerr << "Found file " << str_path << std::endl;
             res.emplace(str_path, "usb_rule");
           }
