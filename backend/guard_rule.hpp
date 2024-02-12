@@ -48,6 +48,17 @@ enum class RuleConditions {
   no_condition
 };
 
+/**
+ * @brief Strictness levels 
+ * 
+ */
+enum class StrictnessLevel{
+  hash, // the most strict
+  vid_pid, 
+  interface,
+  non_strict
+};
+
 // clang-format on
 
 using RuleWithOptionalParam =
@@ -59,7 +70,7 @@ using RuleWithBool = std::pair<bool, RuleWithOptionalParam>;
  * @class GuardRule
  * @throws Constructor - std::logical_error
  */
-class GuardRule {
+class GuardRule:public SerializableForLisp<GuardRule> {
 
   /// @brief Maps Target enum to a string.
   const std::map<Target, std::string> map_target;
@@ -82,6 +93,7 @@ public:
       with_interface;
   std::optional<std::string> conn_type;
   std::optional<std::pair<RuleOperator, std::vector<RuleWithBool>>> cond;
+  StrictnessLevel level = StrictnessLevel::hash;
 
   /**
    * @brief Construct a new Guard Rule object
@@ -100,6 +112,8 @@ public:
  */
   std::string BuildString(bool build_parent_hash = false,
                           bool with_interface_array_no_operator = false) const;
+  
+  vecPairs SerializeForLisp() const;                        
 
 private:
   /**
@@ -208,9 +222,17 @@ private:
    */
   std::string ConditionsToString() const;
 
+  std::string PortsToString() const;
+  std::string InterfacesToString() const;
+
 #ifdef UNIT_TEST
   friend class ::Test;
 #endif
 };
+
+/**********************************************************************************/
+// Non-friend functions
+
+StrictnessLevel StrToStrictnessLevel(const std::string & str);
 
 } // namespace guard

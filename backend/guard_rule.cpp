@@ -4,6 +4,7 @@
 #include <boost/algorithm/string/regex.hpp>
 #include <functional>
 #include <map>
+#include "utils.hpp"
 
 namespace guard {
 
@@ -99,6 +100,19 @@ GuardRule::GuardRule(const std::string &raw_str)
   conn_type = ParseToken(splitted, "with-connect-type", default_predicat);
   // Conditions may or may not exist in the string.
   cond = ParseConditions(splitted);
+
+  // ----------------------------------------
+  // Determine the stricness level
+  if (hash)
+    level = StrictnessLevel::hash;
+  else if(vid && pid)
+    level =StrictnessLevel::vid_pid;
+  else if (with_interface)
+    level =StrictnessLevel::interface;
+  else
+    level = StrictnessLevel::non_strict;
+
+
 }
 
 /******************************************************************************/
@@ -541,6 +555,96 @@ GuardRule::BuildString(bool build_parent_hash,
   }
   boost::trim(res);
   return res;
+}
+
+/**********************************************************************************/
+
+std::string GuardRule::PortsToString() const{
+  std::string res;
+  if (port) {
+    res += map_operator.at(port->first);
+    if (port->second.size() > 1) {
+      res += "{ ";
+    }
+    for (const auto &p : port->second) {
+      res += p;
+    }
+    if (port->second.size() > 1) {
+      res += " }";
+    }
+  }
+  return res;
+}
+
+/**********************************************************************************/
+std::string GuardRule::InterfacesToString() const{
+  std::string res;
+   if (with_interface) {
+    if (with_interface->second.size() > 1) {
+        res += map_operator.at(with_interface->first);
+      res += "{";
+      for (const auto &i : with_interface->second) {
+        res += " ";
+        res += i;
+      }
+      res += " }";
+    } else if (with_interface->second.size() == 1) {
+      res += with_interface->second[0];
+    }
+  }
+  return res;
+}
+
+/**********************************************************************************/
+ vecPairs GuardRule::SerializeForLisp() const{
+   vecPairs res;
+   res.emplace_back("name",std::to_string(number));
+   // The most string rules
+   if (level==StrictnessLevel::hash){
+      res.emplace_back("lbl_rule_hash", hash.has_value() ? EscapeQuotes(hash.value()) : "");
+      res.emplace_back("lbl_rule_desc", device_name.has_value() ? EscapeQuotes(device_name.value()) :"");
+   }
+
+   // VID::PID
+   if (level == StrictnessLevel::vid_pid){
+      res.emplace_back("lbl_rule_vid",vid.has_value() ? EscapeQuotes(*vid): "");
+      res.emplace_back("lbl_rule_vendor","TODO");
+      res.emplace_back("lbl_rule_pid",pid.has_value() ? EscapeQuotes(*pid):"");
+      res.emplace_back("lbl_rule_product",device_name.has_value() ? EscapeQuotes(*device_name):"");
+      res.emplace_back("lbl_rule_port",port.has_value() ? EscapeQuotes(PortsToString()) :"");
+   }
+
+   // interface 
+   if (level == StrictnessLevel::interface){
+      res.emplace_back("lbl_rule_interface",with_interface.has_value() 
+                        ? EscapeQuotes(InterfacesToString()):"");
+      res.emplace_back("lbl_rule_desc", device_name.has_value() ? EscapeQuotes(device_name.value()) :"");
+      res.emplace_back("lbl_rule_port",port.has_value() ? EscapeQuotes(PortsToString()) :"");
+   }
+
+   // non-strict
+   if (level ==StrictnessLevel::non_strict){
+      res.emplace_back("lbl_rule_raw",EscapeQuotes(BuildString()));
+   }
+  res.emplace_back("lbl_rule_target",map_target.count(target)? map_target.at(target):"");
+   return res;
+ }
+
+
+/**********************************************************************************/
+// Non-friend functions
+
+StrictnessLevel StrToStrictnessLevel(const std::string & str){
+  if (str=="hash"){
+    return StrictnessLevel::hash;
+  }
+  else if (str=="vid_pid"){
+    return StrictnessLevel::vid_pid;
+  }
+  else if (str=="interface"){
+    return StrictnessLevel::interface;
+  }
+  return StrictnessLevel::non_strict;
 }
 
 } // namespace guard
