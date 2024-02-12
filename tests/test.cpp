@@ -591,6 +591,55 @@ std::cerr << "[TEST] rule-evaluated time with no parameter" <<std::endl;
     assert(*parser.pid=="1000");
   }
 
+// real rule
+ str="allow id 1d6b:0002 serial \"0000:00:0d.0\" name \"xHCI Host Controller\" hash \"d3YN7OD60Ggqc9hClW0/al6tlFEshidDnQKzZRRk410=\" parent-hash \"Y1kBdG1uWQr5CjULQs7uh2F6pHgFb6VDHcWLk83v+tE=\" with-interface 09:00:00 with-connect-type \"\""; 
+  {
+    GuardRule parser(str);
+    assert(parser.target == Target::allow);
+    assert(*parser.vid=="1d6b");
+    assert(*parser.pid=="0002");
+    assert(!parser.cond.has_value());
+    assert(*parser.device_name=="\"xHCI Host Controller\"");
+    assert(*parser.hash=="\"d3YN7OD60Ggqc9hClW0/al6tlFEshidDnQKzZRRk410=\"");
+    assert(!parser.port.has_value());
+    assert(*parser.serial=="\"0000:00:0d.0\"");
+    assert(parser.with_interface->first == guard::RuleOperator::no_operator);
+    assert(parser.with_interface->second.at(0) == "09:00:00");
+
+
+
+  }
+
+  str="allow id 30c9:0030 serial \"0001\" name \"Integrated Camera\" hash \"94ed2Mm6HGRsDZTjqV8TdnQWRDdUvlDdTmMm+henvVk=\" parent-hash \"jEP/6WzviqdJ5VSeTUY8PatCNBKeaREvo2OqdplND/o=\" with-interface { 0e:01:00 0e:02:00 0e:02:00 0e:02:00 0e:02:00 0e:02:00 0e:02:00 0e:02:00 0e:02:00 } with-connect-type \"hardwired\"";
+  {
+    GuardRule parser(str);
+  }  
 
   std::cerr << "TEST10 .... OK" << std::endl;
+}
+
+void Test::Run11(){
+  
+  // parse real file
+
+   guard::Guard guard;
+   guard::ConfigStatus cs (guard.GetConfigStatus());
+   std::vector<guard::GuardRule> result = cs.parseGuardRulesFile();
+
+  std::cerr <<"[TEST] parse config rules. Build each rule from object,compare with the source. "<<std::endl;
+
+  std::ifstream file(cs.daemon_rules_file_path);
+  std::string line;
+  int line_counter=0;
+  while(std::getline(file,line)){
+    std::cerr <<"\n=================================" << std::endl;
+    std::cerr << "\n[TEST] RULE NUMBER " << line_counter<< "\n" << line << "\n" << result[line_counter].BuildString(true,true) <<std::endl;
+    assert(line == result[line_counter].BuildString(true,true));
+    line.clear();
+    ++line_counter;
+  }
+  file.close();
+
+  std::cerr << "[TEST] TEST11 ... OK"<<std::endl;
+
 }

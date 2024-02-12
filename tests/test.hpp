@@ -60,4 +60,11 @@ public:
    *
    */
   void Run10();
+
+  /**
+   * @brief Test a rule file parsing
+   * 
+   */
+  void Run11();
+
 };
