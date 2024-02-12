@@ -81,6 +81,21 @@ bool MessageDispatcher::Dispatch(const LispMessage &msg) {
     std::vector<guard::GuardRule> vec_rules = guard.GetConfigStatus().parseGuardRulesFile();
     std::cout << mess_beg;
     std::string response;
+    // map vendor ids to strings 
+    if (level == guard::StrictnessLevel::vid_pid){
+      std::unordered_set<std::string> vendors;
+      for (const auto& r:vec_rules){
+        if (r.vid)
+        vendors.insert(r.vid.value());
+      }
+      auto vendors_names=guard.MapVendorCodesToNames(vendors);
+      for  (auto& r:vec_rules){
+        if (r.vid.has_value() && vendors_names.count(r.vid.value())){
+          r.vendor_name=vendors_names.at(r.vid.value());
+        } 
+      }
+    }
+
     for (const auto &rule : vec_rules) {
       if (rule.level==level){
         response += ToLisp(rule);
