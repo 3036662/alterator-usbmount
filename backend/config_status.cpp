@@ -20,6 +20,8 @@ ConfigStatus::ConfigStatus()
   ParseDaemonConfig();
 }
 
+/***********************************************************/
+
 vecPairs ConfigStatus::SerializeForLisp() const {
   vecPairs res;
   res.emplace_back("udev", udev_rules_OK ? "OK" : "BAD");
@@ -35,6 +37,8 @@ vecPairs ConfigStatus::SerializeForLisp() const {
 
   return res;
 }
+
+/***********************************************************/
 
 void ConfigStatus::CheckDaemon() {
   dbus_bindings::Systemd systemd;
@@ -106,6 +110,8 @@ std::string ConfigStatus::GetDaemonConfigPath() const {
   }
   return res;
 }
+
+/***********************************************************/
 
 void ConfigStatus::ParseDaemonConfig() {
 
@@ -222,6 +228,49 @@ void ConfigStatus::ParseDaemonConfig() {
 
   f.close();
 }
+
+/***********************************************************/
+std::vector<GuardRule> ConfigStatus::parseGuardRulesFile() const{
+    std::vector<GuardRule> res;
+    try{
+      if (!std::filesystem::exists(daemon_rules_file_path)){
+        std::cerr << "[WATINIG] The rules file for usbguard doesn't exist." <<std::endl;
+        return res;
+      }
+    }
+    catch(const std::exception &ex){
+      std::cerr <<"[ERROR] Can't parse rules file "<< daemon_rules_file_path <<std::endl;
+      return res;
+    }
+    std::ifstream file(daemon_rules_file_path);
+    if (!file.is_open()){
+      std::cerr << "[ERROR] Can't open file "<< daemon_rules_file_path <<std::endl;
+      return res;
+    }
+    // Parse the file
+    std::string line;
+    int counter=0;
+    int counter_fails=0;
+    while (std::getline(file,line)){
+      try{
+          res.emplace_back(GuardRule(line));
+          res.back().number=counter;
+          ++counter;
+      }
+      catch (const std::logic_error& ex){
+        std::cerr <<"[ERROR] Can't parse the rule "<< line <<std::endl;
+        ++counter_fails;
+      }
+      line.clear();
+    }
+    file.close();
+
+    std::cerr << "[INFO] Parsed "<< res.size() << " rules."
+              <<" Failed "<< counter_fails << std::endl;
+
+    return res;
+}
+
 
 /***********************************************************/
 // non-friend funcions
