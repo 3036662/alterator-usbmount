@@ -67,20 +67,19 @@ class GuardRule {
   const std::map<RuleConditions, std::string> map_conditions;
   /// @brief Maps RuleOperator enum to a string.
   const std::map<RuleOperator, std::string> map_operator;
-  /// @brief Usbguard hash string size.
-  const size_t usbguard_hash_length;
-
 public:
   int number = 0; ///@brief number of line (from the beginnig of file)
   Target target;
   std::optional<std::string> vid;
   std::optional<std::string> pid;
   std::optional<std::string> hash;
+  std::optional<std::string> parent_hash;
   std::optional<std::string> device_name;
   std::optional<std::string> serial;
   std::optional<std::pair<RuleOperator, std::vector<std::string>>> port;
   std::optional<std::pair<RuleOperator, std::vector<std::string>>>
       with_interface;
+  std::optional<std::string> conn_type;    
   std::optional<std::pair<RuleOperator, std::vector<RuleWithBool>>> cond;
 
   /**
@@ -89,6 +88,9 @@ public:
    * @throws std::logical_error
    */
   GuardRule(std::string raw_str);
+
+  std::string BuildString(bool build_parent_hash = false,
+                          bool with_interface_array_no_operator = false) const ;
 
 private:
   /**

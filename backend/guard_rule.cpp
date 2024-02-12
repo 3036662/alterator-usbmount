@@ -29,8 +29,7 @@ GuardRule::GuardRule(std::string raw_str)
                    {RuleOperator::none_of, "none-of"},
                    {RuleOperator::equals, "equals"},
                    {RuleOperator::equals_ordered, "equals-ordered"},
-                   {RuleOperator::no_operator, ""}},
-      usbguard_hash_length{44} {
+                   {RuleOperator::no_operator, ""}}{
 
   std::logic_error ex("Cant parse rule string");
   // Split string to tokens.
@@ -73,17 +72,30 @@ GuardRule::GuardRule(std::string raw_str)
   // validating.
   std::function<bool(const std::string &)> default_predicat =
       [this](const std::string &val) { return !IsReservedWord(val); };
-  hash = ParseToken(splitted, "hash", [this](const std::string &val) {
-    return val.size() == usbguard_hash_length;
+  hash = ParseToken(splitted, "hash", [](const std::string &val) {
+    return val.size() > 10;
+  });
+  parent_hash = ParseToken(splitted, "parent-hash", [](const std::string &val) {
+    return val.size() > 10;
   });
   device_name = ParseToken(splitted, "name", default_predicat);
   serial = ParseToken(splitted, "serial", default_predicat);
   port = ParseTokenWithOperator(splitted, "via-port", default_predicat);
+
+  // if a rules contains  with-interface { i1, i2 } array - insert the "equals" operator
+  auto it_with_interface = std::find(splitted.begin(),splitted.end(),"with-interface");
+  if (it_with_interface!=splitted.end()){
+    ++it_with_interface;
+    if (it_with_interface!=splitted.end() && *it_with_interface == "{"){
+      splitted.insert(it_with_interface,"equals");
+    }
+  }
   with_interface = ParseTokenWithOperator(
       splitted, "with-interface", [](const std::string &val) {
         return val.size() > 2 && val.find(':') != std::string::npos;
       });
 
+  conn_type = ParseToken(splitted,"with-connect-type",default_predicat);
   // Conditions may or may not exist in the string.
   cond = ParseConditions(splitted);
 }
@@ -455,5 +467,78 @@ std::string GuardRule::ConditionsToString() const {
     res += "}";
   return res;
 }
+
+/******************************************************************************/
+ 
+ std::string GuardRule::BuildString(bool build_parent_hash,
+                                    bool with_interface_array_no_operator) const{
+    std::string res;
+    res+=map_target.at(target);
+    if (vid && pid){
+      res+=" id ";
+      res+=*vid;
+      res+=":";
+      res+=*pid;
+    }   
+    if (serial){
+      res+=" serial ";
+      res+=*serial;
+    }
+    if (device_name){
+      res+=" name ";
+      res+=*device_name;
+    }
+    if (hash){
+      res+=" hash ";
+      res+=*hash;
+    }
+    if (build_parent_hash && parent_hash){
+      res+=" parent-hash ";
+      res+=*parent_hash;
+    }
+
+    if (port){
+      res+=" via-port ";
+      res+=map_operator.at(port->first);
+      if (port->second.size()>1){
+        res+="{ ";
+      }
+      for (const auto& p : port->second){
+        res+=p;
+      }
+      if (port->second.size()>1){
+        res+=" }";
+      }
+    }
+
+    if (with_interface){
+      res+=" with-interface ";
+      if (with_interface->second.size()>1){
+        if (!with_interface_array_no_operator || with_interface->first != RuleOperator::equals){
+            res+=map_operator.at(with_interface->first);
+        }
+        res+="{";
+        for (const auto& i: with_interface->second){
+          res+=" ";
+          res+=i;
+        }
+        res+=" }"; 
+      }
+      else if(with_interface->second.size() ==1){
+        res+=with_interface->second[0];
+      }
+    }
+    if (conn_type){
+      res+=" with-connect-type ";
+      res+=*conn_type;
+    }
+
+    if (cond){
+      res+=" ";
+      res+=ConditionsToString();
+    }
+    boost::trim(res);
+    return res;
+ }
 
 } // namespace guard
