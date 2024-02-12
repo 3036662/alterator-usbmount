@@ -90,3 +90,6 @@ std::string ToLispAssoc(const SerializableForLisp<T> &obj) {
  */
 std::string ToLisp([[maybe_unused]] const std::string &name,
                    const std::string &value);
+
+
+std::string EscapeQuotes(const std::string &str);

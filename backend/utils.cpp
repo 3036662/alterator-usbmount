@@ -61,3 +61,14 @@ std::vector<std::string> FindAllFilesInDirRecursive(const std::string &dir,
   }
   return res;
 }
+
+std::string EscapeQuotes(const std::string &str){
+  std::string res;
+  for (auto it =str.cbegin();it!=str.cend();++it){
+    if (*it == '\"' && res.back()!='\\'){
+          res.push_back('\\');
+    }
+    res.push_back(*it);
+  }
+  return res;
+}
