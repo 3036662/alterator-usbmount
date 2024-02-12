@@ -92,4 +92,7 @@ std::string ToLisp([[maybe_unused]] const std::string &name,
                    const std::string &value);
 
 
+/// @brief  Escapes double-quotes with slashes
+/// @param str Source string
+/// @return Escaped string
 std::string EscapeQuotes(const std::string &str);

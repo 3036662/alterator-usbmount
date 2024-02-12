@@ -230,7 +230,7 @@ void ConfigStatus::ParseDaemonConfig() {
 }
 
 /***********************************************************/
-std::vector<GuardRule> ConfigStatus::parseGuardRulesFile() const {
+std::vector<GuardRule> ConfigStatus::ParseGuardRulesFile() const {
   std::vector<GuardRule> res;
   try {
     if (!std::filesystem::exists(daemon_rules_file_path)) {

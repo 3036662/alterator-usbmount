@@ -234,6 +234,9 @@ private:
 /**********************************************************************************/
 // Non-friend functions
 
+/// @brief Converts a string representation of Rule StricnessLevel to a StrictnessLevel
+/// @param str Stricness level ("hash","vid_pid","interface");
+/// @return StrictnessLevel - non_strict if no corresondent level is found.
 StrictnessLevel StrToStrictnessLevel(const std::string & str);
 
 } // namespace guard

@@ -52,7 +52,12 @@ public:
   /// @brief Checks the daemon status,fills status fields
   void CheckDaemon();
 
-  std::vector<GuardRule> parseGuardRulesFile() const;
+  /**
+   * @brief Parses usbguard rules.conf file 
+   * 
+   * @return std::vector<GuardRule> 
+   */
+  std::vector<GuardRule> ParseGuardRulesFile() const;
 
 private:
   /// @brief Return path for the  daemon .conf file
@@ -61,6 +66,11 @@ private:
   /// /lib/systemd/system
   std::string GetDaemonConfigPath() const;
 
+  /**
+   * @brief Parses usbguard .conf file.
+   * @details Looks for rules-file path.
+   * Looks for allowed users and groups.
+   */
   void ParseDaemonConfig();
 
 #ifdef UNIT_TEST
