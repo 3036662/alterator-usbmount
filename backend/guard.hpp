@@ -37,6 +37,14 @@ public:
    * @return ConfigStatus object
    */
   ConfigStatus GetConfigStatus();
+  /**
+   * @brief Creates map vendor ID : vendor Name with in one pass to file
+   *
+   * @param vendors set of vendor IDs
+   * @return std::map<std::string,std::string> Vendor ID : Vendor Name
+   */
+  std::unordered_map<std::string, std::string>
+  MapVendorCodesToNames(const std::unordered_set<std::string> vendors) const;
 
 private:
   const std::string default_query = "match";
@@ -50,14 +58,7 @@ private:
   ///@param i_type string with list of interfaces from usbguard
   std::vector<std::string> FoldUsbInterfacesList(std::string i_type) const;
 
-  /**
-   * @brief Creates map vendor ID : vendor Name with in one pass to file
-   *
-   * @param vendors set of vendor IDs
-   * @return std::map<std::string,std::string> Vendor ID : Vendor Name
-   */
-  std::unordered_map<std::string, std::string>
-  MapVendorCodesToNames(const std::unordered_set<std::string> vendors) const;
+
 
 #ifdef UNIT_TEST
   friend class ::Test;
