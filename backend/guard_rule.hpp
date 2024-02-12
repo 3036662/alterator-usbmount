@@ -88,8 +88,16 @@ public:
    * @param str String rule from usbguard rules file
    * @throws std::logical_error
    */
-  GuardRule(std::string raw_str);
+  GuardRule(const std::string &raw_str);
 
+/**
+ * @brief Build rule string for usbguard
+ * 
+ * @param build_parent_hash include parent hash to rule string
+ * @param false skip operator "equals" for an array of interface 
+ * @return std::string 
+ * @details The parameters are used to build the same rule as usbguard cli builds
+ */
   std::string BuildString(bool build_parent_hash = false,
                           bool with_interface_array_no_operator = false) const;
 

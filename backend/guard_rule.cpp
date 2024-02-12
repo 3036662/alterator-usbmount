@@ -9,7 +9,7 @@ namespace guard {
 
 /******************************************************************************/
 
-GuardRule::GuardRule(std::string raw_str)
+GuardRule::GuardRule(const std::string &raw_str)
     : map_target{{Target::allow, "allow"},
                  {Target::block, "block"},
                  {Target::reject, "reject"}},
