@@ -5,7 +5,15 @@
 
 (define (ls_usbs)
     (form-update-enum "list_prsnt_devices" (woo-list "/simple/list_curr_usbs" ))
-)   
+)
+
+; list usbguard rules
+(define (ls_guard_rules)
+    (form-update-enum "list_hash_rules" (woo-list "/simple/list_rules" 'level "hash"))
+    (form-update-enum "list_vidpid_rules" (woo-list "/simple/list_rules" 'level "vid_pid"))
+    (form-update-enum "list_interface_rules" (woo-list "/simple/list_rules" 'level "interface"))
+     (form-update-enum "list_unsorted_rules" (woo-list "/simple/list_rules" 'level "non-strict"))   
+)
 
 ; get udev rules filenames
 (define (udev_rules_check)
@@ -51,7 +59,6 @@
                     (form-update-visibility "guard_status_bad" #f)
                     (form-update-visibility "list_prsnt_devices" #t)
                     (form-update-visibility "usb_buttons" #t)
-                   ; (form-update-activity "checkbox_use_control" #t)
                     (ls_usbs)
                 )
                 ;else usbguard not totally fine
@@ -64,7 +71,6 @@
                      (if (string=? "ACTIVE" (get-value 'usbguard_active status))
                         (begin
                             (form-update-visibility "list_prsnt_devices" #t)
-                     ;       (form-update-activity"checkbox_use_control" #t)
                             (ls_usbs)
                         ) 
                         ; else hide list of devices
@@ -111,6 +117,7 @@
 
 (define (init)
   (config_status_check)
+  (ls_guard_rules)
   (form-bind "btn_prsnt_scan" "click" ls_usbs)
   (form-bind "btn_prsnt_dev_add" "click" allow_device)
   (form-bind "btn_prsnt_dev_block" "click" block_device)

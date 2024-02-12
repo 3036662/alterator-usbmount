@@ -117,6 +117,31 @@
                   <input type="button" name="btn_prsnt_dev_block" class="btn" value="Block device"/>
         </div>
       </form>
+      <!-- Rules non-strict(non sorted) -->
+      <form name="form_list_unsorted_rules" class="form_rules" method="POST">
+        <table class="alterator-listbox single-select" align="center" name="list_unsorted_rules">
+          <caption>Unsorted rules</caption>
+          <thead>
+            <tr>
+              <th>N</th>
+              <th>Rule</th>
+              <th>Allow</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr class="wrap">
+              <td><span class="alterator-label" name="name" /></td>
+              <td><span class="alterator-label" name="lbl_rule_raw" /></td>
+              <td><span class="alterator-label" name="lbl_rule_target" /></td>
+            </tr>
+          </tbody>
+        </table>
+        <div name="list_interface_rules_buttons" class="right_buttons">
+          <input type="button" name="btn_load_interface_rules" class="btn" value="Load from file"/>
+          <input type="button" name="btn_prsnt_dev_add" class="btn" value="Add"/>
+          <input type="button" name="btn_prsnt_dev_block" class="btn" value="Delete"/>
+        </div>
+      </form>
       <!-- Rules by interface-->
       <form name="form_list_interface_rules" class="form_rules" method="POST">
         <table class="alterator-listbox single-select" align="center" name="list_interface_rules">
@@ -132,11 +157,11 @@
           </thead>
           <tbody>
             <tr class="wrap">
-              <td></td>
-              <td></td>
-              <td></td>
-              <td></td>
-              <td></td>
+              <td><span class="alterator-label" name="name" /></td>
+              <td><span class="alterator-label" name="lbl_rule_interface" /></td>
+              <td><span class="alterator-label" name="lbl_rule_desc" /></td>
+              <td><span class="alterator-label" name="lbl_rule_port" /></td>
+              <td><span class="alterator-label" name="lbl_rule_target" /></td>
             </tr>
           </tbody>
         </table>
@@ -163,13 +188,13 @@
           </thead>
           <tbody>
             <tr class="wrap">
-              <td></td>
-              <td></td>
-              <td></td>
-              <td></td>
-              <td></td>
-              <td></td>
-              <td></td>
+              <td><span class="alterator-label" name="name" /></td>
+              <td><span class="alterator-label" name="lbl_rule_vid" /></td>
+              <td><span class="alterator-label" name="lbl_rule_vendor" /></td>
+              <td><span class="alterator-label" name="lbl_rule_pid" /></td>
+              <td><span class="alterator-label" name="lbl_rule_product" /></td>
+              <td><span class="alterator-label" name="lbl_rule_port" /></td>
+              <td><span class="alterator-label" name="lbl_rule_target" /></td>
             </tr>
           </tbody>
         </table>
@@ -181,7 +206,7 @@
       </form>
       <!-- Rules by hash-->
       <form name="form_list_hash_rules" class="form_rules" method="POST">
-        <table class="alterator-listbox single-select" align="center" name="list_interface_rules">
+        <table class="alterator-listbox single-select" align="center" name="list_hash_rules">
           <caption>Mask Hash</caption>
           <thead>
             <tr>
@@ -193,10 +218,10 @@
           </thead>
           <tbody>
             <tr class="wrap">
-              <td></td>
-              <td></td>
-              <td></td>
-              <td></td>
+              <td><span class="alterator-label" name="name" /></td>
+              <td><span class="alterator-label" name="lbl_rule_hash" /></td>
+              <td><span class="alterator-label" name="lbl_rule_desc" /></td>
+              <td><span class="alterator-label" name="lbl_rule_target" /></td>
             </tr>
           </tbody>
         </table>

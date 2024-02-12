@@ -2,6 +2,7 @@
 #include "utils.hpp"
 #include <boost/algorithm/algorithm.hpp>
 #include <boost/algorithm/string.hpp>
+#include "guard_rule.hpp"
 
 MessageDispatcher::MessageDispatcher(guard::Guard &guard) : guard(guard) {}
 
@@ -69,6 +70,23 @@ bool MessageDispatcher::Dispatch(const LispMessage &msg) {
   if (msg.action == "read" && msg.objects == "config_status") {
     std::cerr << "[Dispatcher] Get config status" << std::endl;
     std::cout << ToLispAssoc(guard.GetConfigStatus());
+    return true;
+  }
+
+
+  // list usbguard rules
+  if (msg.action == "list" && msg.objects == "list_rules" && msg.params.count("level")) {
+    std::cerr << "dispatcher->list_rules" << std::endl;
+    guard::StrictnessLevel level=guard::StrToStrictnessLevel(msg.params.at("level"));
+    std::vector<guard::GuardRule> vec_rules = guard.GetConfigStatus().parseGuardRulesFile();
+    std::cout << mess_beg;
+    std::string response;
+    for (const auto &rule : vec_rules) {
+      if (rule.level==level){
+        response += ToLisp(rule);
+      }
+    }
+    std::cout <<response<< mess_end;
     return true;
   }
 
