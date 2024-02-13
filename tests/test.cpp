@@ -624,7 +624,7 @@ void Test::Run11(){
 
    guard::Guard guard;
    guard::ConfigStatus cs (guard.GetConfigStatus());
-   std::vector<guard::GuardRule> result = cs.parseGuardRulesFile();
+   std::vector<guard::GuardRule> result = cs.ParseGuardRulesFile();
 
   std::cerr <<"[TEST] parse config rules. Build each rule from object,compare with the source. "<<std::endl;
 

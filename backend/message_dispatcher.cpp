@@ -78,7 +78,7 @@ bool MessageDispatcher::Dispatch(const LispMessage &msg) {
   if (msg.action == "list" && msg.objects == "list_rules" && msg.params.count("level")) {
     std::cerr << "dispatcher->list_rules" << std::endl;
     guard::StrictnessLevel level=guard::StrToStrictnessLevel(msg.params.at("level"));
-    std::vector<guard::GuardRule> vec_rules = guard.GetConfigStatus().parseGuardRulesFile();
+    std::vector<guard::GuardRule> vec_rules = guard.GetConfigStatus().ParseGuardRulesFile();
     std::cout << mess_beg;
     std::string response;
     // map vendor ids to strings 
