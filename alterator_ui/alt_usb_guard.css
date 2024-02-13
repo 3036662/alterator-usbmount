@@ -62,3 +62,15 @@
 .form_rules{
     margin-top: 50px;
 }
+
+#form_presets {
+  display: inline-block;
+  margin-top: 50px;
+}
+#form_presets fieldset legend{
+    font-weight: 600;
+}
+
+#radio_list_type input{
+    margin-left: 40px;
+}

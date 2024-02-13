@@ -82,11 +82,11 @@
                 )    
            ) ; endif
            
-            ; disable block button if default policy is block
-            (if (string=? "block" (get-value 'implicit_policy status))
+           ; disable block button if default policy is block
+           (if (string=? "block" (get-value 'implicit_policy status))
                     (form-update-activity "btn_prsnt_dev_block"  #f)
                     (form-update-activity "btn_prsnt_dev_add"  #f) 
-            ) ; endif    
+           ) ; endif    
            
            ; set checkbox checked if usbguard is active 
            (form-update-value "checkbox_use_control_hidden" 
@@ -94,6 +94,14 @@
            ;show allowed users and groups
            (form-update-value "usbguard_users" (get-value 'allowed_users status)) 
            (form-update-value "usbguard_groups" (get-value 'allowed_groups status)) 
+           
+           ;select a preset
+           (form-update-value "presets_input_hidden" "manual_mode")
+           ;select a list type (white or black)
+           (if (string=? "block" (get-value 'implicit_policy status))
+               (form-update-value "hidden_list_type" "radio_white_list")
+               (form-update-value "hidden_list_type" "radio_black_list") 
+           )
 
    )  ; //let
 ) ; // config_status check
