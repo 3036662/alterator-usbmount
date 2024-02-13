@@ -34,6 +34,7 @@ vecPairs ConfigStatus::SerializeForLisp() const {
 
   res.emplace_back("allowed_users", boost::join(ipc_allowed_users, ", "));
   res.emplace_back("allowed_groups", boost::join(ipc_allowed_groups, ", "));
+  res.emplace_back("implicit_policy",implicit_policy_target);
 
   return res;
 }

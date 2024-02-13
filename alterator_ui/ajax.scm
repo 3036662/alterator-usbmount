@@ -12,7 +12,7 @@
     (form-update-enum "list_hash_rules" (woo-list "/simple/list_rules" 'level "hash"))
     (form-update-enum "list_vidpid_rules" (woo-list "/simple/list_rules" 'level "vid_pid"))
     (form-update-enum "list_interface_rules" (woo-list "/simple/list_rules" 'level "interface"))
-     (form-update-enum "list_unsorted_rules" (woo-list "/simple/list_rules" 'level "non-strict"))   
+    (form-update-enum "list_unsorted_rules" (woo-list "/simple/list_rules" 'level "non-strict"))   
 )
 
 ; get udev rules filenames
@@ -77,11 +77,16 @@
                         (begin
                             (form-update-visibility "list_prsnt_devices" #f)
                             (form-update-visibility "usb_buttons" #f)
-                      ;      (form-update-activity "checkbox_use_control" #f)
                         )
                      )
                 )    
            ) ; endif
+           
+            ; disable block button if default policy is block
+            (if (string=? "block" (get-value 'implicit_policy status))
+                    (form-update-activity "btn_prsnt_dev_block"  #f)
+                    (form-update-activity "btn_prsnt_dev_add"  #f) 
+            ) ; endif    
            
            ; set checkbox checked if usbguard is active 
            (form-update-value "checkbox_use_control_hidden" 
