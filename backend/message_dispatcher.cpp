@@ -3,23 +3,25 @@
 #include <boost/algorithm/algorithm.hpp>
 #include <boost/algorithm/string.hpp>
 #include "guard_rule.hpp"
+#include <chrono>
 
 MessageDispatcher::MessageDispatcher(guard::Guard &guard) : guard(guard) {}
 
 bool MessageDispatcher::Dispatch(const LispMessage &msg) {
   std::cerr << msg << std::endl;
-  std::cerr << "curr action " << msg.action << std::endl;
+  //std::cerr << "curr action " << msg.action << std::endl;
 
   // list usbs
   if (msg.action == "list" && msg.objects == "list_curr_usbs") {
-    std::cerr << "dispatcher->list" << std::endl;
-    //  std::vector<UsbDevice> vec_usb=fakeLibGetUsbList();
+    auto start = std::chrono::steady_clock::now();
+    std::cerr << "[INFO] Time measurement has started"<<std::endl;
     std::vector<guard::UsbDevice> vec_usb = guard.ListCurrentUsbDevices();
     std::cout << mess_beg;
     for (const auto &usb : vec_usb) {
       std::cout << ToLisp(usb);
     }
     std::cout << mess_end;
+    std::cerr << "[INFO] Elapsed(ms)=" << since(start).count() << std::endl;
     return true;
   }
 
@@ -76,8 +78,9 @@ bool MessageDispatcher::Dispatch(const LispMessage &msg) {
 
   // list usbguard rules
   if (msg.action == "list" && msg.objects == "list_rules" && msg.params.count("level")) {
-    std::cerr << "dispatcher->list_rules" << std::endl;
     guard::StrictnessLevel level=guard::StrToStrictnessLevel(msg.params.at("level"));
+    auto start = std::chrono::steady_clock::now();
+    std::cerr << "[INFO] Time measurement has started"<<std::endl;
     std::vector<guard::GuardRule> vec_rules = guard.GetConfigStatus().ParseGuardRulesFile();
     std::cout << mess_beg;
     std::string response;
@@ -102,6 +105,7 @@ bool MessageDispatcher::Dispatch(const LispMessage &msg) {
       }
     }
     std::cout <<response<< mess_end;
+    std::cerr << "[INFO]Elapsed(ms)=" << since(start).count() << std::endl;
     return true;
   }
 

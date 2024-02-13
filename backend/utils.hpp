@@ -96,3 +96,14 @@ std::string ToLisp([[maybe_unused]] const std::string &name,
 /// @param str Source string
 /// @return Escaped string
 std::string EscapeQuotes(const std::string &str);
+
+
+template <
+    class result_t   = std::chrono::milliseconds,
+    class clock_t    = std::chrono::steady_clock,
+    class duration_t = std::chrono::milliseconds
+>
+auto since(std::chrono::time_point<clock_t, duration_t> const& start)
+{
+    return std::chrono::duration_cast<result_t>(clock_t::now() - start);
+}
