@@ -238,8 +238,8 @@
         </div>
       </form>
       <!-- Rules by hash-->
-      <form name="form_list_hash_rules" class="form_rules" method="POST">
-        <table class="alterator-listbox single-select" align="center" name="list_hash_rules">
+      <form name="form_list_hash_rules" id="form_list_hash_rules" class="form_rules" method="POST">
+        <table class="alterator-listbox multi-select" align="center" name="list_hash_rules">
           <caption>Mask Hash</caption>
           <thead>
             <tr>
@@ -261,7 +261,7 @@
         <div name="list_hash_rules_buttons" class="right_buttons">
           <input type="button" name="" class="btn" value="Load from file"/>
           <input type="button" name="" class="btn" value="Add"/>
-          <input type="button" name="" class="btn" value="Delete"/>
+          <input type="button" name="" class="btn" value="Delete" id="delete_rules_from_hash_level" />
         </div>
       </form>
     <div id="module_footer">  

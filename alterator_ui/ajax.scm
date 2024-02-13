@@ -128,6 +128,10 @@
     ); let
  )
 
+(define (test_js)
+    (ls_usbs)
+)
+
 (define (init)
   (config_status_check)
   (ls_guard_rules)

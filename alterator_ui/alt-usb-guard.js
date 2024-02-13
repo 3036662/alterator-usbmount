@@ -1,5 +1,6 @@
 $(document).ready(function() {
 
+ 
 // workaround to check and uncheck checkbox as usual input
 // state of check  can be changed from lisp 
 // with form-update-value for hidden input 
@@ -21,6 +22,7 @@ $('#checkbox_use_control_hidden').bind('update-value change',function(){
   });
   $('#checkbox_use_control_hidden').trigger('change');
 
+/*******************************************************/  
 // catch a preset selection event
 $('input[type=radio][name=presets]').change(function(){
   if($(this).is(':checked')){
@@ -45,6 +47,19 @@ $('#hidden_list_type').bind('update-value change',function(){
 });
 $('#hidden_list_type').trigger('change');
 
+/*******************************************************/
+
+// delete rules from  tables
+localStorage.removeItem(deletedFields);
+$("#delete_rules_from_hash_level").bind('click',function(){
+  console.log("Clicked delete");
+  var deletedFields = JSON.parse(localStorage.getItem('deletedFields')) || [];
+  $('#form_list_hash_rules tr.selected').each(function(){
+    deletedFields.push($(this).find("td > span[name='name']").text());
+    //console.log(   $(this).find("td > span[name='name']").text() );
+  });
+  localStorage.setItem('deletedFields', JSON.stringify(deletedFields));
+});
 
 
 }); // .ready
