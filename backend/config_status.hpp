@@ -41,6 +41,7 @@ public:
   bool rules_files_exists;
   std::set<std::string> ipc_allowed_users;
   std::set<std::string> ipc_allowed_groups;
+  std::string implicit_policy_target;
 
   /// @brief Constructor checks for udev rules and daemon status
   ConfigStatus();

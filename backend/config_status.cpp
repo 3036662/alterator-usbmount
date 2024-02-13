@@ -223,6 +223,22 @@ void ConfigStatus::ParseDaemonConfig() {
       }
       continue;
     }
+
+    // ImplicitPolicyTarget
+    if (boost::starts_with(line, "ImplicitPolicyTarget=")) {
+       size_t pos = line.find('=');
+       if (pos != std::string::npos && ++pos < line.size()) {
+          std::string implicit_target(line, pos);
+          boost::trim(implicit_target);
+          if (!implicit_target.empty()){
+              implicit_policy_target=std::move(implicit_target);
+              std::cerr << "[INFO] Implicit policy target = " 
+                        << implicit_policy_target <<std::endl;
+          }       
+       }
+       continue;
+    }
+
     line.clear();
   }
 
