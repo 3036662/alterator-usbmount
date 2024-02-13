@@ -5,9 +5,14 @@
 
 namespace guard {
 
+/******************************************************************************/
 Guard::Guard() : ptr_ipc(nullptr) { ConnectToUsbGuard(); }
 
+/******************************************************************************/
+
 bool Guard::HealthStatus() const { return ptr_ipc && ptr_ipc->isConnected(); }
+
+/******************************************************************************/
 
 std::vector<UsbDevice> Guard::ListCurrentUsbDevices() {
   std::vector<UsbDevice> res;
@@ -48,6 +53,8 @@ std::vector<UsbDevice> Guard::ListCurrentUsbDevices() {
   return res;
 }
 
+/******************************************************************************/
+
 bool Guard::AllowOrBlockDevice(std::string id, bool allow, bool permanent) {
   if (id.empty() || !HealthStatus())
     return false;
@@ -67,6 +74,8 @@ bool Guard::AllowOrBlockDevice(std::string id, bool allow, bool permanent) {
   return true;
 }
 
+/******************************************************************************/
+
 ConfigStatus Guard::GetConfigStatus() {
   ConfigStatus config_status;
   //  TODO if daemon is on active think about creating policy before enabling
@@ -76,7 +85,8 @@ ConfigStatus Guard::GetConfigStatus() {
   return config_status;
 }
 
-// ---------------------- private ---------------------------
+/******************************************************************************/
+// private
 
 void Guard::ConnectToUsbGuard() noexcept {
   try {
@@ -87,7 +97,7 @@ void Guard::ConnectToUsbGuard() noexcept {
   }
 }
 
-// -----------------------------------------------------------
+/******************************************************************************/
 
 std::vector<std::string>
 Guard::FoldUsbInterfacesList(std::string i_type) const {
@@ -141,7 +151,8 @@ Guard::FoldUsbInterfacesList(std::string i_type) const {
   return vec_i_types;
 }
 
-// ------------------------------------------------------------
+/******************************************************************************/
+
 std::unordered_map<std::string, std::string> Guard::MapVendorCodesToNames(
     const std::unordered_set<std::string> vendors) const {
   std::unordered_map<std::string, std::string> res;
