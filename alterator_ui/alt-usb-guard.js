@@ -92,6 +92,15 @@ var new_unsorted_rules_row = '<tr><td><input class="select_appended" type="check
 addRuleBehaviorAdd("#add_to_rules_unsorted",new_unsorted_rules_row,"#list_unsorted_rules");
 
 
+// read stored values, put them to hidden input, trigger "ready" event for it
+$("#save_rules_button").bind('click',function(){
+  var deletedFields = localStorage.getItem('deletedFields');
+  if(deletedFields){
+    $("#hidden_manual_changes_data").val(deletedFields);
+  }
+  $("#hidden_manual_changes_data").trigger('ready');
+});
+
 }); // .ready
 
 function addRuleBehaviorAdd(button_id,row_html,table_id){

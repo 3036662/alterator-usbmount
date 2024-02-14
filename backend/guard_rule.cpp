@@ -1,10 +1,10 @@
 #include "guard_rule.hpp"
+#include "utils.hpp"
 #include <algorithm>
 #include <boost/algorithm/string.hpp>
 #include <boost/algorithm/string/regex.hpp>
 #include <functional>
 #include <map>
-#include "utils.hpp"
 
 namespace guard {
 
@@ -105,14 +105,12 @@ GuardRule::GuardRule(const std::string &raw_str)
   // Determine the stricness level
   if (hash)
     level = StrictnessLevel::hash;
-  else if(vid && pid)
-    level =StrictnessLevel::vid_pid;
+  else if (vid && pid)
+    level = StrictnessLevel::vid_pid;
   else if (with_interface)
-    level =StrictnessLevel::interface;
+    level = StrictnessLevel::interface;
   else
     level = StrictnessLevel::non_strict;
-
-
 }
 
 /******************************************************************************/
@@ -487,7 +485,7 @@ std::string GuardRule::ConditionsToString() const {
 
 std::string
 GuardRule::BuildString(bool build_parent_hash,
-                       bool with_interface_array_no_operator) const {
+                       bool with_interface_array_no_operator) const noexcept {
   std::string res;
   res += map_target.at(target);
   if (vid && pid) {
@@ -559,7 +557,7 @@ GuardRule::BuildString(bool build_parent_hash,
 
 /**********************************************************************************/
 
-std::string GuardRule::PortsToString() const{
+std::string GuardRule::PortsToString() const {
   std::string res;
   if (port) {
     res += map_operator.at(port->first);
@@ -577,11 +575,11 @@ std::string GuardRule::PortsToString() const{
 }
 
 /**********************************************************************************/
-std::string GuardRule::InterfacesToString() const{
+std::string GuardRule::InterfacesToString() const {
   std::string res;
-   if (with_interface) {
+  if (with_interface) {
     if (with_interface->second.size() > 1) {
-        res += map_operator.at(with_interface->first);
+      res += map_operator.at(with_interface->first);
       res += "{";
       for (const auto &i : with_interface->second) {
         res += " ";
@@ -596,52 +594,60 @@ std::string GuardRule::InterfacesToString() const{
 }
 
 /**********************************************************************************/
- vecPairs GuardRule::SerializeForLisp() const{
-   vecPairs res;
-   res.emplace_back("name",std::to_string(number));
-   // The most string rules
-   if (level==StrictnessLevel::hash){
-      res.emplace_back("lbl_rule_hash", hash.has_value() ? EscapeQuotes(hash.value()) : "");
-      res.emplace_back("lbl_rule_desc", device_name.has_value() ? EscapeQuotes(device_name.value()) :"");
-   }
+vecPairs GuardRule::SerializeForLisp() const {
+  vecPairs res;
+  res.emplace_back("name", std::to_string(number));
+  // The most string rules
+  if (level == StrictnessLevel::hash) {
+    res.emplace_back("lbl_rule_hash",
+                     hash.has_value() ? EscapeQuotes(hash.value()) : "");
+    res.emplace_back("lbl_rule_desc", device_name.has_value()
+                                          ? EscapeQuotes(device_name.value())
+                                          : "");
+  }
 
-   // VID::PID
-   if (level == StrictnessLevel::vid_pid){
-      res.emplace_back("lbl_rule_vid",vid.has_value() ? EscapeQuotes(*vid): "");
-      res.emplace_back("lbl_rule_vendor",vendor_name.has_value() ? EscapeQuotes(*vendor_name):"");
-      res.emplace_back("lbl_rule_pid",pid.has_value() ? EscapeQuotes(*pid):"");
-      res.emplace_back("lbl_rule_product",device_name.has_value() ? EscapeQuotes(*device_name):"");
-      res.emplace_back("lbl_rule_port",port.has_value() ? EscapeQuotes(PortsToString()) :"");
-   }
+  // VID::PID
+  if (level == StrictnessLevel::vid_pid) {
+    res.emplace_back("lbl_rule_vid", vid.has_value() ? EscapeQuotes(*vid) : "");
+    res.emplace_back("lbl_rule_vendor",
+                     vendor_name.has_value() ? EscapeQuotes(*vendor_name) : "");
+    res.emplace_back("lbl_rule_pid", pid.has_value() ? EscapeQuotes(*pid) : "");
+    res.emplace_back("lbl_rule_product",
+                     device_name.has_value() ? EscapeQuotes(*device_name) : "");
+    res.emplace_back("lbl_rule_port",
+                     port.has_value() ? EscapeQuotes(PortsToString()) : "");
+  }
 
-   // interface 
-   if (level == StrictnessLevel::interface){
-      res.emplace_back("lbl_rule_interface",with_interface.has_value() 
-                        ? EscapeQuotes(InterfacesToString()):"");
-      res.emplace_back("lbl_rule_desc", device_name.has_value() ? EscapeQuotes(device_name.value()) :"");
-      res.emplace_back("lbl_rule_port",port.has_value() ? EscapeQuotes(PortsToString()) :"");
-   }
+  // interface
+  if (level == StrictnessLevel::interface) {
+    res.emplace_back(
+        "lbl_rule_interface",
+        with_interface.has_value() ? EscapeQuotes(InterfacesToString()) : "");
+    res.emplace_back("lbl_rule_desc", device_name.has_value()
+                                          ? EscapeQuotes(device_name.value())
+                                          : "");
+    res.emplace_back("lbl_rule_port",
+                     port.has_value() ? EscapeQuotes(PortsToString()) : "");
+  }
 
-   // non-strict
-   if (level ==StrictnessLevel::non_strict){
-      res.emplace_back("lbl_rule_raw",EscapeQuotes(BuildString()));
-   }
-  res.emplace_back("lbl_rule_target",map_target.count(target)? map_target.at(target):"");
-   return res;
- }
-
+  // non-strict
+  if (level == StrictnessLevel::non_strict) {
+    res.emplace_back("lbl_rule_raw", EscapeQuotes(BuildString()));
+  }
+  res.emplace_back("lbl_rule_target",
+                   map_target.count(target) ? map_target.at(target) : "");
+  return res;
+}
 
 /**********************************************************************************/
 // Non-friend functions
 
-StrictnessLevel StrToStrictnessLevel(const std::string & str){
-  if (str=="hash"){
+StrictnessLevel StrToStrictnessLevel(const std::string &str) {
+  if (str == "hash") {
     return StrictnessLevel::hash;
-  }
-  else if (str=="vid_pid"){
+  } else if (str == "vid_pid") {
     return StrictnessLevel::vid_pid;
-  }
-  else if (str=="interface"){
+  } else if (str == "interface") {
     return StrictnessLevel::interface;
   }
   return StrictnessLevel::non_strict;

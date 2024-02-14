@@ -54,11 +54,14 @@ public:
   void CheckDaemon();
 
   /**
-   * @brief Parses usbguard rules.conf file 
-   * 
-   * @return std::vector<GuardRule> 
+   * @brief Parses usbguard rules.conf file
+   *
+   * @return  std::pair<std::vector<GuardRule>,uint> Parsed rules,total lines in
+   * file
    */
-  std::vector<GuardRule> ParseGuardRulesFile() const;
+  std::pair<std::vector<GuardRule>, uint> ParseGuardRulesFile() const;
+
+  bool OverwriteRulesFile(const std::string &new_content) noexcept;
 
 private:
   /// @brief Return path for the  daemon .conf file

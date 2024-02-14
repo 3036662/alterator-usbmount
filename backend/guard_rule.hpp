@@ -70,7 +70,7 @@ using RuleWithBool = std::pair<bool, RuleWithOptionalParam>;
  * @class GuardRule
  * @throws Constructor - std::logical_error
  */
-class GuardRule:public SerializableForLisp<GuardRule> {
+class GuardRule : public SerializableForLisp<GuardRule> {
 
   /// @brief Maps Target enum to a string.
   const std::map<Target, std::string> map_target;
@@ -103,18 +103,20 @@ public:
    */
   GuardRule(const std::string &raw_str);
 
-/**
- * @brief Build rule string for usbguard
- * 
- * @param build_parent_hash include parent hash to rule string
- * @param false skip operator "equals" for an array of interface 
- * @return std::string 
- * @details The parameters are used to build the same rule as usbguard cli builds
- */
-  std::string BuildString(bool build_parent_hash = false,
-                          bool with_interface_array_no_operator = false) const;
-  
-  vecPairs SerializeForLisp() const;                        
+  /**
+   * @brief Build rule string for usbguard
+   *
+   * @param build_parent_hash include parent hash to rule string
+   * @param false skip operator "equals" for an array of interface
+   * @return std::string
+   * @details The parameters are used to build the same rule as usbguard cli
+   * builds
+   */
+  std::string
+  BuildString(bool build_parent_hash = false,
+              bool with_interface_array_no_operator = false) const noexcept;
+
+  vecPairs SerializeForLisp() const;
 
 private:
   /**
@@ -234,9 +236,10 @@ private:
 /**********************************************************************************/
 // Non-friend functions
 
-/// @brief Converts a string representation of Rule StricnessLevel to a StrictnessLevel
+/// @brief Converts a string representation of Rule StricnessLevel to a
+/// StrictnessLevel
 /// @param str Stricness level ("hash","vid_pid","interface");
 /// @return StrictnessLevel - non_strict if no corresondent level is found.
-StrictnessLevel StrToStrictnessLevel(const std::string & str);
+StrictnessLevel StrToStrictnessLevel(const std::string &str);
 
 } // namespace guard

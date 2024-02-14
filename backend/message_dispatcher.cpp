@@ -1,20 +1,20 @@
 #include "message_dispatcher.hpp"
+#include "guard_rule.hpp"
 #include "utils.hpp"
 #include <boost/algorithm/algorithm.hpp>
 #include <boost/algorithm/string.hpp>
-#include "guard_rule.hpp"
 #include <chrono>
 
 MessageDispatcher::MessageDispatcher(guard::Guard &guard) : guard(guard) {}
 
 bool MessageDispatcher::Dispatch(const LispMessage &msg) {
   std::cerr << msg << std::endl;
-  //std::cerr << "curr action " << msg.action << std::endl;
+  // std::cerr << "curr action " << msg.action << std::endl;
 
   // list usbs
   if (msg.action == "list" && msg.objects == "list_curr_usbs") {
     auto start = std::chrono::steady_clock::now();
-    std::cerr << "[INFO] Time measurement has started"<<std::endl;
+    std::cerr << "[INFO] Time measurement has started" << std::endl;
     std::vector<guard::UsbDevice> vec_usb = guard.ListCurrentUsbDevices();
     std::cout << mess_beg;
     for (const auto &usb : vec_usb) {
@@ -75,37 +75,56 @@ bool MessageDispatcher::Dispatch(const LispMessage &msg) {
     return true;
   }
 
-
   // list usbguard rules
-  if (msg.action == "list" && msg.objects == "list_rules" && msg.params.count("level")) {
-    guard::StrictnessLevel level=guard::StrToStrictnessLevel(msg.params.at("level"));
+  if (msg.action == "list" && msg.objects == "list_rules" &&
+      msg.params.count("level")) {
+    guard::StrictnessLevel level =
+        guard::StrToStrictnessLevel(msg.params.at("level"));
     auto start = std::chrono::steady_clock::now();
-    std::cerr << "[INFO] Time measurement has started"<<std::endl;
-    std::vector<guard::GuardRule> vec_rules = guard.GetConfigStatus().ParseGuardRulesFile();
+    std::cerr << "[INFO] Time measurement has started" << std::endl;
+    std::vector<guard::GuardRule> vec_rules =
+        guard.GetConfigStatus().ParseGuardRulesFile().first;
     std::cout << mess_beg;
     std::string response;
-    // map vendor ids to strings 
-    if (level == guard::StrictnessLevel::vid_pid){
+    // map vendor ids to strings
+    if (level == guard::StrictnessLevel::vid_pid) {
       std::unordered_set<std::string> vendors;
-      for (const auto& r:vec_rules){
+      for (const auto &r : vec_rules) {
         if (r.vid)
-        vendors.insert(r.vid.value());
+          vendors.insert(r.vid.value());
       }
-      auto vendors_names=guard.MapVendorCodesToNames(vendors);
-      for  (auto& r:vec_rules){
-        if (r.vid.has_value() && vendors_names.count(r.vid.value())){
-          r.vendor_name=vendors_names.at(r.vid.value());
-        } 
+      auto vendors_names = guard.MapVendorCodesToNames(vendors);
+      for (auto &r : vec_rules) {
+        if (r.vid.has_value() && vendors_names.count(r.vid.value())) {
+          r.vendor_name = vendors_names.at(r.vid.value());
+        }
       }
     }
 
     for (const auto &rule : vec_rules) {
-      if (rule.level==level){
+      if (rule.level == level) {
         response += ToLisp(rule);
       }
     }
-    std::cout <<response<< mess_end;
+    std::cout << response << mess_end;
     std::cerr << "[INFO]Elapsed(ms)=" << since(start).count() << std::endl;
+    return true;
+  }
+
+  // delete rules
+  if (msg.action == "read" && msg.objects == "delete_rules") {
+    std::cerr << "Delete rules " << std::endl;
+    if (!msg.params.count("rules_ids") ||
+        msg.params.find("rules_ids")->second.empty()) {
+      std::cout << mess_beg << mess_end;
+      std::cerr << "bad request for delete rules,doing nothing" << std::endl;
+      return true;
+    }
+    if (guard.DeleteRules(ParseJsonIntArray(msg.params.at("rules_ids")))) {
+      std::cout << mess_beg << "status" << WrapWithQuotes("OK") << mess_end;
+    } else {
+      std::cout << mess_beg << "status" << WrapWithQuotes("FAILED") << mess_end;
+    }
     return true;
   }
 

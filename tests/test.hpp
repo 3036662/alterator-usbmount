@@ -63,8 +63,13 @@ public:
 
   /**
    * @brief Test a rule file parsing
-   * 
+   *
    */
   void Run11();
 
+  /**
+   * @brief Parse json array of uints
+   *
+   */
+  void Run12();
 };

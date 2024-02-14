@@ -4,6 +4,7 @@
 #include <boost/algorithm/string.hpp>
 #include <fstream>
 #include <iostream>
+#include <sstream>
 #include <string>
 
 namespace guard {
@@ -34,7 +35,7 @@ vecPairs ConfigStatus::SerializeForLisp() const {
 
   res.emplace_back("allowed_users", boost::join(ipc_allowed_users, ", "));
   res.emplace_back("allowed_groups", boost::join(ipc_allowed_groups, ", "));
-  res.emplace_back("implicit_policy",implicit_policy_target);
+  res.emplace_back("implicit_policy", implicit_policy_target);
 
   return res;
 }
@@ -227,17 +228,17 @@ void ConfigStatus::ParseDaemonConfig() {
 
     // ImplicitPolicyTarget
     if (boost::starts_with(line, "ImplicitPolicyTarget=")) {
-       size_t pos = line.find('=');
-       if (pos != std::string::npos && ++pos < line.size()) {
-          std::string implicit_target(line, pos);
-          boost::trim(implicit_target);
-          if (!implicit_target.empty()){
-              implicit_policy_target=std::move(implicit_target);
-              std::cerr << "[INFO] Implicit policy target = " 
-                        << implicit_policy_target <<std::endl;
-          }       
-       }
-       continue;
+      size_t pos = line.find('=');
+      if (pos != std::string::npos && ++pos < line.size()) {
+        std::string implicit_target(line, pos);
+        boost::trim(implicit_target);
+        if (!implicit_target.empty()) {
+          implicit_policy_target = std::move(implicit_target);
+          std::cerr << "[INFO] Implicit policy target = "
+                    << implicit_policy_target << std::endl;
+        }
+      }
+      continue;
     }
 
     line.clear();
@@ -247,8 +248,10 @@ void ConfigStatus::ParseDaemonConfig() {
 }
 
 /***********************************************************/
-std::vector<GuardRule> ConfigStatus::ParseGuardRulesFile() const {
-  std::vector<GuardRule> res;
+std::pair<std::vector<GuardRule>, uint>
+ConfigStatus::ParseGuardRulesFile() const {
+  std::pair<std::vector<GuardRule>, uint> res;
+  res.second = 0;
   try {
     if (!std::filesystem::exists(daemon_rules_file_path)) {
       std::cerr << "[WATINIG] The rules file for usbguard doesn't exist."
@@ -268,12 +271,12 @@ std::vector<GuardRule> ConfigStatus::ParseGuardRulesFile() const {
   }
   // Parse the file
   std::string line;
-  int counter = 0;
-  int counter_fails = 0;
+  uint counter = 0;
+  uint counter_fails = 0;
   while (std::getline(file, line)) {
     try {
-      res.emplace_back(GuardRule(line));
-      res.back().number = counter;
+      res.first.emplace_back(GuardRule(line));
+      res.first.back().number = counter;
       ++counter;
     } catch (const std::logic_error &ex) {
       std::cerr << "[ERROR] Can't parse the rule " << line << std::endl;
@@ -283,10 +286,56 @@ std::vector<GuardRule> ConfigStatus::ParseGuardRulesFile() const {
   }
   file.close();
 
-  std::cerr << "[INFO] Parsed " << res.size() << " rules."
+  res.second = counter + counter_fails;
+  std::cerr << "[INFO] Parsed " << res.first.size() << " rules."
             << " Failed " << counter_fails << std::endl;
 
   return res;
+}
+
+/***********************************************************/
+
+bool ConfigStatus::OverwriteRulesFile(const std::string &new_content) noexcept {
+  if (rules_files_exists) {
+    // read old rules
+    std::ifstream old_file(daemon_config_file_path);
+    if (!old_file.is_open()) {
+      std::cerr << "[ERROR] Can't open file " << daemon_rules_file_path
+                << std::endl;
+      return false;
+    }
+    std::stringstream old_content;
+    old_content << old_file.rdbuf();
+    old_file.close();
+
+    // write new rules
+    std::ofstream file(daemon_rules_file_path);
+    if (!file.is_open()) {
+      std::cerr << "[ERROR] Can't open file " << daemon_rules_file_path
+                << " for writing" << std::endl;
+      return false;
+    }
+    file << new_content;
+    file.close();
+
+    // parse new rules
+    auto parsed_new_file = ParseGuardRulesFile();
+    // If some errors occurred while parsing new rules - recover
+    if (parsed_new_file.first.size() != parsed_new_file.second) {
+      std::cerr << "[ERROR] Error parsing new rules,old file will be recovered"
+                << std::endl;
+      std::ofstream file3(daemon_rules_file_path);
+      if (!file3.is_open()) {
+        std::cerr << "[ERROR] Can't open file " << daemon_rules_file_path
+                  << " for writing" << std::endl;
+        return false;
+      }
+      file3 << old_content.str();
+      file.close();
+      return false;
+    }
+  }
+  return true;
 }
 
 /***********************************************************/

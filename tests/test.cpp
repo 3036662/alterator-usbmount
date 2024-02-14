@@ -624,7 +624,7 @@ void Test::Run11(){
 
    guard::Guard guard;
    guard::ConfigStatus cs (guard.GetConfigStatus());
-   std::vector<guard::GuardRule> result = cs.ParseGuardRulesFile();
+   std::vector<guard::GuardRule> result = cs.ParseGuardRulesFile().first;
 
   std::cerr <<"[TEST] parse config rules. Build each rule from object,compare with the source. "<<std::endl;
 
@@ -642,4 +642,40 @@ void Test::Run11(){
 
   std::cerr << "[TEST] TEST11 ... OK"<<std::endl;
 
+}
+
+void Test::Run12(){
+  std::cerr << "[TEST Test 12. Parsing json uint array" <<std::endl;
+  {
+    std::vector<uint> excpeted{12};
+    std::string json ="[\"12\"]";
+    assert (ParseJsonIntArray(json)== excpeted);
+  }
+
+  {
+    std::vector<uint> excpeted{12,0,0,122};
+    std::string json ="[" +WrapWithQuotes("12")+","+
+                          WrapWithQuotes("0")+","+
+                          WrapWithQuotes("0")+","+
+                          WrapWithQuotes("122")+"]";
+    assert (ParseJsonIntArray(json)== excpeted);
+  }
+
+  {
+    std::vector<uint> excpeted{};
+    std::string json ="";
+    assert (ParseJsonIntArray(json)== excpeted);
+  }
+
+  {
+    std::vector<uint> excpeted{};
+    std::string json ="[]";
+    assert (ParseJsonIntArray(json)== excpeted);
+  }
+  {
+    std::vector<uint> excpeted{};
+    std::string json ="[\"ы\"]";
+    assert (ParseJsonIntArray(json)== excpeted);
+  }
+  std::cerr << "[TEST] TEST12 ... OK" <<std::endl;
 }

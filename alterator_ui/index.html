@@ -268,8 +268,11 @@
         </div>
       </form>
     <div id="module_footer">  
-      <hr />  
-        <input class="right_buttons btn" type="button" name="save_rules" id="save_rules_button" value="SAVE ALL RULES" />
+      <hr />
+        <form onsubmit="return false;">
+          <input type="hidden" name="hidden_manual_changes_data" id = "hidden_manual_changes_data"/> 
+          <input class="right_buttons btn" type="button" name="save_rules" id="save_rules_button" value="SAVE ALL RULES" />
+        </form>
       </div>
     </body>
 </html>

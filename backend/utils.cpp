@@ -25,7 +25,7 @@ std::vector<guard::UsbDevice> fakeLibGetUsbList() {
     std::string str_num = std::to_string(i);
     res.emplace_back(i, "allowed", "name" + str_num, "vid" + str_num,
                      "pid" + str_num, "port" + str_num, "conn" + str_num,
-                     "00::00::00","serial"+str_num,"hash"+str_num);
+                     "00::00::00", "serial" + str_num, "hash" + str_num);
   }
   return res;
 }
@@ -62,13 +62,47 @@ std::vector<std::string> FindAllFilesInDirRecursive(const std::string &dir,
   return res;
 }
 
-std::string EscapeQuotes(const std::string &str){
+std::string EscapeQuotes(const std::string &str) {
   std::string res;
-  for (auto it =str.cbegin();it!=str.cend();++it){
-    if (*it == '\"' && res.back()!='\\'){
-          res.push_back('\\');
+  for (auto it = str.cbegin(); it != str.cend(); ++it) {
+    if (*it == '\"' && res.back() != '\\') {
+      res.push_back('\\');
     }
     res.push_back(*it);
   }
   return res;
 }
+
+std::vector<uint> ParseJsonIntArray(std::string json) noexcept {
+  std::vector<uint> res;
+  boost::trim(json);
+  if (json.size() < 3)
+    return res;
+  if (json[0] != '[' || json.back() != ']')
+    return res;
+  // remove [] braces  
+  json.erase(json.size() - 1, 1);
+  json.erase(0, 1);
+  std::vector<std::string> splitted;
+  boost::split(splitted, json, [](const char c) { return c == ','; });
+  if (splitted.empty())
+    return res;
+  // convert to ints and push to vector
+  std::for_each(splitted.begin(), splitted.end(), [&res](std::string &el) {
+    boost::trim(el);
+    if (el.empty())
+      return;
+    if (el.back() == '"')
+      el.erase(el.size() - 1, 1);
+    if (!el.empty() && el[0] == '"')
+      el.erase(0, 1);
+    try {
+      uint x = std::stoi(el);
+      res.push_back(x);
+    } catch (const std::exception &ex) {
+      std::cerr << "[ERROR] Can't parse int rules number from json " << el
+                << std::endl;
+    }
+  });
+  return res;
+};

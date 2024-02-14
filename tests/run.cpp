@@ -33,5 +33,8 @@ int main(int argc, char *argv[]) {
   // Test a rules file parsing
   test.Run11();
 
+  // Test parsing of json array of uints
+  test.Run12();
+
   return 0;
 }

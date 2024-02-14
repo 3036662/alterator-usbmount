@@ -1,6 +1,7 @@
 #pragma once
 #include "types.hpp"
 #include "usb_device.hpp"
+#include <boost/algorithm/string.hpp>
 #include <cstdint>
 #include <filesystem>
 #include <string>
@@ -91,19 +92,22 @@ std::string ToLispAssoc(const SerializableForLisp<T> &obj) {
 std::string ToLisp([[maybe_unused]] const std::string &name,
                    const std::string &value);
 
-
 /// @brief  Escapes double-quotes with slashes
 /// @param str Source string
 /// @return Escaped string
 std::string EscapeQuotes(const std::string &str);
 
+/**
+ * @brief Parse json string ["1","2","n"] to vector of int
+ *
+ * @param json string ["1","2","n"]
+ * @return std::vector<uint>
+ */
+std::vector<uint> ParseJsonIntArray(std::string json) noexcept;
 
-template <
-    class result_t   = std::chrono::milliseconds,
-    class clock_t    = std::chrono::steady_clock,
-    class duration_t = std::chrono::milliseconds
->
-auto since(std::chrono::time_point<clock_t, duration_t> const& start)
-{
-    return std::chrono::duration_cast<result_t>(clock_t::now() - start);
+template <class result_t = std::chrono::milliseconds,
+          class clock_t = std::chrono::steady_clock,
+          class duration_t = std::chrono::milliseconds>
+auto since(std::chrono::time_point<clock_t, duration_t> const &start) {
+  return std::chrono::duration_cast<result_t>(clock_t::now() - start);
 }

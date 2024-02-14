@@ -86,6 +86,41 @@ ConfigStatus Guard::GetConfigStatus() {
 }
 
 /******************************************************************************/
+
+bool Guard::DeleteRules(const std::vector<uint> &rule_indexes) {
+  ConfigStatus cs = GetConfigStatus();
+
+  // make sure that old rules were successfully parsed
+  std::pair<std::vector<guard::GuardRule>, uint> parsed_rules =
+      cs.ParseGuardRulesFile();
+  if (parsed_rules.first.size() != parsed_rules.second) {
+    std::cerr << "[ERROR] The rules file is not completelly parsed, can't edit"
+              << std::endl;
+    return false;
+  }
+
+  // copy old rules,except listed in rule_indexes
+  std::set<uint> unique_indexes(rule_indexes.cbegin(), rule_indexes.cend());
+  std::vector<guard::GuardRule> new_rules;
+  std::copy_if(parsed_rules.first.cbegin(), parsed_rules.first.cend(),
+               std::back_inserter(new_rules),
+               [&unique_indexes](const auto &rule) {
+                 return unique_indexes.count(rule.number) == 0;
+               });
+
+  // build new content for a rules-file
+  std::string new_rules_str;
+  std::for_each(new_rules.cbegin(), new_rules.cend(),
+                [&new_rules_str](const auto &rule) {
+                  new_rules_str += rule.BuildString(true, true);
+                  new_rules_str += "\n";
+                });
+
+  // overwrite
+  return cs.OverwriteRulesFile(new_rules_str);
+}
+
+/******************************************************************************/
 // private
 
 void Guard::ConnectToUsbGuard() noexcept {
