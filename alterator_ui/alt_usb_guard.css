@@ -79,3 +79,8 @@
     margin-top: 50px;
     height: 40px;
 }
+
+.input_appended{
+    width: 100%;
+    border: 0px;
+}

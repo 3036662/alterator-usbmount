@@ -48,18 +48,83 @@ $('#hidden_list_type').bind('update-value change',function(){
 $('#hidden_list_type').trigger('change');
 
 /*******************************************************/
+// delete strings from tables
 
-// delete rules from  tables
-localStorage.removeItem(deletedFields);
-$("#delete_rules_from_hash_level").bind('click',function(){
-  console.log("Clicked delete");
-  var deletedFields = JSON.parse(localStorage.getItem('deletedFields')) || [];
-  $('#form_list_hash_rules tr.selected').each(function(){
-    deletedFields.push($(this).find("td > span[name='name']").text());
-    //console.log(   $(this).find("td > span[name='name']").text() );
-  });
-  localStorage.setItem('deletedFields', JSON.stringify(deletedFields));
-});
+localStorage.removeItem("deletedFields");
+
+$("#delete_rules_from_hash_level").bind('click',"form_list_hash_rules",SaveDeleted);
+$("#delete_rules_from_vid_pid_level").bind('click',"form_list_vidpid_rules",SaveDeleted);
+$("#delete_rules_from_interface_level").bind('click',"form_list_interface_rules",SaveDeleted);
+$("#delete_rules_from_unsorted_level").bind('click',"form_list_unsorted_rules",SaveDeleted);
+
+
+/*******************************************************/
+// add strings to tables
+console.log($("#hidden_list_type").val());
+
+// add new hash-level rule
+var new_hash_row = '<tr><td><input class="select_appended" type="checkbox"></td>'+
+                '<td>--</td>'+
+                '<td><span class="alterator-label"><input type="text" class="input_appended"><span></td>'+
+                '<td>--</td>';
+addRuleBehaviorAdd("#add_to_rules_hash",new_hash_row,"#list_hash_rules");
+
+// add new vidpid-level rule
+var new_vidpid_row = '<tr><td><input class="select_appended" type="checkbox"></td>'+
+                    '<td>--</td>'+
+                    '<td><span class="alterator-label"><input type="text" class="input_appended"><span></td>'+
+                    '<td>--</td>'+
+                    '<td><span class="alterator-label"><input type="text" class="input_appended"><span></td>'+
+                    '<td>--</td><td>--</td>';
+addRuleBehaviorAdd("#add_to_rules_vidpid",new_vidpid_row,"#list_vidpid_rules");
+
+// add new CC::SS::PP rule
+var new_interface_row = '<tr><td><input class="select_appended" type="checkbox"></td>'+
+                        '<td>--</td>'+
+                        '<td><span class="alterator-label"><input type="text" class="input_appended"><span></td>'+
+                        '<td>--</td><td>--</td>';
+addRuleBehaviorAdd("#add_to_rules_interfase",new_interface_row,"#list_interface_rules");
+
+// add new rule to unsorted-rules
+var new_unsorted_rules_row = '<tr><td><input class="select_appended" type="checkbox"></td>'+
+            '<td>--</td>'+
+            '<td><span class="alterator-label"><input type="text" class="input_appended"><span></td>';
+addRuleBehaviorAdd("#add_to_rules_unsorted",new_unsorted_rules_row,"#list_unsorted_rules");
 
 
 }); // .ready
+
+function addRuleBehaviorAdd(button_id,row_html,table_id){
+  $(button_id).bind('click',function(){
+    $(table_id).append(row_html+'<td>'+
+                      ($("#hidden_list_type").val() ==="radio_white_list" ? "allow":"block") +
+                      '</td></tr>');
+    bindCheckBox();
+  });
+};
+
+
+function bindCheckBox(){
+  $('.select_appended').change(function(){
+    if($(this).is(':checked')){
+      $(this).closest('tr').addClass('selected');
+    }
+    else{
+      $(this).closest('tr').removeClass('selected');
+    }
+  });
+};
+
+
+// save deleted rules to local storage
+function SaveDeleted(table_id){
+  var deletedFields = JSON.parse(localStorage.getItem('deletedFields')) || [];
+  $('#'+table_id.data+" tr.selected").each(function(){
+    var val= $(this).find("td > span[name='name']").text();
+    if (val!==""){
+      deletedFields.push(val);
+    }  
+    $(this).remove();
+  });
+  localStorage.setItem('deletedFields', JSON.stringify(deletedFields));
+}
