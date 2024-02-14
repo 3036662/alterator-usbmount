@@ -29,7 +29,7 @@ $('input[type=radio][name=presets]').change(function(){
     $("#presets_input_hidden").val($(this).val());
   }
 }); 
-// set preset selectection
+// set preset selection
 $('#presets_input_hidden').bind('update-value change',function(){
     $('input[type=radio][name=presets][value='+$("#presets_input_hidden").val() +']').attr('checked', true);
   });
