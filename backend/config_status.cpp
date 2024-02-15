@@ -327,11 +327,16 @@ bool ConfigStatus::OverwriteRulesFile(const std::string &new_content) noexcept {
       std::ofstream file3(daemon_rules_file_path);
       if (!file3.is_open()) {
         std::cerr << "[ERROR] Can't open file " << daemon_rules_file_path
-                  << " for writing" << std::endl;
+                  << " for writing" << std::endl;           
         return false;
       }
       file3 << old_content.str();
       file3.close();
+      dbus_bindings::Systemd sd;
+      auto start_result = sd.StartUnit(usb_guard_daemon_name);
+      if (!start_result || *start_result){
+        std::cerr << "[ERROR] Can't start usbguard service rules recover." << std::endl;
+      }
       return false;
     }
   }
