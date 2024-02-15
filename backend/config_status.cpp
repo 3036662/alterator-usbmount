@@ -321,7 +321,7 @@ bool ConfigStatus::OverwriteRulesFile(const std::string &new_content) noexcept {
     // parse new rules
     auto parsed_new_file = ParseGuardRulesFile();
     // If some errors occurred while parsing new rules - recover
-    if (parsed_new_file.first.size() != parsed_new_file.second) {
+    if (parsed_new_file.first.size() != parsed_new_file.second || !TryToRun()) {
       std::cerr << "[ERROR] Error parsing new rules,old file will be recovered"
                 << std::endl;
       std::ofstream file3(daemon_rules_file_path);
@@ -331,11 +331,39 @@ bool ConfigStatus::OverwriteRulesFile(const std::string &new_content) noexcept {
         return false;
       }
       file3 << old_content.str();
-      file.close();
+      file3.close();
       return false;
     }
   }
   return true;
+}
+
+/***********************************************************/
+bool ConfigStatus::TryToRun() noexcept {
+  dbus_bindings::Systemd sd;
+  auto init_state = sd.IsUnitActive(usb_guard_daemon_name);
+  if (!init_state.has_value())
+    return false;
+  std::cerr << "[INFO] Usbguard is " 
+            << (*init_state ? "active" : "inactive")
+            << std::endl;
+
+  // if stopped - try to start
+  if (!init_state.value()) {
+    auto result = sd.StartUnit(usb_guard_daemon_name);
+    std::cerr << "[INFO] Test run - "
+              << ((result.has_value() && *result) ? "OK" : "FAIL") 
+              << std::endl;
+    sd.StopUnit(usb_guard_daemon_name);
+    return result.has_value() && *result;
+  }
+
+  // if daemon is active - restart
+  auto result = sd.RestartUnit(usb_guard_daemon_name);
+  std::cerr << "[INFO] Restart - "
+            << ((result.has_value() && *result) ? "OK" : "FAIL") 
+            << std::endl;
+  return result.has_value() && *result;
 }
 
 /***********************************************************/

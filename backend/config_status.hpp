@@ -77,6 +77,14 @@ private:
    */
   void ParseDaemonConfig();
 
+  /**
+   * @brief Try to run usbguard, just for a health check. Leaves a daemon in its initial state.
+   * 
+   * @return true
+   * @return false 
+   */
+  bool TryToRun() noexcept;
+
 #ifdef UNIT_TEST
   friend class ::Test;
 #endif

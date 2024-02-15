@@ -1,10 +1,13 @@
 #include "systemd_dbus.hpp"
 #include <boost/algorithm/string/predicate.hpp>
 #include <iostream>
+#include <thread>
 
 namespace dbus_bindings {
 
-Systemd::Systemd() : connection{nullptr} { ConnectToSystemDbus(); }
+/******************************************************************************/
+
+Systemd::Systemd() noexcept: connection{nullptr} { ConnectToSystemDbus(); }
 
 std::optional<bool>
 Systemd::IsUnitEnabled(const std::string &unit_name) noexcept {
@@ -26,6 +29,8 @@ Systemd::IsUnitEnabled(const std::string &unit_name) noexcept {
              ? std::nullopt
              : std::optional<bool>(boost::contains(result, "enabled"));
 }
+
+/******************************************************************************/
 
 std::optional<bool>
 Systemd::IsUnitActive(const std::string &unit_name) noexcept {
@@ -57,6 +62,105 @@ Systemd::IsUnitActive(const std::string &unit_name) noexcept {
              : std::optional<bool>(boost::starts_with(result, "active"));
 }
 
+/******************************************************************************/
+
+std::optional<bool> Systemd::StartUnit(const std::string &unit_name) noexcept {
+  if (!Health())
+    return std::nullopt;
+  try {
+    auto proxy = CreateProxyToSystemd(objectPath);
+    auto method =
+        proxy->createMethodCall(systemd_interface_manager, "StartUnit");
+    method << unit_name << "replace";
+    auto reply = proxy->callMethod(method);
+    auto isActive = IsUnitActive(unit_name);
+    if (isActive && isActive.value()) {
+      return true;
+    } else {
+      for (int i = 0; i < 10; ++i) {
+        std::cerr << "[INFO] Waiting for systemd starts the sevice ..."
+                  << std::endl;
+        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+        isActive = IsUnitActive(unit_name);
+        if (isActive.has_value() && isActive.value())
+          return true;
+      }
+    }
+
+  } catch (const sdbus::Error &ex) {
+    std::cerr << "[Error] Can't restart " << unit_name << " unit is active"
+              << ex.what() << std::endl;
+  }
+  return std::nullopt;
+}
+/******************************************************************************/
+
+std::optional<bool>
+Systemd::RestartUnit(const std::string &unit_name) noexcept {
+  if (!Health())
+    return std::nullopt;
+  try {
+    auto proxy = CreateProxyToSystemd(objectPath);
+    auto method =
+        proxy->createMethodCall(systemd_interface_manager, "RestartUnit");
+    method << unit_name << "replace";
+    auto reply = proxy->callMethod(method);
+    auto isActive = IsUnitActive(unit_name);
+    if (isActive && isActive.value()) {
+      return true;
+    } else {
+      for (int i = 0; i < 10; ++i) {
+        std::cerr << "[INFO] Waiting for systemd starts the sevice ..."
+                  << std::endl;
+        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+        isActive = IsUnitActive(unit_name);
+        if (isActive.has_value() && isActive.value())
+          return true;
+      }
+    }
+
+  } catch (const sdbus::Error &ex) {
+    std::cerr << "[Error] Can't restart " << unit_name << " unit is active"
+              << ex.what() << std::endl;
+  }
+  return std::nullopt;
+}
+
+/******************************************************************************/
+std::optional<bool> Systemd::StopUnit(const std::string &unit_name) noexcept {
+  if (!Health())
+    return std::nullopt;
+  try {
+    // if a unit is already stopped
+    auto isActive = IsUnitActive(unit_name);
+    if (isActive && !isActive.value()) {
+      return true;
+    }
+    auto proxy = CreateProxyToSystemd(objectPath);
+    auto method =
+        proxy->createMethodCall(systemd_interface_manager, "StopUnit");
+    method << unit_name << "replace";
+    auto reply = proxy->callMethod(method);
+    isActive = IsUnitActive(unit_name);
+    if (isActive && !isActive.value()) {
+      return true;
+    } else {
+      for (int i = 0; i < 10; ++i) {
+        std::cerr << "[INFO] Waiting for systemd stops the sevice ..."
+                  << std::endl;
+        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+        isActive = IsUnitActive(unit_name);
+        if (isActive.has_value() && !isActive.value())
+          return true;
+      }
+    }
+  } catch (const sdbus::Error &ex) {
+    std::cerr << "[Error] Can't stop " << unit_name << " unit is active"
+              << ex.what() << std::endl;
+  }
+  return std::nullopt;
+}
+
 /*******************    Private *****************************/
 
 void Systemd::ConnectToSystemDbus() noexcept {
@@ -67,15 +171,19 @@ void Systemd::ConnectToSystemDbus() noexcept {
   }
 }
 
+/******************************************************************************/
+
 bool Systemd::Health() {
   if (!connection)
     ConnectToSystemDbus();
   return static_cast<bool>(connection);
 }
 
+/******************************************************************************/
+
 std::unique_ptr<sdbus::IProxy>
 Systemd::CreateProxyToSystemd(const std::string &path) {
   return sdbus::createProxy(*connection, destinationName, path);
 }
 
-} // namespace dbus_buindings
+} // namespace dbus_bindings

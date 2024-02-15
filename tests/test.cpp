@@ -8,6 +8,7 @@
 #include <string>
 #include <unordered_map>
 #include <unordered_set>
+#include "systemd_dbus.hpp"
 
 void Test::Run1() {
   std::cout << "Test udev rules files search" << std::endl;
@@ -678,4 +679,55 @@ void Test::Run12(){
     assert (ParseJsonIntArray(json)== excpeted);
   }
   std::cerr << "[TEST] TEST12 ... OK" <<std::endl;
+}
+
+
+
+void Test::Run13(){
+  dbus_bindings::Systemd sd;
+
+  std::cerr << "\n[TEST] TEST13 Test usbguard start stop and restart"<<std::endl;
+  auto init_state=sd.IsUnitActive("usbguard.service");
+  assert (init_state.has_value());
+  std::cerr << "[TEST] Start service ...";
+  // start if stopped
+  if (init_state && !init_state.value()){
+    if (std::system("systemctl start usbguard")) {
+      throw std::logic_error("can't start usbguard");
+    }
+    {
+    auto val=sd.IsUnitActive("usbguard.service");
+    assert (val.has_value() && val.value());
+    }
+  }
+  std::cerr <<"OK"<< std::endl;
+
+  // stop
+  std::cerr <<"[TEST] Stop service ...";
+  {
+    auto val=sd.StopUnit("usbguard.service");
+    assert (val.has_value() && val.value());
+  }
+  std::cerr <<"OK"<<std::endl;
+
+  // start
+  std::cerr << "[TEST] Start service ...";
+  {
+    auto val=sd.StartUnit("usbguard.service");
+    assert (val.has_value() && val.value());
+  }
+  std::cerr <<"OK"<<std::endl;
+  // restart
+   std::cerr << "[TEST] Restart service ...";
+  {
+    auto val=sd.IsUnitActive("usbguard.service");
+    assert (val.has_value() && val.value());
+  }
+  std::cerr <<"OK"<<std::endl;
+  //  return to init state
+  if (init_state && !init_state.value()){
+    sd.StopUnit("usbguard.service");
+  }
+
+  std::cerr << "[TEST] TEST13 ... OK" <<std::endl;
 }

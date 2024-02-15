@@ -72,4 +72,10 @@ public:
    *
    */
   void Run12();
+
+/**
+ * @brief Test systemd restart and stop
+ * 
+ */
+  void Run13();
 };

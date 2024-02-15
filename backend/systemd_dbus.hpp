@@ -13,7 +13,7 @@ namespace dbus_bindings {
  */
 class Systemd {
 public:
-  Systemd(); /// constructor - creates connection to DBus
+  Systemd() noexcept; /// constructor - creates connection to DBus
 
   /**
    * @brief Check whether unit.service is enabled
@@ -28,6 +28,11 @@ public:
    * @returnTrue if unit is enabled,False if not, nothing if error (optional)
    * */
   std::optional<bool> IsUnitActive(const std::string &unit_name) noexcept;
+
+  std::optional<bool> StartUnit(const std::string &unit_name) noexcept;
+  std::optional<bool> RestartUnit(const std::string &unit_name) noexcept;
+  std::optional<bool> StopUnit(const std::string &unit_name) noexcept;
+
 
 private:
   const std::string destinationName = "org.freedesktop.systemd1";

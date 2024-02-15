@@ -36,5 +36,8 @@ int main(int argc, char *argv[]) {
   // Test parsing of json array of uints
   test.Run12();
 
+  // Test systemd restart and stop
+  test.Run13();
+
   return 0;
 }
