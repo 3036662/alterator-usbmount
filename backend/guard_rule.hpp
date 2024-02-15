@@ -5,7 +5,7 @@
 #include <optional>
 #include <string>
 #include <vector>
-//#include <boost/json/src.hpp>
+#include <boost/json.hpp>
 
 #ifdef UNIT_TEST
 #include "test.hpp"
@@ -104,7 +104,7 @@ public:
    */
   GuardRule(const std::string &raw_str);
 
- // explicit GuardRule(const boost::json::object* const ptr_obj);
+  explicit GuardRule(const boost::json::object* const ptr_obj);
 
   /**
    * @brief Build rule string for usbguard

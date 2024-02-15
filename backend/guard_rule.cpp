@@ -6,9 +6,11 @@
 #include <functional>
 #include <map>
 
+
 namespace guard {
 
 /******************************************************************************/
+// static
 const std::map<Target, std::string> GuardRule:: map_target{{Target::allow, "allow"},
                  {Target::block, "block"},
                  {Target::reject, "reject"}};
@@ -30,9 +32,7 @@ const std::map<RuleOperator, std::string> GuardRule::map_operator{{RuleOperator:
                    {RuleOperator::equals_ordered, "equals-ordered"},
                    {RuleOperator::no_operator, ""}};
 
-
-
-
+/******************************************************************************/
 GuardRule::GuardRule(const std::string &raw_str) {
 
   std::logic_error ex("Cant parse rule string");

@@ -3,7 +3,7 @@
 #include "utils.hpp"
 #include <boost/algorithm/algorithm.hpp>
 #include <boost/algorithm/string.hpp>
-#include <chrono>
+#include <boost/json/src.hpp> //TODO maybe link with compiled
 
 MessageDispatcher::MessageDispatcher(guard::Guard &guard) : guard(guard) {}
 
@@ -111,20 +111,50 @@ bool MessageDispatcher::Dispatch(const LispMessage &msg) {
     return true;
   }
 
-  // delete rules
-  if (msg.action == "read" && msg.objects == "delete_rules") {
-    std::cerr << "Delete rules " << std::endl;
-    if (!msg.params.count("rules_ids") ||
-        msg.params.find("rules_ids")->second.empty()) {
+  // save changes rules
+  if (msg.action == "read" && msg.objects == "apply_changes") {
+    std::cerr << "Validating rules changes " << std::endl;
+    if (!msg.params.count("changes_json") ||
+        msg.params.find("changes_json")->second.empty()) {
       std::cout << mess_beg << mess_end;
-      std::cerr << "bad request for delete rules,doing nothing" << std::endl;
+      std::cerr << "bad request for rules,doing nothing" << std::endl;
       return true;
     }
-    if (guard.DeleteRules(ParseJsonIntArray(msg.params.at("rules_ids")))) {
-      std::cout << mess_beg << "status" << WrapWithQuotes("OK") << mess_end;
-    } else {
-      std::cout << mess_beg << "status" << WrapWithQuotes("FAILED") << mess_end;
+
+    namespace json = boost::json;
+    // TODO parse the json and process
+    try {
+      json::value json_value = json::parse(msg.params.at("changes_json"));
+      std::cerr << json_value << std::endl;
+      json::object *ptr_jobj = json_value.if_object();
+      // if some new rules were added
+      if (ptr_jobj && ptr_jobj->contains("appended_rules")) {
+        json::array *ptr_json_array_rules =
+            ptr_jobj->at("appended_rules").if_array();
+        if (ptr_json_array_rules && !ptr_json_array_rules->empty()) {
+          size_t total_rules = ptr_json_array_rules->size();
+          // for each rule
+          for (auto it = ptr_json_array_rules->cbegin();
+               it != ptr_json_array_rules->cend(); ++it) {
+            const json::object *ptr_json_rule = it->if_object();
+            if (ptr_json_rule) {
+              std::cerr << "RULE:" << *ptr_json_rule;
+            }
+          }
+        }
+      }
+    } catch (const std::exception &ex) {
+      std::cerr << "[ERROR] Can't parse JSON" << std::endl;
+      std::cerr << "[ERROR] " << ex.what() << std::endl;
     }
+    // if (guard.DeleteRules(ParseJsonIntArray(msg.params.at("rules_ids")))) {
+    //   std::cout << mess_beg << "status" << WrapWithQuotes("OK") << mess_end;
+    // } else {
+    //   std::cout << mess_beg << "status" << WrapWithQuotes("FAILED") <<
+    //   mess_end;
+    // }
+
+    std::cout << mess_beg << "status" << WrapWithQuotes("OK") << mess_end;
     return true;
   }
 

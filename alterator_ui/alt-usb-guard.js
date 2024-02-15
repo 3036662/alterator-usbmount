@@ -97,8 +97,8 @@ $(document).ready(function () {
       appended_rules: collectAppendedRules()
     }
     $("#hidden_manual_changes_data").val(JSON.stringify(rules_changes));
-    console.log(rules_changes);
-    //$("#hidden_manual_changes_data").trigger('ready');
+   // $(".manual_appeded").remove();
+    $("#hidden_manual_changes_data").trigger('ready');
   });
 
 
@@ -116,7 +116,7 @@ function addRuleBehaviorAdd(button_id, row_html, table_id) {
       ($("#hidden_list_type").val() === "radio_white_list" ? "allow" : "block") +
       '</td></tr>');
     bindCheckBox();
-   // bindValidator();
+
   });
 };
 
@@ -148,7 +148,7 @@ function collectAppendedRules() {
     inputs.each(function(i,el){
         var name=$(el).attr('name');
         var val=$(el).val();
-        fields.push({name:name,value:val});
+        fields.push({[name]:val});
     });
     // put rule to the result array (appended_rules)
     appended_rules.push({table_id:table_id,fields_arr:fields});

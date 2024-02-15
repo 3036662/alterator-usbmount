@@ -130,10 +130,10 @@
 
 ; get all changes with one string from fronted and send data to backend
 (define (save_rules_handler)
-    (let ((  status  (woo-read-first "/simple/delete_rules" 'rules_ids  (form-value "hidden_manual_changes_data")) ))
+    (let ((  status  (woo-read-first "/simple/apply_changes" 'changes_json  (form-value "hidden_manual_changes_data")) ))
         (if
             (equal? "OK" (woo-get-option status 'status))
-            (ls_guard_rules)
+            .
             (woo-error "An error occurred when replacing the rules")
         )
     ); //let 
