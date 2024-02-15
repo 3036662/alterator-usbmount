@@ -9,12 +9,10 @@
 namespace guard {
 
 /******************************************************************************/
-
-GuardRule::GuardRule(const std::string &raw_str)
-    : map_target{{Target::allow, "allow"},
+const std::map<Target, std::string> GuardRule:: map_target{{Target::allow, "allow"},
                  {Target::block, "block"},
-                 {Target::reject, "reject"}},
-      map_conditions{{RuleConditions::localtime, "localtime"},
+                 {Target::reject, "reject"}};
+const std::map<RuleConditions, std::string> GuardRule::map_conditions{{RuleConditions::localtime, "localtime"},
                      {RuleConditions::allowed_matches, "allowed-matches"},
                      {RuleConditions::rule_applied, "rule-applied"},
                      {RuleConditions::rule_applied_past, "rule-applied("},
@@ -24,13 +22,18 @@ GuardRule::GuardRule(const std::string &raw_str)
                      {RuleConditions::random_with_propability, "random("},
                      {RuleConditions::always_true, "true"},
                      {RuleConditions::always_false, "false"},
-                     {RuleConditions::no_condition, ""}},
-      map_operator{{RuleOperator::all_of, "all-of"},
+                     {RuleConditions::no_condition, ""}};
+const std::map<RuleOperator, std::string> GuardRule::map_operator{{RuleOperator::all_of, "all-of"},
                    {RuleOperator::one_of, "one-of"},
                    {RuleOperator::none_of, "none-of"},
                    {RuleOperator::equals, "equals"},
                    {RuleOperator::equals_ordered, "equals-ordered"},
-                   {RuleOperator::no_operator, ""}} {
+                   {RuleOperator::no_operator, ""}};
+
+
+
+
+GuardRule::GuardRule(const std::string &raw_str) {
 
   std::logic_error ex("Cant parse rule string");
   // Split string to tokens.
@@ -112,6 +115,9 @@ GuardRule::GuardRule(const std::string &raw_str)
   else
     level = StrictnessLevel::non_strict;
 }
+
+/******************************************************************************/
+
 
 /******************************************************************************/
 

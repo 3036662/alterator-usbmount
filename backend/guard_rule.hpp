@@ -5,6 +5,7 @@
 #include <optional>
 #include <string>
 #include <vector>
+//#include <boost/json/src.hpp>
 
 #ifdef UNIT_TEST
 #include "test.hpp"
@@ -73,11 +74,11 @@ using RuleWithBool = std::pair<bool, RuleWithOptionalParam>;
 class GuardRule : public SerializableForLisp<GuardRule> {
 
   /// @brief Maps Target enum to a string.
-  const std::map<Target, std::string> map_target;
+  static const std::map<Target, std::string> map_target;
   /// @brief Maps RuleConditions enum to a string.
-  const std::map<RuleConditions, std::string> map_conditions;
+  static const std::map<RuleConditions, std::string> map_conditions;
   /// @brief Maps RuleOperator enum to a string.
-  const std::map<RuleOperator, std::string> map_operator;
+  static const std::map<RuleOperator, std::string> map_operator;
 
 public:
   int number = 0; ///@brief number of line (from the beginnig of file)
@@ -102,6 +103,8 @@ public:
    * @throws std::logical_error
    */
   GuardRule(const std::string &raw_str);
+
+ // explicit GuardRule(const boost::json::object* const ptr_obj);
 
   /**
    * @brief Build rule string for usbguard
