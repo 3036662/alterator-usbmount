@@ -93,7 +93,7 @@ $(document).ready(function () {
   $("#save_rules_button").bind('click', function () {
     var deletedFields = localStorage.getItem('deletedFields');
     var rules_changes={
-      deleted_rules: deletedFields,
+      deleted_rules:  JSON.parse(deletedFields),
       appended_rules: collectAppendedRules()
     }
     $("#hidden_manual_changes_data").val(JSON.stringify(rules_changes));
