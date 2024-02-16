@@ -250,7 +250,7 @@ std::string Guard::ParseJsonRulesChanges(const std::string &msg) noexcept {
              it != ptr_json_array_rules->cend(); ++it) {
           const json::object *ptr_json_rule = it->if_object();
           if (ptr_json_rule) {
-            std::cerr << "RULE:" << *ptr_json_rule;
+            //std::cerr << "RULE:" << *ptr_json_rule;
             const json::string *tr_id = ptr_json_rule->at("tr_id").if_string();
             // try to build a rule
             try {

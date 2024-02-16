@@ -98,7 +98,7 @@ $(document).ready(function () {
     }
     $("#hidden_manual_changes_data").val(JSON.stringify(rules_changes));
    // $(".manual_appeded").remove();
-    $("#hidden_manual_changes_data").trigger('ready');
+    $("#hidden_manual_changes_data").trigger('rules_json_ready');
   });
 
 

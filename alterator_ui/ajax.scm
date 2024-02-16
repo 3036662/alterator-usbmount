@@ -27,6 +27,12 @@
 ; get value by key from associative  
 (define (get-value key assoc-list)
   (cadr (assoc key assoc-list)))
+; print object as string
+(define (object->string obj)
+  (call-with-output-string
+    (lambda (port)
+      (write obj port))))
+
 
 ; get status
 ; usbguard: "OK" or "BAD"
@@ -128,14 +134,17 @@
     ); let
  )
 
+
 ; get all changes with one string from fronted and send data to backend
 (define (save_rules_handler)
+    ;(woo-error (object->string (woo-read "/simple/apply_changes" 'changes_json  (form-value "hidden_manual_changes_data")) ))
     (let ((  response  (removeFirstElement (woo-read "/simple/apply_changes" 'changes_json  (form-value "hidden_manual_changes_data"))) ))
         (if 
             (string=? "OK" (get-value 'status response))
             (woo-error  (get-value 'ids_json response) )
             (woo-error  (get-value 'status response) )
         )
+        (setq response nil)
     ); //let 
 )
 
@@ -145,5 +154,5 @@
   (form-bind "btn_prsnt_scan" "click" ls_usbs)
   (form-bind "btn_prsnt_dev_add" "click" allow_device)
   (form-bind "btn_prsnt_dev_block" "click" block_device)
-  (form-bind "hidden_manual_changes_data" "ready" save_rules_handler) ;save changes event
+  (form-bind "hidden_manual_changes_data" "rules_json_ready" save_rules_handler) ;save changes event
 )
