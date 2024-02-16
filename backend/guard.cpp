@@ -1,6 +1,7 @@
 #include "guard.hpp"
 #include "utils.hpp"
 #include <boost/algorithm/string.hpp>
+#include <boost/json.hpp>
 #include <unordered_set>
 
 namespace guard {
@@ -102,17 +103,17 @@ bool Guard::DeleteRules(const std::vector<uint> &rule_indexes) {
   // copy old rules,except listed in rule_indexes
   std::set<uint> unique_indexes(rule_indexes.cbegin(), rule_indexes.cend());
   std::vector<guard::GuardRule> new_rules;
-  for(const auto& rule : parsed_rules.first){
+  for (const auto &rule : parsed_rules.first) {
     if (!unique_indexes.count(rule.number))
-        new_rules.push_back(rule);
+      new_rules.push_back(rule);
   }
 
   // build new content for a rules-file
   std::string new_rules_str;
-  for (const auto& rule: new_rules){
-    new_rules_str+=rule.BuildString(true,true);
-    new_rules_str+="\n";
-  }              
+  for (const auto &rule : new_rules) {
+    new_rules_str += rule.BuildString(true, true);
+    new_rules_str += "\n";
+  }
 
   // overwrite
   return cs.OverwriteRulesFile(new_rules_str);
@@ -223,6 +224,69 @@ std::unordered_map<std::string, std::string> Guard::MapVendorCodesToNames(
     std::cerr << "[ERROR] Can't map vendor IDs to vendor names." << std::endl
               << ex.what() << std::endl;
   }
+  return res;
+}
+/******************************************************************************/
+
+std::string Guard::ParseJsonRulesChanges(const std::string &msg) noexcept {
+  std::string res;
+  std::vector<GuardRule> vec_rules;
+  boost::json::array json_arr_OK;
+  boost::json::array json_arr_BAD;
+  namespace json = boost::json;
+  // TODO parse the json and process
+  try {
+    json::value json_value = json::parse(msg);
+    std::cerr << json_value << std::endl;
+    json::object *ptr_jobj = json_value.if_object();
+    // if some new rules were added
+    if (ptr_jobj && ptr_jobj->contains("appended_rules")) {
+      json::array *ptr_json_array_rules =
+          ptr_jobj->at("appended_rules").if_array();
+      if (ptr_json_array_rules && !ptr_json_array_rules->empty()) {
+        size_t total_rules = ptr_json_array_rules->size();
+        // for each rule
+        for (auto it = ptr_json_array_rules->cbegin();
+             it != ptr_json_array_rules->cend(); ++it) {
+          const json::object *ptr_json_rule = it->if_object();
+          if (ptr_json_rule) {
+            std::cerr << "RULE:" << *ptr_json_rule;
+            const json::string *tr_id = ptr_json_rule->at("tr_id").if_string();
+            // try to build a rule
+            try {
+              GuardRule rule{ptr_json_rule};
+              vec_rules.push_back(std::move(rule));
+              if (tr_id && !tr_id->empty()) {
+                json_arr_OK.emplace_back(*tr_id);
+              }
+            }
+            // if failed
+            catch (const std::logic_error &ex) {
+              std::cerr << "[ERROR] Can't build the rule" << std::endl;
+              std::cerr << ex.what() << std::endl;
+              if (tr_id && !tr_id->empty()) {
+                json_arr_BAD.emplace_back(*tr_id);
+              }
+            }
+          }
+        }
+      }
+    }
+  } catch (const std::exception &ex) {
+    std::cerr << "[ERROR] Can't parse JSON" << std::endl;
+    std::cerr << "[ERROR] " << ex.what() << std::endl;
+  }
+
+  // after all rules are parsed
+  json::object obj_result;
+  obj_result["rules_OK"] = std::move(json_arr_OK);
+  obj_result["rules_BAD"] = std::move(json_arr_BAD);
+  // std::cerr << obj_result;
+
+  // TODO apply RULES
+  // TODO apply delete rules
+
+  res = json::serialize(obj_result);
   return res;
 }
 

@@ -327,15 +327,16 @@ bool ConfigStatus::OverwriteRulesFile(const std::string &new_content) noexcept {
       std::ofstream file3(daemon_rules_file_path);
       if (!file3.is_open()) {
         std::cerr << "[ERROR] Can't open file " << daemon_rules_file_path
-                  << " for writing" << std::endl;           
+                  << " for writing" << std::endl;
         return false;
       }
       file3 << old_content.str();
       file3.close();
       dbus_bindings::Systemd sd;
       auto start_result = sd.StartUnit(usb_guard_daemon_name);
-      if (!start_result || *start_result){
-        std::cerr << "[ERROR] Can't start usbguard service rules recover." << std::endl;
+      if (!start_result || *start_result) {
+        std::cerr << "[ERROR] Can't start usbguard service rules recover."
+                  << std::endl;
       }
       return false;
     }
@@ -349,16 +350,14 @@ bool ConfigStatus::TryToRun() noexcept {
   auto init_state = sd.IsUnitActive(usb_guard_daemon_name);
   if (!init_state.has_value())
     return false;
-  std::cerr << "[INFO] Usbguard is " 
-            << (*init_state ? "active" : "inactive")
+  std::cerr << "[INFO] Usbguard is " << (*init_state ? "active" : "inactive")
             << std::endl;
 
   // if stopped - try to start
   if (!init_state.value()) {
     auto result = sd.StartUnit(usb_guard_daemon_name);
     std::cerr << "[INFO] Test run - "
-              << ((result.has_value() && *result) ? "OK" : "FAIL") 
-              << std::endl;
+              << ((result.has_value() && *result) ? "OK" : "FAIL") << std::endl;
     sd.StopUnit(usb_guard_daemon_name);
     return result.has_value() && *result;
   }
@@ -366,8 +365,7 @@ bool ConfigStatus::TryToRun() noexcept {
   // if daemon is active - restart
   auto result = sd.RestartUnit(usb_guard_daemon_name);
   std::cerr << "[INFO] Restart - "
-            << ((result.has_value() && *result) ? "OK" : "FAIL") 
-            << std::endl;
+            << ((result.has_value() && *result) ? "OK" : "FAIL") << std::endl;
   return result.has_value() && *result;
 }
 

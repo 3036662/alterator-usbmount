@@ -78,10 +78,11 @@ private:
   void ParseDaemonConfig();
 
   /**
-   * @brief Try to run usbguard, just for a health check. Leaves a daemon in its initial state.
-   * 
+   * @brief Try to run usbguard, just for a health check. Leaves a daemon in its
+   * initial state.
+   *
    * @return true
-   * @return false 
+   * @return false
    */
   bool TryToRun() noexcept;
 

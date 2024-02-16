@@ -6,31 +6,33 @@
 #include <functional>
 #include <map>
 
-
 namespace guard {
 
 /******************************************************************************/
 // static
-const std::map<Target, std::string> GuardRule:: map_target{{Target::allow, "allow"},
-                 {Target::block, "block"},
-                 {Target::reject, "reject"}};
-const std::map<RuleConditions, std::string> GuardRule::map_conditions{{RuleConditions::localtime, "localtime"},
-                     {RuleConditions::allowed_matches, "allowed-matches"},
-                     {RuleConditions::rule_applied, "rule-applied"},
-                     {RuleConditions::rule_applied_past, "rule-applied("},
-                     {RuleConditions::rule_evaluated, "rule-evaluated"},
-                     {RuleConditions::rule_evaluated_past, "rule-evaluated("},
-                     {RuleConditions::random, "random"},
-                     {RuleConditions::random_with_propability, "random("},
-                     {RuleConditions::always_true, "true"},
-                     {RuleConditions::always_false, "false"},
-                     {RuleConditions::no_condition, ""}};
-const std::map<RuleOperator, std::string> GuardRule::map_operator{{RuleOperator::all_of, "all-of"},
-                   {RuleOperator::one_of, "one-of"},
-                   {RuleOperator::none_of, "none-of"},
-                   {RuleOperator::equals, "equals"},
-                   {RuleOperator::equals_ordered, "equals-ordered"},
-                   {RuleOperator::no_operator, ""}};
+const std::map<Target, std::string> GuardRule::map_target{
+    {Target::allow, "allow"},
+    {Target::block, "block"},
+    {Target::reject, "reject"}};
+const std::map<RuleConditions, std::string> GuardRule::map_conditions{
+    {RuleConditions::localtime, "localtime"},
+    {RuleConditions::allowed_matches, "allowed-matches"},
+    {RuleConditions::rule_applied, "rule-applied"},
+    {RuleConditions::rule_applied_past, "rule-applied("},
+    {RuleConditions::rule_evaluated, "rule-evaluated"},
+    {RuleConditions::rule_evaluated_past, "rule-evaluated("},
+    {RuleConditions::random, "random"},
+    {RuleConditions::random_with_propability, "random("},
+    {RuleConditions::always_true, "true"},
+    {RuleConditions::always_false, "false"},
+    {RuleConditions::no_condition, ""}};
+const std::map<RuleOperator, std::string> GuardRule::map_operator{
+    {RuleOperator::all_of, "all-of"},
+    {RuleOperator::one_of, "one-of"},
+    {RuleOperator::none_of, "none-of"},
+    {RuleOperator::equals, "equals"},
+    {RuleOperator::equals_ordered, "equals-ordered"},
+    {RuleOperator::no_operator, ""}};
 
 /******************************************************************************/
 GuardRule::GuardRule(const std::string &raw_str) {
@@ -55,17 +57,19 @@ GuardRule::GuardRule(const std::string &raw_str) {
     return;
 
   // ----------------------------------------
-  // id
+  // id (vid:pid)
+  // toke id MUST contain a ':' symbol
   std::optional<std::string> str_id =
       ParseToken(splitted, "id", [](const std::string &val) {
         if (val.find(':') == std::string::npos)
           return false;
         return true;
       });
+
   if (str_id) {
-    size_t separator = splitted[2].find(':');
-    vid = splitted[2].substr(0, separator);
-    pid = splitted[2].substr(separator + 1);
+    size_t separator = str_id->find(':');
+    vid = str_id->substr(0, separator);
+    pid = str_id->substr(separator + 1);
     if (vid->empty() || pid->empty())
       throw ex;
   }
@@ -74,8 +78,11 @@ GuardRule::GuardRule(const std::string &raw_str) {
   // Hash, device_name, serial, port, and with_interface may or may not exist in
   // the string. default_predicat - Function is the default behavior of values
   // validating.
+
+  // The default predicat for validation
   std::function<bool(const std::string &)> default_predicat =
       [this](const std::string &val) { return !IsReservedWord(val); };
+  // hash length MUST be > 10 symbols
   hash = ParseToken(splitted, "hash",
                     [](const std::string &val) { return val.size() > 10; });
   parent_hash = ParseToken(splitted, "parent-hash", [](const std::string &val) {
@@ -117,7 +124,106 @@ GuardRule::GuardRule(const std::string &raw_str) {
 }
 
 /******************************************************************************/
+// This constructor doesn't have its own validation behavior.
+// It just parses a JSON objects and puts values into member fields.
+// When finished, it will try to construct a GuardRule object from own
+// string representation to be sure that all fields are OK.
 
+GuardRule::GuardRule(const boost::json::object *const ptr_obj) {
+  namespace json = boost::json;
+
+  // target
+  if (!ptr_obj->contains("target")) {
+    throw std::logic_error("Rule target is mandatory");
+  }
+  const json::string *tr_string = ptr_obj->at("target").if_string();
+  auto it_target = std::find_if(
+      map_target.cbegin(), map_target.cend(),
+      [tr_string](const auto &el) { return el.second == *tr_string; });
+  if (it_target == map_target.cend()) {
+    throw std::logic_error("Can't parse target string");
+  }
+  target = it_target->first;
+
+  // fields
+  if (!ptr_obj->contains("fields_arr") ||
+      !ptr_obj->at("fields_arr").is_array() ||
+      ptr_obj->at("fields_arr").if_array()->empty()) {
+    throw std::logic_error("Can't find any fields for a rule");
+  }
+  const json::array *ptr_fields = ptr_obj->at("fields_arr").if_array();
+
+  std::function<bool(const std::string &)> default_predicat =
+      [this](const std::string &val) { return !IsReservedWord(val); };
+  // for each field in array
+  for (auto it = ptr_fields->cbegin(); it != ptr_fields->cend(); ++it) {
+    if (!it->is_object()) {
+      throw std::logic_error("Error parsing rule fields");
+    }
+    const json::object *ptr_field = it->if_object();
+    for (auto it_field = ptr_field->cbegin(); it_field != ptr_field->cend();
+         ++it_field) {
+      std::string field = it_field->key();
+      std::string value = it_field->value().as_string().c_str();
+      if (value.empty()) {
+        throw std::logic_error("Empty value for field " + field);
+      }
+      // write fields
+      if (field == "vid") {
+        vid = value;
+      } else if (field == "pid") {
+        pid = value;
+      } else if (field == "hash") {
+        hash = value;
+      } else if (field == "parent_hash") {
+        parent_hash = value;
+      } else if (field == "device_name") {
+        device_name = value;
+      } else if (field == "serial") {
+        serial = value;
+      } else if (field == "via-port") {
+        std::string str_for_parser = "via-port ";
+        str_for_parser += value;
+        port = ParseTokenWithOperator(SplitRawRule(str_for_parser), "via-port",
+                                      default_predicat);
+      } else if (field == "with_interface") {
+        std::string str_for_parser = "with_interface ";
+        str_for_parser += value;
+        auto splitted = SplitRawRule(str_for_parser);
+        // if a rules contains  with-interface { i1, i2 } array - insert the
+        // "equals" operator
+        auto it_with_interface =
+            std::find(splitted.begin(), splitted.end(), "with_interface");
+        if (it_with_interface != splitted.end()) {
+          ++it_with_interface;
+          if (it_with_interface != splitted.end() &&
+              *it_with_interface == "{") {
+            splitted.insert(it_with_interface, "equals");
+          }
+        }
+        with_interface = ParseTokenWithOperator(
+            splitted, "with_interface", [](const std::string &val) {
+              return val.size() > 2 && val.find(':') != std::string::npos;
+            });
+      } else if (field == "with-connect-type") {
+        conn_type = value;
+      } else if (field == "cond") {
+        cond = ParseConditions(SplitRawRule(value));
+      }
+      // for a raw rule
+      else if (field == "raw") {
+        *this = GuardRule(value);
+      }
+    }
+  }
+
+  // all fields are parsed - validate "this" object -
+  // try build a new object from string representation of "this
+  // if something is wrong with "this" exception will be thrown while
+  // constructing tmp
+  GuardRule tmp(this->BuildString());
+  level = tmp.level;
+}
 
 /******************************************************************************/
 
@@ -209,7 +315,8 @@ GuardRule::ParseToken(const std::vector<std::string> &splitted,
     if (it_name_param != splitted.cend() && predicat(*it_name_param)) {
       res = *it_name_param;
     } else {
-      std::cerr << "[ERROR] Parsing error" << std::endl;
+      std::cerr << "[ERROR] Parsing error, token " << *it_name_param
+                << std::endl;
       throw ex;
     }
   }
@@ -275,7 +382,12 @@ GuardRule::ParseTokenWithOperator(
       auto it_val = it_range_begin;
       ++it_val;
       while (it_val != it_range_end) {
-        res->second.emplace_back(*it_val);
+        if (predicat(*it_val)) {
+          res->second.emplace_back(*it_val);
+        } else {
+          std::cerr << "[ERROR]Parsing error, token " << *it_val << std::endl;
+          throw ex;
+        }
         ++it_val;
       }
     }
@@ -308,7 +420,7 @@ GuardRule::ParseConditions(const std::vector<std::string> &splitted) {
         return val.second == *it_param1;
       });
   have_operator = it_operator != map_operator.cend();
-  std::cerr << "Has operator " << have_operator << std::endl;
+  // std::cerr << "Has operator " << have_operator << std::endl;
 
   // ------------------------------------------------------
   // No operator was found
@@ -317,7 +429,7 @@ GuardRule::ParseConditions(const std::vector<std::string> &splitted) {
     tmp.push_back(ParseOneCondition(it_param1, splitted.cend()));
     res = {RuleOperator::no_operator, std::move(tmp)};
   } else {
-    std::cerr << "Operator was found =" << it_operator->second << std::endl;
+    // std::cerr << "Operator was found =" << it_operator->second << std::endl;
     // Find the array bounds.
     RuleOperator op = it_operator->first; // goes to the result
 

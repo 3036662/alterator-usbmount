@@ -78,4 +78,10 @@ public:
  * 
  */
   void Run13();
+
+  /**
+   * @brief Test parsing json rule object
+   * 
+   */
+void Run14();
 };

@@ -33,7 +33,6 @@ public:
   std::optional<bool> RestartUnit(const std::string &unit_name) noexcept;
   std::optional<bool> StopUnit(const std::string &unit_name) noexcept;
 
-
 private:
   const std::string destinationName = "org.freedesktop.systemd1";
   const std::string objectPath = "/org/freedesktop/systemd1";
@@ -52,4 +51,4 @@ private:
   std::unique_ptr<sdbus::IProxy> CreateProxyToSystemd(const std::string &path);
 };
 
-} // namespace dbus_buindings
+} // namespace dbus_bindings

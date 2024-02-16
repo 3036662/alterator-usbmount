@@ -7,7 +7,7 @@ namespace dbus_bindings {
 
 /******************************************************************************/
 
-Systemd::Systemd() noexcept: connection{nullptr} { ConnectToSystemDbus(); }
+Systemd::Systemd() noexcept : connection{nullptr} { ConnectToSystemDbus(); }
 
 std::optional<bool>
 Systemd::IsUnitEnabled(const std::string &unit_name) noexcept {

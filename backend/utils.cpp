@@ -80,7 +80,7 @@ std::vector<uint> ParseJsonIntArray(std::string json) noexcept {
     return res;
   if (json[0] != '[' || json.back() != ']')
     return res;
-  // remove [] braces  
+  // remove [] braces
   json.erase(json.size() - 1, 1);
   json.erase(0, 1);
   std::vector<std::string> splitted;

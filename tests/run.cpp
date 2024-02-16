@@ -39,5 +39,8 @@ int main(int argc, char *argv[]) {
   // Test systemd restart and stop
   test.Run13();
 
+  //Test parsing json rule object
+  test.Run14();
+  
   return 0;
 }

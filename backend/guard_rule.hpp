@@ -1,11 +1,11 @@
 #pragma once
 #include "usb_device.hpp"
+#include <boost/json.hpp>
 #include <functional>
 #include <map>
 #include <optional>
 #include <string>
 #include <vector>
-#include <boost/json.hpp>
 
 #ifdef UNIT_TEST
 #include "test.hpp"
@@ -102,9 +102,35 @@ public:
    * @param str String rule from usbguard rules file
    * @throws std::logical_error
    */
-  GuardRule(const std::string &raw_str);
+  explicit GuardRule(const std::string &raw_str);
 
-  explicit GuardRule(const boost::json::object* const ptr_obj);
+  /**
+   * @brief Construct a new Guard Rule object from json object
+   *
+   * @param ptr_obj boost json object
+   * @throws std::logic_error
+   * @details Target field is mandatory.
+   *  This constructor doesn't have its own validation behavior.
+   *  It just parses a JSON object and puts values into member fields.
+   *  When finished, it will try to construct a GuardRule object from own
+   * string representation to be sure that all fields are OK.
+   * @code
+   * {
+   *  "table_id":"list_vidpid_rules",
+   *  "target":"allow",
+   *  "fields_arr":[
+   *                  {"vid":"value_of_vid"},
+   *                  {"pid":"value_of_pid"}
+   *                ]
+   * }
+   * @endcode
+   */
+  explicit GuardRule(const boost::json::object *const ptr_obj);
+
+  GuardRule &operator=(const GuardRule &) noexcept = default;
+  GuardRule &operator=(GuardRule &&) noexcept = default;
+  GuardRule(GuardRule &&) noexcept = default;
+  GuardRule(const GuardRule &) noexcept = default;
 
   /**
    * @brief Build rule string for usbguard

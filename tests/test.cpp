@@ -731,3 +731,397 @@ void Test::Run13(){
 
   std::cerr << "[TEST] TEST13 ... OK" <<std::endl;
 }
+
+// JSON RULE  OBJECTS PARSING
+
+void Test::Run14(){
+  std::cerr<< "[TEST] Test GuardRule building from json string"<<std::endl;
+
+  {
+    std::cerr <<"[TEST] "<< "Normal json with vid pid "<<std::endl;
+    std::string json="{\"deleted_rules\":null,"
+                      "\"appended_rules\":"
+                      "[{\"table_id\":"
+                        "\"list_vidpid_rules\","
+                        "\"target\":\"allow\",\""
+                        "fields_arr\":"
+                        "[{\"vid\":\"a000\"},{\"pid\":\"s5a5\"}]}]}";
+    const boost::json::value jv= boost::json::parse(json);                    
+    const boost::json::object* ptr_obj= jv.as_object().at("appended_rules").as_array().at(0).if_object();                   
+    guard::GuardRule rule(ptr_obj);
+    
+    assert(rule.target == guard::Target::allow);
+    assert(rule.vid == "a000");
+    assert(rule.pid == "s5a5");
+    assert(rule.level == guard::StrictnessLevel::vid_pid);
+
+  }
+
+   {
+    std::cerr <<"[TEST] "<< "Empty pid "<<std::endl;
+    std::string json="{\"deleted_rules\":null,"
+                      "\"appended_rules\":"
+                      "[{\"table_id\":"
+                        "\"list_vidpid_rules\","
+                        "\"target\":\"allow\",\""
+                        "fields_arr\":"
+                        "[{\"vid\":\"\"},{\"pid\":\"s5a5\"}]}]}";
+    const boost::json::value jv= boost::json::parse(json);                    
+    const boost::json::object* ptr_obj= jv.as_object().at("appended_rules").as_array().at(0).if_object();  
+    try{                 
+      guard::GuardRule rule(ptr_obj);
+    }
+    catch(const std::logic_error& ex){
+      assert(std::string (ex.what()) == "Empty value for field vid" );
+    }
+  }
+
+  {
+    std::cerr <<"[TEST] "<< "Empty pid "<<std::endl;
+    std::string json="{\"deleted_rules\":null,"
+                      "\"appended_rules\":"
+                      "[{\"table_id\":"
+                        "\"list_vidpid_rules\","
+                        "\"target\":\"allow\",\""
+                        "fields_arr\":"
+                        "[{\"vid\":\"aaa\"},{\"pid\":\"\"}]}]}";
+    const boost::json::value jv= boost::json::parse(json);                    
+    const boost::json::object* ptr_obj= jv.as_object().at("appended_rules").as_array().at(0).if_object();  
+    try{                 
+      guard::GuardRule rule(ptr_obj);
+    }
+    catch(const std::logic_error& ex){
+      assert(std::string (ex.what()) == "Empty value for field pid" );
+    }
+  }
+
+   {
+    std::cerr <<"[TEST] "<< "Empty fields arr "<<std::endl;
+    std::string json="{\"deleted_rules\":null,"
+                      "\"appended_rules\":"
+                      "[{\"table_id\":"
+                        "\"list_vidpid_rules\","
+                        "\"target\":\"allow\",\""
+                        "fields_arr\":"
+                        "[]}]}";
+    const boost::json::value jv= boost::json::parse(json);                    
+    const boost::json::object* ptr_obj= jv.as_object().at("appended_rules").as_array().at(0).if_object();  
+    try{                 
+      guard::GuardRule rule(ptr_obj);
+    }
+    catch(const std::logic_error& ex){
+      //std::cerr <<ex.what();
+      assert(std::string (ex.what()) == "Can't find any fields for a rule" );
+    }
+  }
+
+  {
+    std::cerr <<"[TEST] "<< "Empty target "<<std::endl;
+    std::string json="{\"deleted_rules\":null,"
+                      "\"appended_rules\":"
+                      "[{\"table_id\":"
+                        "\"list_vidpid_rules\","
+                        "\"fields_arr\":"
+                        "[{\"vid\":\"aaa\"},{\"pid\":\"\"}]}]}";
+    const boost::json::value jv= boost::json::parse(json);                    
+    const boost::json::object* ptr_obj= jv.as_object().at("appended_rules").as_array().at(0).if_object();  
+    try{                 
+      guard::GuardRule rule(ptr_obj);
+    }
+    catch(const std::logic_error& ex){
+      assert(std::string (ex.what()) == "Rule target is mandatory" );
+    }
+  }
+
+
+  {
+    std::cerr <<"[TEST] "<< "Normal with hash "<<std::endl;
+    std::string json="{\"deleted_rules\":null,"
+                      "\"appended_rules\":"
+                      "[{\"table_id\":"
+                        "\"list_vidpid_rules\","
+                        "\"target\":\"allow\",\""
+                        "fields_arr\":"
+                        "[{\"vid\":\"a000\"},"
+                         "{\"pid\":\"s5a5\"},"
+                         "{\"hash\":\"salkdjlskjf\"}"
+                        "]}]}";
+    const boost::json::value jv= boost::json::parse(json);                    
+    const boost::json::object* ptr_obj= jv.as_object().at("appended_rules").as_array().at(0).if_object();                   
+    guard::GuardRule rule(ptr_obj);
+    
+    assert(rule.target == guard::Target::allow);
+    assert(rule.vid == "a000");
+    assert(rule.pid == "s5a5");
+    assert(rule.hash == "salkdjlskjf");
+    assert(rule.level == guard::StrictnessLevel::hash);
+
+  }
+
+
+  {
+    std::cerr <<"[TEST] "<< "With hash and interface "<<std::endl;
+    std::string json="{\"deleted_rules\":null,"
+                      "\"appended_rules\":"
+                      "[{\"table_id\":"
+                        "\"list_vidpid_rules\","
+                        "\"target\":\"allow\",\""
+                        "fields_arr\":"
+                        "[{\"vid\":\"a000\"},"
+                         "{\"pid\":\"s5a5\"},"
+                         "{\"hash\":\"salkdjlskjf\"},"
+                         "{\"with_interface\":\"{04:00:* 01:11:00}\" }"
+                        "]}]}";
+    // std::cerr <<json<<std::endl;                   
+    const boost::json::value jv= boost::json::parse(json);                    
+    const boost::json::object* ptr_obj= jv.as_object().at("appended_rules").as_array().at(0).if_object();                   
+    guard::GuardRule rule(ptr_obj);
+    
+    assert(rule.target == guard::Target::allow);
+    assert(rule.vid == "a000");
+    assert(rule.pid == "s5a5");
+    assert(rule.hash == "salkdjlskjf");
+    assert(rule.level == guard::StrictnessLevel::hash);
+
+    std::pair<guard::RuleOperator,std::vector<std::string>> pair=std::make_pair(guard::RuleOperator::equals,std::vector<std::string>());
+    pair.second.push_back("04:00:*");
+    pair.second.push_back("01:11:00");
+
+    assert(rule.with_interface.has_value());
+    assert(rule.with_interface.value() == pair);
+  }
+
+
+  {
+    std::cerr <<"[TEST] "<< "Bad interface "<<std::endl;
+    std::string json="{\"deleted_rules\":null,"
+                      "\"appended_rules\":"
+                      "[{\"table_id\":"
+                        "\"list_vidpid_rules\","
+                        "\"target\":\"allow\",\""
+                        "fields_arr\":"
+                        "[{\"vid\":\"a000\"},"
+                         "{\"pid\":\"s5a5\"},"
+                         "{\"hash\":\"salkdjlskjf\"},"
+                         "{\"with_interface\":\"{04:00:* 01:11:00 sal;dfk;}\" }"
+                        "]}]}";
+    // std::cerr <<json<<std::endl;                   
+    const boost::json::value jv= boost::json::parse(json);                    
+    const boost::json::object* ptr_obj= jv.as_object().at("appended_rules").as_array().at(0).if_object();  
+    try{                 
+      guard::GuardRule rule(ptr_obj);
+    }
+    catch(const std::logic_error& ex){
+         assert(std::string(ex.what()) == "Cant parse rule string");
+    }
+   
+  }
+
+  {
+    std::cerr <<"[TEST] "<< "With vidpid and interface "<<std::endl;
+    std::string json="{\"deleted_rules\":null,"
+                      "\"appended_rules\":"
+                      "[{\"table_id\":"
+                        "\"list_vidpid_rules\","
+                        "\"target\":\"allow\",\""
+                        "fields_arr\":"
+                        "[{\"vid\":\"a000\"},"
+                         "{\"pid\":\"s5a5\"},"
+                         "{\"with_interface\":\"{04:00:* 01:11:00}\" }"
+                        "]}]}";
+    // std::cerr <<json<<std::endl;                   
+    const boost::json::value jv= boost::json::parse(json);                    
+    const boost::json::object* ptr_obj= jv.as_object().at("appended_rules").as_array().at(0).if_object();                   
+    guard::GuardRule rule(ptr_obj);
+    
+    assert(rule.target == guard::Target::allow);
+    assert(rule.vid == "a000");
+    assert(rule.pid == "s5a5");
+
+    std::pair<guard::RuleOperator,std::vector<std::string>> pair=std::make_pair(guard::RuleOperator::equals,std::vector<std::string>());
+    pair.second.push_back("04:00:*");
+    pair.second.push_back("01:11:00");
+
+    assert(rule.with_interface.has_value());
+    assert(rule.with_interface.value() == pair);
+    assert(rule.level == guard::StrictnessLevel::vid_pid);
+  }
+
+  
+  {
+    std::cerr <<"[TEST] "<< "With only an interface "<<std::endl;
+    std::string json="{\"deleted_rules\":null,"
+                      "\"appended_rules\":"
+                      "[{\"table_id\":"
+                        "\"list_vidpid_rules\","
+                        "\"target\":\"block\",\""
+                        "fields_arr\":["
+                         "{\"with_interface\":\"{04:00:* 01:11:00}\" }"
+                        "]}]}";
+    // std::cerr <<json<<std::endl;                   
+    const boost::json::value jv= boost::json::parse(json);                    
+    const boost::json::object* ptr_obj= jv.as_object().at("appended_rules").as_array().at(0).if_object();                   
+    guard::GuardRule rule(ptr_obj);
+    
+    assert(rule.target == guard::Target::block);
+
+
+    assert(rule.with_interface.has_value());
+    assert(rule.level == guard::StrictnessLevel::interface);
+  }
+
+   {
+    std::cerr <<"[TEST] "<< "With only an interface "<<std::endl;
+    std::string json="{\"deleted_rules\":null,"
+                      "\"appended_rules\":"
+                      "[{\"table_id\":"
+                        "\"list_vidpid_rules\","
+                        "\"target\":\"block\",\""
+                        "fields_arr\":["
+                         "{\"with_interface\":\"{04:00:* 01:11:00}\" }"
+                        "]}]}";
+    // std::cerr <<json<<std::endl;                   
+    const boost::json::value jv= boost::json::parse(json);                    
+    const boost::json::object* ptr_obj= jv.as_object().at("appended_rules").as_array().at(0).if_object();                   
+    guard::GuardRule rule(ptr_obj);
+    
+    assert(rule.target == guard::Target::block);
+
+
+    assert(rule.with_interface.has_value());
+    assert(rule.level == guard::StrictnessLevel::interface);
+  }
+
+  {
+    std::cerr <<"[TEST] "<< "With vidpid, interface, ports "<<std::endl;
+    std::string json="{\"deleted_rules\":null,"
+                      "\"appended_rules\":"
+                      "[{\"table_id\":"
+                        "\"list_vidpid_rules\","
+                        "\"target\":\"allow\",\""
+                        "fields_arr\":"
+                        "[{\"vid\":\"a000\"},"
+                         "{\"pid\":\"s5a5\"},"
+                         "{\"with_interface\":\"{04:00:* 01:11:00}\" },"
+                         "{\"via-port\":\"none-of {usb1 usb2 usb3}\"}"
+                        "]}]}";
+    // std::cerr <<json<<std::endl;                   
+    const boost::json::value jv= boost::json::parse(json);                    
+    const boost::json::object* ptr_obj= jv.as_object().at("appended_rules").as_array().at(0).if_object();                   
+    guard::GuardRule rule(ptr_obj);
+    
+    assert(rule.target == guard::Target::allow);
+    assert(rule.vid == "a000");
+    assert(rule.pid == "s5a5");
+
+    std::pair<guard::RuleOperator,std::vector<std::string>> pair=std::make_pair(guard::RuleOperator::equals,std::vector<std::string>());
+    pair.second.push_back("04:00:*");
+    pair.second.push_back("01:11:00");
+
+    std::pair<guard::RuleOperator,std::vector<std::string>> ports=std::make_pair(guard::RuleOperator::none_of,std::vector<std::string>());
+    ports.second.push_back("usb1");
+    ports.second.push_back("usb2");
+    ports.second.push_back("usb3");
+
+    assert(rule.with_interface.has_value());
+    assert(rule.with_interface.value() == pair);
+    assert(rule.port.has_value());
+    assert(rule.port == ports);
+    assert(rule.level == guard::StrictnessLevel::vid_pid);
+  }
+
+  {
+    std::cerr <<"[TEST] "<< "With vidpid, interface, ports,conn type "<<std::endl;
+    std::string json="{\"deleted_rules\":null,"
+                      "\"appended_rules\":"
+                      "[{\"table_id\":"
+                        "\"list_vidpid_rules\","
+                        "\"target\":\"allow\",\""
+                        "fields_arr\":"
+                        "[{\"vid\":\"a000\"},"
+                         "{\"pid\":\"s5a5\"},"
+                         "{\"with_interface\":\"{04:00:* 01:11:00}\" },"
+                         "{\"via-port\":\"none-of {usb1 usb2 usb3}\"},"
+                         "{\"with-connect-type\":\"hotplug\"}"
+                        "]}]}";
+    // std::cerr <<json<<std::endl;                   
+    const boost::json::value jv= boost::json::parse(json);                    
+    const boost::json::object* ptr_obj= jv.as_object().at("appended_rules").as_array().at(0).if_object();                   
+    guard::GuardRule rule(ptr_obj);
+    
+    assert(rule.target == guard::Target::allow);
+    assert(rule.vid == "a000");
+    assert(rule.pid == "s5a5");
+
+    std::pair<guard::RuleOperator,std::vector<std::string>> pair=std::make_pair(guard::RuleOperator::equals,std::vector<std::string>());
+    pair.second.push_back("04:00:*");
+    pair.second.push_back("01:11:00");
+
+    std::pair<guard::RuleOperator,std::vector<std::string>> ports=std::make_pair(guard::RuleOperator::none_of,std::vector<std::string>());
+    ports.second.push_back("usb1");
+    ports.second.push_back("usb2");
+    ports.second.push_back("usb3");
+
+    assert(rule.with_interface.has_value());
+    assert(rule.with_interface.value() == pair);
+    assert(rule.port.has_value());
+    assert(rule.port == ports);
+    assert(rule.level == guard::StrictnessLevel::vid_pid);
+    assert(rule.conn_type == "hotplug");
+  }
+
+  {
+    std::cerr <<"[TEST] "<< "With vidpid, interface, ports,conn type, conditions "<<std::endl;
+    std::string json="{\"deleted_rules\":null,"
+                      "\"appended_rules\":"
+                      "[{\"table_id\":"
+                        "\"list_vidpid_rules\","
+                        "\"target\":\"allow\",\""
+                        "fields_arr\":"
+                        "[{\"vid\":\"a000\"},"
+                         "{\"pid\":\"s5a5\"},"
+                         "{\"with_interface\":\"{04:00:* 01:11:00}\" },"
+                         "{\"via-port\":\"none-of {usb1 usb2 usb3}\"},"
+                         "{\"with-connect-type\":\"hotplug\"},"
+                         "{\"cond\":\"if one-of {!localtime(00:00:00) true}\"}"
+                        "]}]}";
+    // std::cerr <<json<<std::endl;                   
+    const boost::json::value jv= boost::json::parse(json);                    
+    const boost::json::object* ptr_obj= jv.as_object().at("appended_rules").as_array().at(0).if_object();                   
+    guard::GuardRule rule(ptr_obj);
+    
+    assert(rule.target == guard::Target::allow);
+    assert(rule.vid == "a000");
+    assert(rule.pid == "s5a5");
+
+    std::pair<guard::RuleOperator,std::vector<std::string>> pair=std::make_pair(guard::RuleOperator::equals,std::vector<std::string>());
+    pair.second.push_back("04:00:*");
+    pair.second.push_back("01:11:00");
+
+    std::pair<guard::RuleOperator,std::vector<std::string>> ports=std::make_pair(guard::RuleOperator::none_of,std::vector<std::string>());
+    ports.second.push_back("usb1");
+    ports.second.push_back("usb2");
+    ports.second.push_back("usb3");
+
+    assert(rule.with_interface.has_value());
+    assert(rule.with_interface.value() == pair);
+    assert(rule.port.has_value());
+    assert(rule.port == ports);
+    assert(rule.level == guard::StrictnessLevel::vid_pid);
+    assert(rule.conn_type == "hotplug");
+
+    std::pair<guard::RuleOperator, std::vector<guard::RuleWithBool>> conds=std::make_pair(guard::RuleOperator::one_of,std::vector<guard::RuleWithBool>());
+    guard::RuleWithOptionalParam rule_with_param1 (guard::RuleConditions::localtime,"00:00:00");
+    guard::RuleWithOptionalParam rule_with_param2 (guard::RuleConditions::always_true,{});
+
+    conds.second.emplace_back(false,rule_with_param1); 
+    conds.second.emplace_back(true,rule_with_param2);
+    assert(rule.cond.has_value());
+    assert(rule.cond->first == guard::RuleOperator::one_of);
+    assert(rule.cond == conds );
+  }
+  
+
+
+  std::cerr << "[TEST] TEST 14 ... OK"<<std::endl;
+}

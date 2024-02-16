@@ -152,7 +152,7 @@ function collectAppendedRules() {
         fields.push({[name]:val});
     });
     // put rule to the result array (appended_rules)
-    appended_rules.push({table_id:table_id,target:$(target).text(),fields_arr:fields});
+    appended_rules.push({table_id:table_id,tr_id:tr_id,target:$(target).text(),fields_arr:fields});
   });
   return appended_rules;
 }
