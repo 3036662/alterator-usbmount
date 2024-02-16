@@ -112,7 +112,7 @@ function addRuleBehaviorAdd(button_id, row_html, table_id) {
     $(table_id).append(
       '<tr class="manual_appeded" id="rule_'+window.last_append_rule_id+'"><td><input class="select_appended" type="checkbox"></td>' +
       '<td>--</td>' +
-      row_html + '<td>' +
+      row_html + '<td class="appended_rule_target">' +
       ($("#hidden_list_type").val() === "radio_white_list" ? "allow" : "block") +
       '</td></tr>');
     bindCheckBox();
@@ -141,6 +141,7 @@ function collectAppendedRules() {
   $(".manual_appeded").each(function () {
     // get a type of rule
     var table_id = $(this).closest('table').attr('id');
+    var target = $(this).find("td.appended_rule_target")[0];
     var tr_id = $(this).attr('id');
     // put all field values to array
     var inputs =$(this).find("input.input_appended");
@@ -151,7 +152,7 @@ function collectAppendedRules() {
         fields.push({[name]:val});
     });
     // put rule to the result array (appended_rules)
-    appended_rules.push({table_id:table_id,fields_arr:fields});
+    appended_rules.push({table_id:table_id,target:$(target).text(),fields_arr:fields});
   });
   return appended_rules;
 }
