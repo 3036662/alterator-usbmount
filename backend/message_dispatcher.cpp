@@ -133,7 +133,7 @@ bool MessageDispatcher::Dispatch(const LispMessage &msg) {
     std::cout << ToLispAssoc(
         SerializableForLisp<vecPairs>(std::move(vec_result)));
     std::cout.flush();
-    std::cerr << "[DEBUG] Elapsed(ms)="
+    std::cerr << "[DEBUG] Elapsed(Nanoseconds)="
               << since<std::chrono::nanoseconds>(start).count() << std::endl;
     // if (guard.DeleteRules(ParseJsonIntArray(msg.params.at("rules_ids")))) {
     //   std::cout << mess_beg << "status" << WrapWithQuotes("OK") << mess_end;
