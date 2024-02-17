@@ -11,12 +11,31 @@ std::string ToLisp([[maybe_unused]] const std::string &name,
   return res;
 }
 
+std::string EscapeQuotes(const std::string &str) {
+  std::string res;
+  for (auto it = str.cbegin(); it != str.cend(); ++it) {
+    if (*it == '\"' && res.back() != '\\') {
+      res.push_back('\\');
+    }
+    res.push_back(*it);
+  }
+  return res;
+}
+
 std::string WrapWithQuotes(const std::string &str) {
   std::string res;
   res += "\"";
   res += str;
   res += "\"";
   return res;
+}
+
+std::string QuoteIfNotQuoted(const std::string &str) {
+  if (str.empty())
+    return "\"\"";
+  if (str[0] != '\"' || str.back() != '\"')
+    return WrapWithQuotes(str);
+  return str;
 }
 
 std::vector<guard::UsbDevice> fakeLibGetUsbList() {
@@ -58,17 +77,6 @@ std::vector<std::string> FindAllFilesInDirRecursive(const std::string &dir,
         res.emplace_back(it_entry->path().string());
       }
     }
-  }
-  return res;
-}
-
-std::string EscapeQuotes(const std::string &str) {
-  std::string res;
-  for (auto it = str.cbegin(); it != str.cend(); ++it) {
-    if (*it == '\"' && res.back() != '\\') {
-      res.push_back('\\');
-    }
-    res.push_back(*it);
   }
   return res;
 }

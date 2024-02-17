@@ -5,6 +5,7 @@
 #include <boost/algorithm/string/regex.hpp>
 #include <functional>
 #include <map>
+#include <sstream>
 
 namespace guard {
 
@@ -131,19 +132,24 @@ GuardRule::GuardRule(const std::string &raw_str) {
 
 GuardRule::GuardRule(const boost::json::object *const ptr_obj) {
   namespace json = boost::json;
+  std::string target;
+  std::string vid;
+  std::string pid;
+  std::string hash;
+  std::string parent_hash;
+  std::string device_name;
+  std::string serial;
+  std::string port;
+  std::string interface;
+  std::string connection;
+  std::string condition;
+  std::string raw;
 
   // target
   if (!ptr_obj->contains("target")) {
     throw std::logic_error("Rule target is mandatory");
   }
-  const json::string *tr_string = ptr_obj->at("target").if_string();
-  auto it_target = std::find_if(
-      map_target.cbegin(), map_target.cend(),
-      [tr_string](const auto &el) { return el.second == *tr_string; });
-  if (it_target == map_target.cend()) {
-    throw std::logic_error("Can't parse target string");
-  }
-  target = it_target->first;
+  target = ptr_obj->at("target").as_string();
 
   // fields
   if (!ptr_obj->contains("fields_arr") ||
@@ -153,8 +159,6 @@ GuardRule::GuardRule(const boost::json::object *const ptr_obj) {
   }
   const json::array *ptr_fields = ptr_obj->at("fields_arr").if_array();
 
-  std::function<bool(const std::string &)> default_predicat =
-      [this](const std::string &val) { return !IsReservedWord(val); };
   // for each field in array
   for (auto it = ptr_fields->cbegin(); it != ptr_fields->cend(); ++it) {
     if (!it->is_object()) {
@@ -170,59 +174,60 @@ GuardRule::GuardRule(const boost::json::object *const ptr_obj) {
       }
       // write fields
       if (field == "vid") {
-        vid = value;
+        vid = std::move(value);
       } else if (field == "pid") {
-        pid = value;
+        pid = std::move(value);
       } else if (field == "hash") {
-        hash = value;
+        hash = std::move(value);
       } else if (field == "parent_hash") {
-        parent_hash = value;
+        parent_hash = std::move(value);
       } else if (field == "device_name") {
-        device_name = value;
+        device_name = std::move(value);
       } else if (field == "serial") {
-        serial = value;
+        serial = std::move(value);
       } else if (field == "via-port") {
-        std::string str_for_parser = "via-port ";
-        str_for_parser += value;
-        port = ParseTokenWithOperator(SplitRawRule(str_for_parser), "via-port",
-                                      default_predicat);
+        port = std::move(value);
       } else if (field == "with_interface") {
-        std::string str_for_parser = "with_interface ";
-        str_for_parser += value;
-        auto splitted = SplitRawRule(str_for_parser);
-        // if a rules contains  with-interface { i1, i2 } array - insert the
-        // "equals" operator
-        auto it_with_interface =
-            std::find(splitted.begin(), splitted.end(), "with_interface");
-        if (it_with_interface != splitted.end()) {
-          ++it_with_interface;
-          if (it_with_interface != splitted.end() &&
-              *it_with_interface == "{") {
-            splitted.insert(it_with_interface, "equals");
-          }
-        }
-        with_interface = ParseTokenWithOperator(
-            splitted, "with_interface", [](const std::string &val) {
-              return val.size() > 2 && val.find(':') != std::string::npos;
-            });
+        interface = std::move(value);
       } else if (field == "with-connect-type") {
-        conn_type = value;
+        connection = std::move(value);
       } else if (field == "cond") {
-        cond = ParseConditions(SplitRawRule(value));
+        condition = std::move(value);
       }
       // for a raw rule
       else if (field == "raw") {
-        *this = GuardRule(value);
+        raw = std::move(value);
       }
     }
   }
 
-  // all fields are parsed - validate "this" object -
-  // try build a new object from string representation of "this
-  // if something is wrong with "this" exception will be thrown while
-  // constructing tmp
-  GuardRule tmp(this->BuildString());
-  level = tmp.level;
+  std::ostringstream ss;
+  if (!raw.empty()) {
+    ss << raw;
+  } else {
+    ss << target << " ";
+    if (!vid.empty())
+      ss << "id " << vid << ":" << pid << " ";
+    if (!serial.empty())
+      ss << "serial " << serial << " ";
+    if (!device_name.empty())
+      ss << "name " << device_name << " ";
+    if (!hash.empty())
+      ss << "hash " << hash << " ";
+    if (!parent_hash.empty())
+      ss << "parent-hash " << parent_hash << " ";
+    if (!port.empty())
+      ss << "via-port " << port << " ";
+    if (!interface.empty())
+      ss << "with-interface " << interface << " ";
+    if (!connection.empty())
+      ss << "with-connect-type " << connection << " ";
+    if (!condition.empty())
+      ss << condition;
+  }
+  // std::cerr<<ss.str()<<std::endl;
+  *this = GuardRule(ss.str());
+  // std::cerr<<BuildString()<<std::endl;
 }
 
 /******************************************************************************/
@@ -436,7 +441,7 @@ GuardRule::ParseConditions(const std::vector<std::string> &splitted) {
     auto range_begin = it_param1;
     ++range_begin;
     if (range_begin == splitted.cend() || *range_begin != "{") {
-      throw ex;
+      throw std::logic_error("{ expected");
     }
     ++range_begin;
     if (range_begin == splitted.cend()) {
@@ -444,7 +449,7 @@ GuardRule::ParseConditions(const std::vector<std::string> &splitted) {
     }
     auto range_end = std::find(range_begin, splitted.cend(), "}");
     if (range_end == splitted.cend() || range_begin >= range_end) {
-      throw ex;
+      throw std::logic_error("} expected");
     }
     std::vector<RuleWithBool> tmp;
     for (auto it = range_begin; it != range_end; ++it) {
@@ -473,6 +478,7 @@ RuleWithBool GuardRule::ParseOneCondition(
   if (exclamation_point) {
     ++it_range_beg;
   }
+
   if (it_range_beg == it_range_end)
     throw ex;
   auto it_condition =
@@ -484,39 +490,37 @@ RuleWithBool GuardRule::ParseOneCondition(
                      return boost::contains(pair.second, *it_range_beg);
                    });
   if (it_condition == map_conditions.cend())
-    throw ex;
+    throw std::logic_error("Cant parse this condition - " + *it_range_beg);
   RuleConditions condition = it_condition->first; // goes to result
 
   // Check if condition may have parameters
   bool may_have_params = CanConditionHaveParams(condition);
+  bool must_have_params = MustConditionHaveParams(condition);
   // The condition, exclamation and may_have parameters are known
-  // Check if there any parameters
   ++it_range_beg;
-  // some params found
-  if (it_range_beg != it_range_end) {
-    /* Conditions are the last block of rule string
-     * So, if a condition can not have any parameters, existance of any
-     * parameters means an error. */
-    if (!may_have_params) {
-      std::cerr << "[ERROR] Condition "
-                << map_conditions.find(condition)->second
-                << " can't have parameters." << std::endl;
-      throw ex;
+  RuleWithOptionalParam rule_with_param{condition, std::nullopt};
+  // Check if there any parameters
+  if (it_range_beg != it_range_end && may_have_params) {
+    std::string par_value =
+        ParseConditionParameter(it_range_beg, it_range_end, must_have_params);
+    // if a parameter found
+    if (!par_value.empty()) {
+      rule_with_param.first = ConvertToConditionWithParam(condition);
+      rule_with_param.second = par_value;
+      // move iterator to the end of current token
+      while (it_range_beg != it_range_end && *it_range_beg != ")") {
+        ++it_range_beg;
+      }
     }
-    std::string par_value = ParseConditionParameter(it_range_beg, it_range_end);
-    condition = ConvertToConditionWithParam(condition);
-    RuleWithOptionalParam rule_with_param{condition, par_value};
-    res = {!exclamation_point, rule_with_param};
-    // move iterator to the end of current token
-    while (it_range_beg != it_range_end && *it_range_beg != ")") {
-      ++it_range_beg;
-    }
+  } else if (it_range_beg == it_range_end && must_have_params) {
+    --it_range_beg;
+    throw std::logic_error("No parameters found for condition " +
+                           *it_range_beg);
   }
-  // no parameters found
-  else {
-    RuleWithOptionalParam rule_with_param{condition, std::nullopt};
-    res = {!exclamation_point, rule_with_param};
-  }
+  // move iterator back if no params were parsed
+  if (!rule_with_param.second.has_value())
+    --it_range_beg;
+  res = {!exclamation_point, std::move(rule_with_param)};
   return res;
 }
 
@@ -532,16 +536,29 @@ bool GuardRule::CanConditionHaveParams(RuleConditions cond) const {
          cond == RuleConditions::random;
 }
 
+bool GuardRule::MustConditionHaveParams(RuleConditions cond) const {
+  return cond == RuleConditions::localtime ||
+         cond == RuleConditions::allowed_matches ||
+         cond == RuleConditions::rule_applied_past ||
+         cond == RuleConditions::rule_evaluated_past;
+}
+
 /******************************************************************************/
 
 std::string GuardRule::ParseConditionParameter(
     std::vector<std::string>::const_iterator it_start,
-    std::vector<std::string>::const_iterator it_end) const {
+    std::vector<std::string>::const_iterator it_end,
+    bool must_have_params) const {
   std::logic_error ex("Can't parse parameters for condition");
   // Parse parameters.
+  // std::cerr<<"must have param"<<must_have_params<<std::endl;
+  // std::cerr<<"params begin"<<*it_start<<std::endl;
   auto it_open_round_brace = it_start;
   if (*it_open_round_brace != "(") {
-    throw ex;
+    if (must_have_params)
+      throw std::logic_error("( expected");
+    else
+      return "";
   }
   ++it_start;
   if (it_start == it_end) {
@@ -573,7 +590,8 @@ GuardRule::ConvertToConditionWithParam(RuleConditions cond) const {
 std::string GuardRule::ConditionsToString() const {
   std::string res;
   if (!cond)
-    return "no conditions \n";
+    return "";
+  // check if any operator
   if (map_operator.count(cond->first)) {
     res += map_operator.at(cond->first);
     if (cond->first != RuleOperator::no_operator)
@@ -581,14 +599,21 @@ std::string GuardRule::ConditionsToString() const {
   }
   int counter = 0;
   for (const auto &rule_with_bool : cond->second) {
+    // look in conditions map
     if (!map_conditions.count(rule_with_bool.second.first))
       continue;
     if (counter)
       res += " ";
+    // check for negotiation
     if (!rule_with_bool.first)
       res += '!';
+    // write string representation of rule into res
     res += map_conditions.at(rule_with_bool.second.first);
+    // check if any parameters exist
     if (rule_with_bool.second.second) {
+      if (rule_with_bool.second.first == RuleConditions::localtime ||
+          rule_with_bool.second.first == RuleConditions::allowed_matches)
+        res += "(";
       res += *rule_with_bool.second.second;
       res += ")";
     }
@@ -604,73 +629,56 @@ std::string GuardRule::ConditionsToString() const {
 std::string
 GuardRule::BuildString(bool build_parent_hash,
                        bool with_interface_array_no_operator) const noexcept {
-  std::string res;
-  res += map_target.at(target);
-  if (vid && pid) {
-    res += " id ";
-    res += *vid;
-    res += ":";
-    res += *pid;
-  }
-  if (serial) {
-    res += " serial ";
-    res += *serial;
-  }
-  if (device_name) {
-    res += " name ";
-    res += *device_name;
-  }
-  if (hash) {
-    res += " hash ";
-    res += *hash;
-  }
-  if (build_parent_hash && parent_hash) {
-    res += " parent-hash ";
-    res += *parent_hash;
-  }
-
+  std::ostringstream res;
+  res << map_target.at(target);
+  if (vid && pid)
+    res << " id " << *vid << ":" << *pid;
+  if (serial)
+    res << " serial " << QuoteIfNotQuoted(*serial);
+  if (device_name)
+    res << " name " << QuoteIfNotQuoted(*device_name);
+  if (hash)
+    res << " hash " << QuoteIfNotQuoted(*hash);
+  if (build_parent_hash && parent_hash)
+    res << " parent-hash " << QuoteIfNotQuoted(*parent_hash);
   if (port) {
-    res += " via-port ";
-    res += map_operator.at(port->first);
+    res << " via-port ";
+    res << map_operator.at(port->first);
     if (port->second.size() > 1) {
-      res += "{ ";
-    }
-    for (const auto &p : port->second) {
-      res += p;
-    }
-    if (port->second.size() > 1) {
-      res += " }";
+      res << "{ ";
+      for (const auto &p : port->second)
+        res << QuoteIfNotQuoted(p) << " ";
+      res << "} ";
+    } else {
+      res << QuoteIfNotQuoted(port->second[0]);
     }
   }
 
   if (with_interface) {
-    res += " with-interface ";
+    res << " with-interface ";
     if (with_interface->second.size() > 1) {
       if (!with_interface_array_no_operator ||
           with_interface->first != RuleOperator::equals) {
-        res += map_operator.at(with_interface->first);
+        res << map_operator.at(with_interface->first);
       }
-      res += "{";
+      res << "{";
       for (const auto &i : with_interface->second) {
-        res += " ";
-        res += i;
+        res << " " << i;
       }
-      res += " }";
+      res << " }";
     } else if (with_interface->second.size() == 1) {
-      res += with_interface->second[0];
+      res << with_interface->second[0];
     }
   }
-  if (conn_type) {
-    res += " with-connect-type ";
-    res += *conn_type;
-  }
+  if (conn_type)
+    res << " with-connect-type " << QuoteIfNotQuoted(*conn_type);
 
   if (cond) {
-    res += " ";
-    res += ConditionsToString();
+    res << " " << ConditionsToString();
   }
-  boost::trim(res);
-  return res;
+  std::string result = res.str();
+  boost::trim(result);
+  return result;
 }
 
 /**********************************************************************************/

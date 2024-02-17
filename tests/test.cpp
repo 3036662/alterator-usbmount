@@ -1,14 +1,15 @@
 #include "guard.hpp"
 #include "guard_rule.hpp"
+#include "systemd_dbus.hpp"
 #include <algorithm>
 #include <cassert>
 #include <cstdlib>
 #include <filesystem>
 #include <iostream>
 #include <string>
+#include <thread>
 #include <unordered_map>
 #include <unordered_set>
-#include "systemd_dbus.hpp"
 
 void Test::Run1() {
   std::cout << "Test udev rules files search" << std::endl;
@@ -611,6 +612,86 @@ std::cerr << "[TEST] rule-evaluated time with no parameter" <<std::endl;
 
   }
 
+
+
+  std::cerr << "[TEST] id, none-of  with sequense of coditions +localtime" <<std::endl;
+  str = "allow id 8564:1000 if one-of{localtime(HH:MM:SS) true}";
+  {
+    GuardRule parser(str);
+    std::string cond_result=parser.ConditionsToString();
+    std::string expected="one-of{localtime(HH:MM:SS) true}";
+    std::cerr <<cond_result <<"==" << expected<<std::endl;
+    assert(cond_result == expected);
+    assert(parser.target == Target::allow);
+    assert(*parser.vid=="8564");
+    assert(*parser.pid=="1000");
+  }
+
+
+  std::cerr << "[TEST] id, one-of  with sequense of coditions +allow-matches" <<std::endl;
+  str = "allow id 8564:1000 if one-of{allowed-matches(query) localtime(HH:MM:SS)}";
+  {
+    GuardRule parser(str);
+    std::string cond_result=parser.ConditionsToString();
+    std::string expected="one-of{allowed-matches(query) localtime(HH:MM:SS)}";
+    std::cerr <<cond_result <<"==" << expected<<std::endl;
+    assert(cond_result == expected);
+    assert(parser.target == Target::allow);
+    assert(*parser.vid=="8564");
+    assert(*parser.pid=="1000");
+  }
+
+   std::cerr << "[TEST] id, one-of  with sequense of coditions +allow-matches ++ rule-applied(past_duration)" <<std::endl;
+  str = "allow id 8564:1000 if one-of{allowed-matches(query) localtime(HH:MM:SS) rule-applied(past_duration)}";
+  {
+    GuardRule parser(str);
+    std::string cond_result=parser.ConditionsToString();
+    std::string expected="one-of{allowed-matches(query) localtime(HH:MM:SS) rule-applied(past_duration)}";
+    std::cerr <<cond_result <<"==" << expected<<std::endl;
+    assert(cond_result == expected);
+    assert(parser.target == Target::allow);
+    assert(*parser.vid=="8564");
+    assert(*parser.pid=="1000");
+  }
+
+    std::cerr << "[TEST] id, one-of  with sequense of coditions +allow-matches ++ rule-applied(past_duration)  rule-applied  + random(p_true) +random" <<std::endl;
+  str = "allow id 8564:1000 if one-of{allowed-matches(query) localtime(HH:MM:SS) rule-applied(past_duration) rule-applied random(p_true)}";
+  {
+    GuardRule parser(str);
+    std::string cond_result=parser.ConditionsToString();
+    std::string expected="one-of{allowed-matches(query) localtime(HH:MM:SS) rule-applied(past_duration) rule-applied random(p_true)}";
+    std::cerr <<cond_result <<"==" << expected<<std::endl;
+    assert(cond_result == expected);
+    assert(parser.target == Target::allow);
+    assert(*parser.vid=="8564");
+    assert(*parser.pid=="1000");
+  }
+
+  std::cerr << "[TEST] id, one-of  with sequense of coditions  true +allow-matches ++ rule-applied(past_duration)  rule-applied  + random(p_true) +random" <<std::endl;
+  str = "allow id 8564:1000 if one-of{true allowed-matches(query) localtime(HH:MM:SS) rule-applied(past_duration) rule-applied random(p_true)}";
+  {
+    GuardRule parser(str);
+    std::string cond_result=parser.ConditionsToString();
+    std::string expected="one-of{true allowed-matches(query) localtime(HH:MM:SS) rule-applied(past_duration) rule-applied random(p_true)}";
+    std::cerr <<cond_result <<"==" << expected<<std::endl;
+    assert(cond_result == expected);
+    assert(parser.target == Target::allow);
+    assert(*parser.vid=="8564");
+    assert(*parser.pid=="1000");
+  }
+
+  std::cerr << "[TEST] allowed-matches without params fails" <<std::endl;
+  str = "allow id 8564:1000 if allowed-matches";
+  {
+    try{
+      GuardRule parser(str);
+      std::string cond_result=parser.ConditionsToString();
+    }
+    catch (const std::logic_error& ex){
+      assert(std::string(ex.what()) == "No parameters found for condition allowed-matches");
+    }
+  }
+
   str="allow id 30c9:0030 serial \"0001\" name \"Integrated Camera\" hash \"94ed2Mm6HGRsDZTjqV8TdnQWRDdUvlDdTmMm+henvVk=\" parent-hash \"jEP/6WzviqdJ5VSeTUY8PatCNBKeaREvo2OqdplND/o=\" with-interface { 0e:01:00 0e:02:00 0e:02:00 0e:02:00 0e:02:00 0e:02:00 0e:02:00 0e:02:00 0e:02:00 } with-connect-type \"hardwired\"";
   {
     GuardRule parser(str);
@@ -701,7 +782,7 @@ void Test::Run13(){
     }
   }
   std::cerr <<"OK"<< std::endl;
-
+ std::this_thread::sleep_for(std::chrono::milliseconds(100));
   // stop
   std::cerr <<"[TEST] Stop service ...";
   {
@@ -710,6 +791,7 @@ void Test::Run13(){
   }
   std::cerr <<"OK"<<std::endl;
 
+  std::this_thread::sleep_for(std::chrono::milliseconds(100));
   // start
   std::cerr << "[TEST] Start service ...";
   {
@@ -717,6 +799,8 @@ void Test::Run13(){
     assert (val.has_value() && val.value());
   }
   std::cerr <<"OK"<<std::endl;
+
+  std::this_thread::sleep_for(std::chrono::milliseconds(100));
   // restart
    std::cerr << "[TEST] Restart service ...";
   {
@@ -724,6 +808,7 @@ void Test::Run13(){
     assert (val.has_value() && val.value());
   }
   std::cerr <<"OK"<<std::endl;
+  std::this_thread::sleep_for(std::chrono::milliseconds(100));
   //  return to init state
   if (init_state && !init_state.value()){
     sd.StopUnit("usbguard.service");

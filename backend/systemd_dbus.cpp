@@ -80,7 +80,7 @@ std::optional<bool> Systemd::StartUnit(const std::string &unit_name) noexcept {
       for (int i = 0; i < 10; ++i) {
         std::cerr << "[INFO] Waiting for systemd starts the sevice ..."
                   << std::endl;
-        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+        std::this_thread::sleep_for(std::chrono::milliseconds(200));
         isActive = IsUnitActive(unit_name);
         if (isActive.has_value() && isActive.value())
           return true;
@@ -112,7 +112,7 @@ Systemd::RestartUnit(const std::string &unit_name) noexcept {
       for (int i = 0; i < 10; ++i) {
         std::cerr << "[INFO] Waiting for systemd starts the sevice ..."
                   << std::endl;
-        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+        std::this_thread::sleep_for(std::chrono::milliseconds(200));
         isActive = IsUnitActive(unit_name);
         if (isActive.has_value() && isActive.value())
           return true;
@@ -148,7 +148,7 @@ std::optional<bool> Systemd::StopUnit(const std::string &unit_name) noexcept {
       for (int i = 0; i < 10; ++i) {
         std::cerr << "[INFO] Waiting for systemd stops the sevice ..."
                   << std::endl;
-        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+        std::this_thread::sleep_for(std::chrono::milliseconds(200));
         isActive = IsUnitActive(unit_name);
         if (isActive.has_value() && !isActive.value())
           return true;

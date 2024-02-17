@@ -226,9 +226,10 @@ private:
    * @param it_end  An iterator, pointing to the end of token sequence.
    * @return A string value of parameter.
    */
-  std::string ParseConditionParameter(
-      std::vector<std::string>::const_iterator it_start,
-      std::vector<std::string>::const_iterator it_end) const;
+  std::string
+  ParseConditionParameter(std::vector<std::string>::const_iterator it_start,
+                          std::vector<std::string>::const_iterator it_end,
+                          bool must_have_params = false) const;
 
   /**
    * @brief Checks if a condition is allowed to have parameters.
@@ -239,6 +240,7 @@ private:
    */
   bool CanConditionHaveParams(RuleConditions cond) const;
 
+  bool MustConditionHaveParams(RuleConditions cond) const;
   /**
    * @brief Choose an appropriate emun for RuleConditions
    * in case it has parameters.

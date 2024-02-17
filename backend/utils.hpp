@@ -12,6 +12,8 @@
 /// @return New wrapped string
 std::string WrapWithQuotes(const std::string &str);
 
+std::string QuoteIfNotQuoted(const std::string &str);
+
 /// @brief Mock usb list just for develop and testing purposes
 /// @return Mocked vector of Usbdevice
 std::vector<guard::UsbDevice> fakeLibGetUsbList();
