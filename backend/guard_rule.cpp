@@ -126,9 +126,8 @@ GuardRule::GuardRule(const std::string &raw_str) {
 
 /******************************************************************************/
 // This constructor doesn't have its own validation behavior.
-// It just parses a JSON objects and puts values into member fields.
-// When finished, it will try to construct a GuardRule object from own
-// string representation to be sure that all fields are OK.
+// It just parses a JSON objects and puts values into a string.
+// When finished, it will try to construct a GuardRule object from a string
 
 GuardRule::GuardRule(const boost::json::object *const ptr_obj) {
   namespace json = boost::json;
@@ -225,9 +224,7 @@ GuardRule::GuardRule(const boost::json::object *const ptr_obj) {
     if (!condition.empty())
       ss << condition;
   }
-  // std::cerr<<ss.str()<<std::endl;
   *this = GuardRule(ss.str());
-  // std::cerr<<BuildString()<<std::endl;
 }
 
 /******************************************************************************/
@@ -287,6 +284,7 @@ std::vector<std::string> GuardRule::SplitRawRule(std::string raw_str) {
 /******************************************************************************/
 
 bool GuardRule::IsReservedWord(const std::string &str) {
+
   if (str.empty())
     return false;
   if (*str.cbegin() == '\"')
@@ -312,6 +310,7 @@ std::optional<std::string>
 GuardRule::ParseToken(const std::vector<std::string> &splitted,
                       const std::string &name,
                       std::function<bool(const std::string &)> predicat) const {
+
   std::logic_error ex("Cant parse rule string");
   std::optional<std::string> res;
   auto it_name = std::find(splitted.cbegin(), splitted.cend(), name);
@@ -325,7 +324,6 @@ GuardRule::ParseToken(const std::vector<std::string> &splitted,
       throw ex;
     }
   }
-
   return res;
 }
 
@@ -404,6 +402,7 @@ GuardRule::ParseTokenWithOperator(
 
 std::optional<std::pair<RuleOperator, std::vector<RuleWithBool>>>
 GuardRule::ParseConditions(const std::vector<std::string> &splitted) {
+
   std::logic_error ex("Cant parse conditions");
   std::optional<std::pair<RuleOperator, std::vector<RuleWithBool>>> res;
   // ------------------------------------------------------
@@ -551,8 +550,6 @@ std::string GuardRule::ParseConditionParameter(
     bool must_have_params) const {
   std::logic_error ex("Can't parse parameters for condition");
   // Parse parameters.
-  // std::cerr<<"must have param"<<must_have_params<<std::endl;
-  // std::cerr<<"params begin"<<*it_start<<std::endl;
   auto it_open_round_brace = it_start;
   if (*it_open_round_brace != "(") {
     if (must_have_params)

@@ -110,10 +110,9 @@ public:
    * @param ptr_obj boost json object
    * @throws std::logic_error
    * @details Target field is mandatory.
-   *  This constructor doesn't have its own validation behavior.
-   *  It just parses a JSON object and puts values into member fields.
-   *  When finished, it will try to construct a GuardRule object from own
-   * string representation to be sure that all fields are OK.
+   * This constructor doesn't have its own validation behavior.
+   * It just parses a JSON objects and puts values into a string.
+   * When finished, it will try to construct a GuardRule object from a string
    * @code
    * {
    *  "table_id":"list_vidpid_rules",
