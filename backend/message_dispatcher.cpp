@@ -133,8 +133,8 @@ bool MessageDispatcher::Dispatch(const LispMessage &msg) {
     std::cout << ToLispAssoc(
         SerializableForLisp<vecPairs>(std::move(vec_result)));
     std::cout.flush();
-    std::cerr << "[DEBUG] Elapsed(Nanoseconds)="
-              << since<std::chrono::nanoseconds>(start).count() << std::endl;
+    std::cerr << "[DEBUG] Elapsed(ms)="
+              << since(start).count() << std::endl;
     return true;
   }
 

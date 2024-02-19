@@ -221,9 +221,9 @@ GuardRule::GuardRule(const boost::json::object *const ptr_obj) {
     if (!condition.empty())
       ss << condition;
   }
-  std::cerr << "BUILD FROM JSON " << ss.str() << std::endl;
+  //std::cerr << "BUILD FROM JSON " << ss.str() << std::endl;
   *this = GuardRule(ss.str());
-  std::cerr << "BUILD FROM OBJ " << BuildString() << std::endl;
+  //std::cerr << "BUILD FROM OBJ " << BuildString() << std::endl;
 }
 
 /******************************************************************************/

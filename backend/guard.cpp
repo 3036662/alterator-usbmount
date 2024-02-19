@@ -237,7 +237,7 @@ std::string Guard::ParseJsonRulesChanges(const std::string &msg) noexcept {
   // TODO parse the json and process
   try {
     json::value json_value = json::parse(msg);
-    std::cerr << json_value << std::endl;
+    //std::cerr << json_value << std::endl;
     json::object *ptr_jobj = json_value.if_object();
     // if some new rules were added
     if (ptr_jobj && ptr_jobj->contains("appended_rules")) {
@@ -284,7 +284,9 @@ std::string Guard::ParseJsonRulesChanges(const std::string &msg) noexcept {
   }
 
   // after all rules are parsed
-  
+  // parse rules to delete
+  //std::vector<>
+
   // std::cerr << obj_result;
   return json::serialize(std::move(obj_result));
 }
