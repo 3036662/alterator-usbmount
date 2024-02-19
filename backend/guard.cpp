@@ -308,7 +308,7 @@ std::optional<std::string> Guard::ParseJsonRulesChanges(const std::string &msg) 
   // build one string for file overwrite
   std::string str_new_rules;
   for (const auto& r: *new_rules){
-    str_new_rules+=r.BuildString();
+    str_new_rules+=r.BuildString(true,true);
     str_new_rules+="\n";
   }
   // overwrite the rules and test launch

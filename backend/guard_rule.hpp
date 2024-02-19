@@ -141,8 +141,8 @@ public:
    * builds
    */
   std::string
-  BuildString(bool build_parent_hash = false,
-              bool with_interface_array_no_operator = false) const noexcept;
+  BuildString(bool build_parent_hash = true,
+              bool with_interface_array_no_operator = true) const noexcept;
 
   vecPairs SerializeForLisp() const;
 
