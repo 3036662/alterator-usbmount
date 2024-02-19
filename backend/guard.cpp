@@ -244,13 +244,11 @@ std::string Guard::ParseJsonRulesChanges(const std::string &msg) noexcept {
       json::array *ptr_json_array_rules =
           ptr_jobj->at("appended_rules").if_array();
       if (ptr_json_array_rules && !ptr_json_array_rules->empty()) {
-        size_t total_rules = ptr_json_array_rules->size();
         // for each rule
         for (auto it = ptr_json_array_rules->cbegin();
              it != ptr_json_array_rules->cend(); ++it) {
           const json::object *ptr_json_rule = it->if_object();
           if (ptr_json_rule) {
-            //std::cerr << "RULE:" << *ptr_json_rule;
             const json::string *tr_id = ptr_json_rule->at("tr_id").if_string();
             // try to build a rule
             try {
