@@ -44,8 +44,7 @@ GuardRule::GuardRule(const std::string &raw_str) {
   if (splitted.empty())
     throw ex;
 
-  // Map strings to values.
-  // ----------------------------------------
+  // Map strings to values/
   // The target is mandatory.
   auto it_target = std::find_if(
       map_target.cbegin(), map_target.cend(),
@@ -57,7 +56,6 @@ GuardRule::GuardRule(const std::string &raw_str) {
   if (splitted.size() == 1)
     return;
 
-  // ----------------------------------------
   // id (vid:pid)
   // toke id MUST contain a ':' symbol
   std::optional<std::string> str_id =
@@ -75,7 +73,6 @@ GuardRule::GuardRule(const std::string &raw_str) {
       throw ex;
   }
 
-  // ----------------------------------------
   // Hash, device_name, serial, port, and with_interface may or may not exist in
   // the string. default_predicat - Function is the default behavior of values
   // validating.
@@ -224,9 +221,9 @@ GuardRule::GuardRule(const boost::json::object *const ptr_obj) {
     if (!condition.empty())
       ss << condition;
   }
-  std::cerr <<"BUILD FROM JSON " <<ss.str()<<std::endl;
+  std::cerr << "BUILD FROM JSON " << ss.str() << std::endl;
   *this = GuardRule(ss.str());
-  std::cerr <<"BUILD FROM OBJ " << BuildString() <<std::endl;
+  std::cerr << "BUILD FROM OBJ " << BuildString() << std::endl;
 }
 
 /******************************************************************************/
@@ -384,6 +381,9 @@ GuardRule::ParseTokenWithOperator(
                   << std::endl;
         throw ex;
       }
+      if (std::distance(it_range_begin, it_range_end) == 1) {
+        throw std::logic_error("Empty array {} is not supported");
+      }
       // fill result with values
       auto it_val = it_range_begin;
       ++it_val;
@@ -408,7 +408,6 @@ GuardRule::ParseConditions(const std::vector<std::string> &splitted) {
 
   std::logic_error ex("Cant parse conditions");
   std::optional<std::pair<RuleOperator, std::vector<RuleWithBool>>> res;
-  // ------------------------------------------------------
   // Check if there are any conditions - look for "if"
   auto it_if_operator = std::find(splitted.cbegin(), splitted.cend(), "if");
   if (it_if_operator == splitted.cend())
@@ -427,21 +426,17 @@ GuardRule::ParseConditions(const std::vector<std::string> &splitted) {
         return val.second == *it_param1;
       });
   have_operator = it_operator != map_operator.cend();
-  // std::cerr << "Has operator " << have_operator << std::endl;
 
-  // ------------------------------------------------------
   // No operator was found
   if (!have_operator) {
     std::vector<RuleWithBool> tmp;
     tmp.push_back(ParseOneCondition(it_param1, splitted.cend()));
     res = {RuleOperator::no_operator, std::move(tmp)};
-    // ++it_param1;
-    // if ( it_param1!=splitted.cend()){
-    //   throm std::logic_error("Some text was found after a condition");
-    // }
+    ++it_param1;
+    if (it_param1 != splitted.cend()) {
+      throw std::logic_error("Some text was found after a condition");
+    }
   } else {
-    // std::cerr << "Operator was found =" << it_operator->second << std::endl;
-    // Find the array bounds.
     RuleOperator op = it_operator->first; // goes to the result
 
     auto range_begin = it_param1;
@@ -457,14 +452,20 @@ GuardRule::ParseConditions(const std::vector<std::string> &splitted) {
     if (range_end == splitted.cend() || range_begin >= range_end) {
       throw std::logic_error("} expected");
     }
+    if (std::distance(range_begin, range_end) == 1) {
+      throw std::logic_error("Empty array {} is not supported");
+    }
     std::vector<RuleWithBool> tmp;
     for (auto it = range_begin; it != range_end; ++it) {
       tmp.push_back(ParseOneCondition(it, range_end));
-      /* it iterator will be incremented by parsing function
-       * checlk bounds after parsing
-       */
+      // it iterator will be incremented by parsing function
+      // check bounds after parsing
       if (it == range_end)
         break;
+    }
+    ++range_end;
+    if (range_end != splitted.cend()) {
+      throw std::logic_error("Some text was found after conditions array");
     }
     res = {op, std::move(tmp)};
   }
@@ -541,6 +542,8 @@ bool GuardRule::CanConditionHaveParams(RuleConditions cond) const {
          cond == RuleConditions::rule_evaluated_past ||
          cond == RuleConditions::random;
 }
+
+/******************************************************************************/
 
 bool GuardRule::MustConditionHaveParams(RuleConditions cond) const {
   return cond == RuleConditions::localtime ||
