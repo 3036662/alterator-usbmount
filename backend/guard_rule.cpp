@@ -194,7 +194,7 @@ GuardRule::GuardRule(const boost::json::object *const ptr_obj) {
         condition = std::move(value);
       }
       // for a raw rule
-      else if (field == "raw") {
+      else if (field == "raw_rule") {
         raw = std::move(value);
       }
     }
@@ -224,7 +224,9 @@ GuardRule::GuardRule(const boost::json::object *const ptr_obj) {
     if (!condition.empty())
       ss << condition;
   }
+  std::cerr <<"BUILD FROM JSON " <<ss.str()<<std::endl;
   *this = GuardRule(ss.str());
+  std::cerr <<"BUILD FROM OBJ " << BuildString() <<std::endl;
 }
 
 /******************************************************************************/
@@ -333,6 +335,7 @@ std::optional<std::pair<RuleOperator, std::vector<std::string>>>
 GuardRule::ParseTokenWithOperator(
     const std::vector<std::string> &splitted, const std::string &name,
     std::function<bool(const std::string &)> predicat) const {
+
   std::logic_error ex("Cant parse rule string");
   std::optional<std::pair<RuleOperator, std::vector<std::string>>> res;
 
@@ -432,6 +435,10 @@ GuardRule::ParseConditions(const std::vector<std::string> &splitted) {
     std::vector<RuleWithBool> tmp;
     tmp.push_back(ParseOneCondition(it_param1, splitted.cend()));
     res = {RuleOperator::no_operator, std::move(tmp)};
+    // ++it_param1;
+    // if ( it_param1!=splitted.cend()){
+    //   throm std::logic_error("Some text was found after a condition");
+    // }
   } else {
     // std::cerr << "Operator was found =" << it_operator->second << std::endl;
     // Find the array bounds.
@@ -671,7 +678,7 @@ GuardRule::BuildString(bool build_parent_hash,
     res << " with-connect-type " << QuoteIfNotQuoted(*conn_type);
 
   if (cond) {
-    res << " " << ConditionsToString();
+    res << " if " << ConditionsToString();
   }
   std::string result = res.str();
   boost::trim(result);

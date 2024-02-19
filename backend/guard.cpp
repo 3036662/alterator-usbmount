@@ -277,17 +277,18 @@ std::string Guard::ParseJsonRulesChanges(const std::string &msg) noexcept {
     std::cerr << "[ERROR] " << ex.what() << std::endl;
   }
 
-  // after all rules are parsed
   json::object obj_result;
   obj_result["rules_OK"] = std::move(json_arr_OK);
   obj_result["rules_BAD"] = std::move(json_arr_BAD);
+  // if some rules are bad - just return a validation result
+  if (!obj_result.at("rules_BAD").as_array().empty()){
+    return json::serialize(std::move(obj_result));
+  }
+
+  // after all rules are parsed
+  
   // std::cerr << obj_result;
-
-  // TODO apply RULES
-  // TODO apply delete rules
-
-  res = json::serialize(obj_result);
-  return res;
+  return json::serialize(std::move(obj_result));
 }
 
 } // namespace guard

@@ -78,7 +78,7 @@ $(document).ready(function () {
 
   // add new CC::SS::PP rule
   var new_interface_row = 
-    '<td><span class="alterator-label"><input type="text" class="input_appended" name="interface"><span></td>' +
+    '<td><span class="alterator-label"><input type="text" class="input_appended" name="with_interface"><span></td>' +
     '<td>--</td><td>--</td>';
   addRuleBehaviorAdd("#add_to_rules_interfase", new_interface_row, "#list_interface_rules");
 
@@ -100,6 +100,21 @@ $(document).ready(function () {
    // $(".manual_appeded").remove();
     $("#hidden_manual_changes_data").trigger('rules_json_ready');
   });
+
+  // bind response recieved
+  $("#hidden_manual_changes_response").bind('update-value change',function(){
+    if ( $(this).val()!==""){  
+      var response=JSON.parse( $(this).val());
+      $(this).val("");
+      for (const el of response["rules_BAD"]){
+        $('#'+el).css("border", "3px red solid");
+      }
+      for (const el of response["rules_OK"]){
+        $('#'+el).css("border", "2px green solid");
+      }  
+    }  
+
+ });
 
 
 }); // .ready

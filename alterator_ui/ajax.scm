@@ -137,14 +137,12 @@
 
 ; get all changes with one string from fronted and send data to backend
 (define (save_rules_handler)
-    ;(woo-error (object->string (woo-read "/simple/apply_changes" 'changes_json  (form-value "hidden_manual_changes_data")) ))
     (let ((  response  (removeFirstElement (woo-read "/simple/apply_changes" 'changes_json  (form-value "hidden_manual_changes_data"))) ))
         (if 
             (string=? "OK" (get-value 'status response))
-            (woo-error  (get-value 'ids_json response) )
-            (woo-error  (get-value 'status response) )
+            (form-update-value "hidden_manual_changes_response" (get-value 'ids_json response) )
+            (woo-error "An error occured while processing new rules" )
         )
-        (setq response nil)
     ); //let 
 )
 

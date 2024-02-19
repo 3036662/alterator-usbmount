@@ -115,7 +115,6 @@ bool MessageDispatcher::Dispatch(const LispMessage &msg) {
     std::cerr << "Validating rules changes " << std::endl;
     auto start = std::chrono::steady_clock::now();
     std::cerr << "[DEBUG] Time measurement has started" << std::endl;
-    std::vector<guard::UsbDevice> vec_usb = guard.ListCurrentUsbDevices();
     if (!msg.params.count("changes_json") ||
         msg.params.find("changes_json")->second.empty()) {
       std::cout << mess_beg << mess_end;
@@ -124,12 +123,14 @@ bool MessageDispatcher::Dispatch(const LispMessage &msg) {
     }
     std::string result = EscapeQuotes(
         guard.ParseJsonRulesChanges(msg.params.at("changes_json")));
-    vecPairs vec_result;
-    vec_result.emplace_back("status", "OK");
-    vec_result.emplace_back("ids_json", std::move(result));
-
-    // std::cerr << ToLispAssoc(
-    //     SerializableForLisp<vecPairs>(vecPairs(vec_result)));
+    std::cerr <<"result " << result<<std::endl;    
+    vecPairs vec_result;    
+    if (!result.empty()){
+      vec_result.emplace_back("status", "OK");
+      vec_result.emplace_back("ids_json", std::move(result));
+    } else {
+      vec_result.emplace_back("status","FAILED");
+    }  
     std::cout << ToLispAssoc(
         SerializableForLisp<vecPairs>(std::move(vec_result)));
     std::cout.flush();
