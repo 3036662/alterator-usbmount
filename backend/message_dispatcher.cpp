@@ -122,11 +122,12 @@ bool MessageDispatcher::Dispatch(const LispMessage &msg) {
     }
     std::string json_string=msg.params.at("changes_json");
     boost::replace_all(json_string,"\\\\\"","\\\"");
-    std::string result = EscapeQuotes(guard.ParseJsonRulesChanges(json_string)); 
+    std::optional<std::string> result = guard.ParseJsonRulesChanges(json_string); 
+    if (result) *result = EscapeQuotes(*result);
     vecPairs vec_result;    
-    if (!result.empty()){
+    if (result){
       vec_result.emplace_back("status", "OK");
-      vec_result.emplace_back("ids_json", std::move(result));
+      vec_result.emplace_back("ids_json", std::move(*result));
     } else {
       vec_result.emplace_back("status","FAILED");
     }  

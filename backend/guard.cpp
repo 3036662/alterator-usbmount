@@ -59,13 +59,13 @@ std::vector<UsbDevice> Guard::ListCurrentUsbDevices() {
 bool Guard::AllowOrBlockDevice(std::string id, bool allow, bool permanent) {
   if (id.empty() || !HealthStatus())
     return false;
-  uint32_t id_numeric = StrToUint(id);
+  std::optional<uint32_t> id_numeric = StrToUint(id);
   if (!id_numeric)
     return false;
   usbguard::Rule::Target policy =
       allow ? usbguard::Rule::Target::Allow : usbguard::Rule::Target::Block;
   try {
-    ptr_ipc->applyDevicePolicy(id_numeric, policy, permanent);
+    ptr_ipc->applyDevicePolicy(*id_numeric, policy, permanent);
   } catch (const usbguard::Exception &ex) {
     std::cerr << "[ERROR] Can't add rule."
               << "May be rule conflict happened" << std::endl
@@ -88,7 +88,7 @@ ConfigStatus Guard::GetConfigStatus() {
 
 /******************************************************************************/
 
-bool Guard::DeleteRules(const std::vector<uint> &rule_indexes) {
+std::optional<std::vector<guard::GuardRule>> Guard::DeleteRules(const std::vector<uint> &rule_indexes) noexcept{
   ConfigStatus cs = GetConfigStatus();
 
   // make sure that old rules were successfully parsed
@@ -97,7 +97,7 @@ bool Guard::DeleteRules(const std::vector<uint> &rule_indexes) {
   if (parsed_rules.first.size() != parsed_rules.second) {
     std::cerr << "[ERROR] The rules file is not completelly parsed, can't edit"
               << std::endl;
-    return false;
+    return std::nullopt;
   }
 
   // copy old rules,except listed in rule_indexes
@@ -109,14 +109,12 @@ bool Guard::DeleteRules(const std::vector<uint> &rule_indexes) {
   }
 
   // build new content for a rules-file
-  std::string new_rules_str;
-  for (const auto &rule : new_rules) {
-    new_rules_str += rule.BuildString(true, true);
-    new_rules_str += "\n";
-  }
-
-  // overwrite
-  return cs.OverwriteRulesFile(new_rules_str);
+  // std::string new_rules_str;
+  // for (const auto &rule : new_rules) {
+  //   new_rules_str += rule.BuildString(true, true);
+  //   new_rules_str += "\n";
+  // }
+  return new_rules;
 }
 
 /******************************************************************************/
@@ -228,11 +226,12 @@ std::unordered_map<std::string, std::string> Guard::MapVendorCodesToNames(
 }
 /******************************************************************************/
 
-std::string Guard::ParseJsonRulesChanges(const std::string &msg) noexcept {
+std::optional<std::string> Guard::ParseJsonRulesChanges(const std::string &msg) noexcept {
   std::string res;
   std::vector<GuardRule> vec_rules;
   boost::json::array json_arr_OK;
   boost::json::array json_arr_BAD;
+  std::vector<uint> rules_to_delete;
   namespace json = boost::json;
   // TODO parse the json and process
   try {
@@ -270,6 +269,18 @@ std::string Guard::ParseJsonRulesChanges(const std::string &msg) noexcept {
         }
       }
     }
+     // delete rules array in json 
+    if (ptr_jobj && 
+        ptr_jobj->contains("deleted_rules") && 
+        ptr_jobj->at("deleted_rules").is_array()){
+        for (const auto &el:ptr_jobj->at("deleted_rules").as_array()){
+          auto id= StrToUint(el.as_string().c_str());
+          if (id){
+            //std::cerr<< "Rule to delete"<< *id <<std::endl;
+            rules_to_delete.push_back(*id);
+          }
+        }  
+    }
   } catch (const std::exception &ex) {
     std::cerr << "[ERROR] Can't parse JSON" << std::endl;
     std::cerr << "[ERROR] " << ex.what() << std::endl;
@@ -284,10 +295,27 @@ std::string Guard::ParseJsonRulesChanges(const std::string &msg) noexcept {
   }
 
   // after all rules are parsed
-  // parse rules to delete
-  //std::vector<>
+  std::optional<std::vector<guard::GuardRule>> new_rules= DeleteRules(rules_to_delete);
+  if (!new_rules.has_value()){
+    std::cerr <<"[ERROR] Can't delete rules"<<std::endl;
+    return std::nullopt;
+  }
 
-  // std::cerr << obj_result;
+  // add parsed rules from json to new rules vector
+  for (auto& r : vec_rules){
+      new_rules->push_back(std::move(r));
+  }
+  // build one string for file overwrite
+  std::string str_new_rules;
+  for (const auto& r: *new_rules){
+    str_new_rules+=r.BuildString();
+    str_new_rules+="\n";
+  }
+  // overwrite the rules and test launch
+  if(!GetConfigStatus().OverwriteRulesFile(str_new_rules)){
+    std::cerr<< "[ERROR] Can't launch the daemon with new rules"<<std::endl;
+    return std::nullopt;
+  }
   return json::serialize(std::move(obj_result));
 }
 

@@ -6,6 +6,7 @@
 #include <filesystem>
 #include <string>
 #include <vector>
+#include <optional>
 
 /// @brief Wrap string with esape coutes
 /// @param str String to wrap
@@ -21,7 +22,7 @@ std::vector<guard::UsbDevice> fakeLibGetUsbList();
 /// @brief Exception-safe string to uint32_t conversion
 /// @param id String, containing number
 /// @return Numerical value (uint32_t)
-uint32_t StrToUint(const std::string &str) noexcept;
+std::optional<uint32_t> StrToUint(const std::string &str) noexcept;
 
 /// @brief Recursive search for all files in direcrory
 /// @param dir Directory to search in

@@ -49,7 +49,7 @@ std::vector<guard::UsbDevice> fakeLibGetUsbList() {
   return res;
 }
 
-uint32_t StrToUint(const std::string &str) noexcept {
+std::optional<uint32_t> StrToUint(const std::string &str) noexcept {
   uint32_t res = 0;
   try {
     res = static_cast<uint32_t>(std::stoul(str));

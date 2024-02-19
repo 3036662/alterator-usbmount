@@ -46,8 +46,8 @@ public:
   std::unordered_map<std::string, std::string>
   MapVendorCodesToNames(const std::unordered_set<std::string> vendors) const;
 
-  bool DeleteRules(const std::vector<uint> &rule_indexes);
-  std::string ParseJsonRulesChanges(const std::string &msg) noexcept;
+  std::optional<std::vector<guard::GuardRule>> DeleteRules(const std::vector<uint> &rule_indexes) noexcept;
+  std::optional<std::string> ParseJsonRulesChanges(const std::string &msg) noexcept;
 
 private:
   const std::string default_query = "match";
