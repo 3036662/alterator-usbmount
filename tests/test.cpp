@@ -692,6 +692,31 @@ std::cerr << "[TEST] rule-evaluated time with no parameter" <<std::endl;
     }
   }
 
+  std::cerr << "[TEST] allowed-matches without params fails" <<std::endl;
+  str = "allow if true)";
+  {
+    try{
+      GuardRule parser(str);
+      assert(parser.BuildString()=="allow if true");
+      
+    }
+    catch (const std::logic_error& ex){
+      assert(std::string(ex.what()) == "Some text was found after a condition");
+    }
+  }
+  
+  {
+    std::cerr << "[TEST] empty array fails" <<std::endl;
+    str = "allow id 1000:2000 hash \"sdaasdklkjd\" name \"device_name\" via-port all-of{}";
+    try{
+      GuardRule parser(str);
+      
+    }
+    catch (const std::logic_error& ex){
+      assert(std::string(ex.what()) == "Empty array {} is not supported");
+    }
+  }
+
   str="allow id 30c9:0030 serial \"0001\" name \"Integrated Camera\" hash \"94ed2Mm6HGRsDZTjqV8TdnQWRDdUvlDdTmMm+henvVk=\" parent-hash \"jEP/6WzviqdJ5VSeTUY8PatCNBKeaREvo2OqdplND/o=\" with-interface { 0e:01:00 0e:02:00 0e:02:00 0e:02:00 0e:02:00 0e:02:00 0e:02:00 0e:02:00 0e:02:00 } with-connect-type \"hardwired\"";
   {
     GuardRule parser(str);
