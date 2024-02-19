@@ -44,7 +44,7 @@ public:
   std::string implicit_policy_target;
 
   /// @brief Constructor checks for udev rules and daemon status
-  ConfigStatus();
+  ConfigStatus() noexcept;
 
   /// @brief Serialize statuses
   /// @return vector of string patrs
@@ -59,7 +59,7 @@ public:
    * @return  std::pair<std::vector<GuardRule>,uint> Parsed rules,total lines in
    * file
    */
-  std::pair<std::vector<GuardRule>, uint> ParseGuardRulesFile() const;
+  std::pair<std::vector<GuardRule>, uint> ParseGuardRulesFile() const noexcept;
 
   bool OverwriteRulesFile(const std::string &new_content) noexcept;
 

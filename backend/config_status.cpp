@@ -12,7 +12,7 @@ namespace guard {
 /**********************************************************/
 // ConfigStatus
 
-ConfigStatus::ConfigStatus()
+ConfigStatus::ConfigStatus() noexcept
     : udev_warnings{InspectUdevRules()}, udev_rules_OK{udev_warnings.empty()},
       guard_daemon_OK{false}, guard_daemon_enabled{false},
       guard_daemon_active{false},
@@ -249,7 +249,7 @@ void ConfigStatus::ParseDaemonConfig() {
 
 /***********************************************************/
 std::pair<std::vector<GuardRule>, uint>
-ConfigStatus::ParseGuardRulesFile() const {
+ConfigStatus::ParseGuardRulesFile() const noexcept{
   std::pair<std::vector<GuardRule>, uint> res;
   res.second = 0;
   try {
@@ -298,7 +298,7 @@ ConfigStatus::ParseGuardRulesFile() const {
 bool ConfigStatus::OverwriteRulesFile(const std::string &new_content) noexcept {
   if (rules_files_exists) {
     // read old rules
-    std::ifstream old_file(daemon_config_file_path);
+    std::ifstream old_file(daemon_rules_file_path);
     if (!old_file.is_open()) {
       std::cerr << "[ERROR] Can't open file " << daemon_rules_file_path
                 << std::endl;
@@ -318,6 +318,8 @@ bool ConfigStatus::OverwriteRulesFile(const std::string &new_content) noexcept {
     file << new_content;
     file.close();
 
+    std::cerr <<new_content <<std::endl; 
+
     // parse new rules
     auto parsed_new_file = ParseGuardRulesFile();
     // If some errors occurred while parsing new rules - recover
@@ -335,7 +337,7 @@ bool ConfigStatus::OverwriteRulesFile(const std::string &new_content) noexcept {
       dbus_bindings::Systemd sd;
       auto start_result = sd.StartUnit(usb_guard_daemon_name);
       if (!start_result || *start_result) {
-        std::cerr << "[ERROR] Can't start usbguard service rules recover."
+        std::cerr << "[ERROR] Can't start usbguard service"
                   << std::endl;
       }
       return false;
