@@ -112,7 +112,6 @@ bool MessageDispatcher::Dispatch(const LispMessage &msg) {
 
   // save changes rules
   if (msg.action == "read" && msg.objects == "apply_changes") {
-    std::cerr << "Validating rules changes " << std::endl;
     auto start = std::chrono::steady_clock::now();
     std::cerr << "[DEBUG] Time measurement has started" << std::endl;
     if (!msg.params.count("changes_json") ||
@@ -121,9 +120,9 @@ bool MessageDispatcher::Dispatch(const LispMessage &msg) {
       std::cerr << "bad request for rules,doing nothing" << std::endl;
       return true;
     }
-    std::string result = EscapeQuotes(
-        guard.ParseJsonRulesChanges(msg.params.at("changes_json")));
-    std::cerr <<"result " << result<<std::endl;    
+    std::string json_string=msg.params.at("changes_json");
+    boost::replace_all(json_string,"\\\\\"","\\\"");
+    std::string result = EscapeQuotes(guard.ParseJsonRulesChanges(json_string)); 
     vecPairs vec_result;    
     if (!result.empty()){
       vec_result.emplace_back("status", "OK");
@@ -136,13 +135,6 @@ bool MessageDispatcher::Dispatch(const LispMessage &msg) {
     std::cout.flush();
     std::cerr << "[DEBUG] Elapsed(Nanoseconds)="
               << since<std::chrono::nanoseconds>(start).count() << std::endl;
-    // if (guard.DeleteRules(ParseJsonIntArray(msg.params.at("rules_ids")))) {
-    //   std::cout << mess_beg << "status" << WrapWithQuotes("OK") << mess_end;
-    // } else {
-    //   std::cout << mess_beg << "status" << WrapWithQuotes("FAILED") <<
-    //   mess_end;
-    // }
-    // std::cout << mess_beg << "status" << WrapWithQuotes("OK") << mess_end;
     return true;
   }
 
