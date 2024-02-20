@@ -67,6 +67,8 @@ private:
    * @brief Process rules for "manual" mode
    * 
    * @param ptr_jobj Json object, containig "appended_rules" and "deleted_rules" arrays
+   * @param[out] rules_to_delete array,where to put order numbers of rules to delete 
+   * @param[out] rules_to_add array, where to put rules to append
    * @return boost::json::object, containig "rules_OK" and "rules_BAD" arrays 
    * @details rules_OK and rules_BAD contains html <tr> ids for validation
    */
