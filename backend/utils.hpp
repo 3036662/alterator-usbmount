@@ -4,9 +4,9 @@
 #include <boost/algorithm/string.hpp>
 #include <cstdint>
 #include <filesystem>
+#include <optional>
 #include <string>
 #include <vector>
-#include <optional>
 
 /// @brief Wrap string with esape coutes
 /// @param str String to wrap

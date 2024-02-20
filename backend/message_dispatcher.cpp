@@ -120,22 +120,23 @@ bool MessageDispatcher::Dispatch(const LispMessage &msg) {
       std::cerr << "bad request for rules,doing nothing" << std::endl;
       return true;
     }
-    std::string json_string=msg.params.at("changes_json");
-    boost::replace_all(json_string,"\\\\\"","\\\"");
-    std::optional<std::string> result = guard.ParseJsonRulesChanges(json_string); 
-    if (result) *result = EscapeQuotes(*result);
-    vecPairs vec_result;    
-    if (result){
+    std::string json_string = msg.params.at("changes_json");
+    boost::replace_all(json_string, "\\\\\"", "\\\"");
+    std::optional<std::string> result =
+        guard.ParseJsonRulesChanges(json_string);
+    if (result)
+      *result = EscapeQuotes(*result);
+    vecPairs vec_result;
+    if (result) {
       vec_result.emplace_back("status", "OK");
       vec_result.emplace_back("ids_json", std::move(*result));
     } else {
-      vec_result.emplace_back("status","FAILED");
-    }  
+      vec_result.emplace_back("status", "FAILED");
+    }
     std::cout << ToLispAssoc(
         SerializableForLisp<vecPairs>(std::move(vec_result)));
     std::cout.flush();
-    std::cerr << "[DEBUG] Elapsed(ms)="
-              << since(start).count() << std::endl;
+    std::cerr << "[DEBUG] Elapsed(ms)=" << since(start).count() << std::endl;
     return true;
   }
 

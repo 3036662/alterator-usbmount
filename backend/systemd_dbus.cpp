@@ -95,15 +95,15 @@ std::optional<bool> Systemd::StartUnit(const std::string &unit_name) noexcept {
 }
 /******************************************************************************/
 
-std::optional<bool> Systemd::EnableUnit(const std::string &unit_name) noexcept{
-   if (!Health())
+std::optional<bool> Systemd::EnableUnit(const std::string &unit_name) noexcept {
+  if (!Health())
     return std::nullopt;
   try {
-    std::vector<std::string> arr_unit_names {unit_name};
+    std::vector<std::string> arr_unit_names{unit_name};
     auto proxy = CreateProxyToSystemd(objectPath);
     auto method =
         proxy->createMethodCall(systemd_interface_manager, "EnableUnitFiles");
-    method << arr_unit_names <<false<<true;
+    method << arr_unit_names << false << true;
     auto reply = proxy->callMethod(method);
     auto isEnabled = IsUnitEnabled(unit_name);
     if (isEnabled && isEnabled.value()) {
@@ -128,15 +128,16 @@ std::optional<bool> Systemd::EnableUnit(const std::string &unit_name) noexcept{
 
 /******************************************************************************/
 
-std::optional<bool> Systemd::DisableUnit(const std::string &unit_name) noexcept{
-   if (!Health())
+std::optional<bool>
+Systemd::DisableUnit(const std::string &unit_name) noexcept {
+  if (!Health())
     return std::nullopt;
   try {
-    std::vector<std::string> arr_unit_names {unit_name};
+    std::vector<std::string> arr_unit_names{unit_name};
     auto proxy = CreateProxyToSystemd(objectPath);
     auto method =
         proxy->createMethodCall(systemd_interface_manager, "DisableUnitFiles");
-    method <<arr_unit_names <<false;
+    method << arr_unit_names << false;
     auto reply = proxy->callMethod(method);
     auto isEnabled = IsUnitEnabled(unit_name);
     if (isEnabled && !isEnabled.value()) {

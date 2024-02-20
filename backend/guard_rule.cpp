@@ -63,21 +63,23 @@ GuardRule::GuardRule(const std::string &raw_str) {
         if (val.find(':') == std::string::npos)
           return false;
         std::vector<std::string> spl;
-        boost::split(spl,val,[](const char c){return c==':';});
-        if (spl.size()!=2) return false;
-        if (spl[0]=="*" && spl[1]!="*") return false;
-        for (const auto& el: spl){
-            if (el.size()>4) return false;
-              if (el.size()<4){
-                return el.find('*')!=std::string::npos;
-              }
-              try{
-                std::stoi(el,nullptr,16);
-              }
-              catch(const std::exception& ex){
-                std::cerr << "[ERROR] Can't parse id "<< el<<std::endl;
-                return false;
-              }
+        boost::split(spl, val, [](const char c) { return c == ':'; });
+        if (spl.size() != 2)
+          return false;
+        if (spl[0] == "*" && spl[1] != "*")
+          return false;
+        for (const auto &el : spl) {
+          if (el.size() > 4)
+            return false;
+          if (el.size() < 4) {
+            return el.find('*') != std::string::npos;
+          }
+          try {
+            std::stoi(el, nullptr, 16);
+          } catch (const std::exception &ex) {
+            std::cerr << "[ERROR] Can't parse id " << el << std::endl;
+            return false;
+          }
         }
         return true;
       });
@@ -119,23 +121,26 @@ GuardRule::GuardRule(const std::string &raw_str) {
   }
   with_interface = ParseTokenWithOperator(
       splitted, "with-interface", [](const std::string &val) {
-       // return val.size() > 2 && val.find(':') != std::string::npos;
-       std::vector<std::string> spl;
-       boost::split(spl,val,[](const char c){return c==':';});
-       if (spl.size()!=3) return false;
-       if (spl[0] =="*" && (spl[1]!="*" || spl[2]!="*")) return false;
-       if (spl[1] =="*" && spl[2]!="*") return false; 
-       for (const auto& el: spl){
-        if (el.size()!=2 && el=="*") return true;
-        try{
-          std::stoi(el,nullptr,16);
+        // return val.size() > 2 && val.find(':') != std::string::npos;
+        std::vector<std::string> spl;
+        boost::split(spl, val, [](const char c) { return c == ':'; });
+        if (spl.size() != 3)
+          return false;
+        if (spl[0] == "*" && (spl[1] != "*" || spl[2] != "*"))
+          return false;
+        if (spl[1] == "*" && spl[2] != "*")
+          return false;
+        for (const auto &el : spl) {
+          if (el.size() != 2 && el == "*")
+            return true;
+          try {
+            std::stoi(el, nullptr, 16);
+          } catch (const std::exception &ex) {
+            std::cerr << "[ERROR] Can't parse interface " << val << std::endl;
+            return false;
+          }
         }
-        catch(const std::exception& ex){
-          std::cerr << "[ERROR] Can't parse interface " << val <<std::endl;
-          return false; 
-        }
-       }
-       return true;
+        return true;
       });
 
   conn_type = ParseToken(splitted, "with-connect-type", default_predicat);
@@ -143,15 +148,14 @@ GuardRule::GuardRule(const std::string &raw_str) {
   cond = ParseConditions(splitted);
 
   // check
-  if (splitted.size()!=0){
-    std::cerr << "[ERROR] Not all token were parsed in the rule"<<std::endl;
-    for (const auto& tok:splitted){
-      std::cerr <<tok<<" ";
+  if (splitted.size() != 0) {
+    std::cerr << "[ERROR] Not all token were parsed in the rule" << std::endl;
+    for (const auto &tok : splitted) {
+      std::cerr << tok << " ";
     }
-    std::cerr <<std::endl;
+    std::cerr << std::endl;
     throw std::logic_error("Not all tokens were parsed");
   }
-
 
   // ----------------------------------------
   // Determine the stricness level
@@ -265,9 +269,9 @@ GuardRule::GuardRule(const boost::json::object *const ptr_obj) {
     if (!condition.empty())
       ss << condition;
   }
-  //std::cerr << "BUILD FROM JSON " << ss.str() << std::endl;
+  // std::cerr << "BUILD FROM JSON " << ss.str() << std::endl;
   *this = GuardRule(ss.str());
-  //std::cerr << "BUILD FROM OBJ " << BuildString() << std::endl;
+  // std::cerr << "BUILD FROM OBJ " << BuildString() << std::endl;
 }
 
 /******************************************************************************/
@@ -350,7 +354,7 @@ bool GuardRule::IsReservedWord(const std::string &str) {
 /******************************************************************************/
 
 std::optional<std::string>
-GuardRule::ParseToken( std::vector<std::string> &splitted,
+GuardRule::ParseToken(std::vector<std::string> &splitted,
                       const std::string &name,
                       std::function<bool(const std::string &)> predicat) const {
 
@@ -358,7 +362,7 @@ GuardRule::ParseToken( std::vector<std::string> &splitted,
   std::optional<std::string> res;
   auto it_name = std::find(splitted.cbegin(), splitted.cend(), name);
   if (it_name != splitted.cend()) {
-    auto it_name_param =it_name;
+    auto it_name_param = it_name;
     ++it_name_param;
     if (it_name_param != splitted.cend() && predicat(*it_name_param)) {
       res = *it_name_param;
@@ -367,7 +371,7 @@ GuardRule::ParseToken( std::vector<std::string> &splitted,
                 << std::endl;
       throw ex;
     }
-    splitted.erase(it_name,++it_name_param);
+    splitted.erase(it_name, ++it_name_param);
   }
   return res;
 }
@@ -376,7 +380,7 @@ GuardRule::ParseToken( std::vector<std::string> &splitted,
 
 std::optional<std::pair<RuleOperator, std::vector<std::string>>>
 GuardRule::ParseTokenWithOperator(
-     std::vector<std::string> &splitted, const std::string &name,
+    std::vector<std::string> &splitted, const std::string &name,
     std::function<bool(const std::string &)> predicat) const {
 
   std::logic_error ex("Cant parse rule string");
@@ -443,7 +447,7 @@ GuardRule::ParseTokenWithOperator(
         }
         ++it_val;
       }
-      splitted.erase(it_name,++it_range_end);
+      splitted.erase(it_name, ++it_range_end);
     }
   }
   return res;
@@ -452,7 +456,7 @@ GuardRule::ParseTokenWithOperator(
 /******************************************************************************/
 
 std::optional<std::pair<RuleOperator, std::vector<RuleWithBool>>>
-GuardRule::ParseConditions( std::vector<std::string> &splitted) {
+GuardRule::ParseConditions(std::vector<std::string> &splitted) {
 
   std::logic_error ex("Cant parse conditions");
   std::optional<std::pair<RuleOperator, std::vector<RuleWithBool>>> res;
@@ -485,7 +489,7 @@ GuardRule::ParseConditions( std::vector<std::string> &splitted) {
     if (it_param1 != splitted.cend()) {
       throw std::logic_error("Some text was found after a condition");
     }
-    splitted.erase(it_if_operator,it_param1);
+    splitted.erase(it_if_operator, it_param1);
   } else {
     RuleOperator op = it_operator->first; // goes to the result
 
@@ -517,7 +521,7 @@ GuardRule::ParseConditions( std::vector<std::string> &splitted) {
     if (range_end != splitted.cend()) {
       throw std::logic_error("Some text was found after conditions array");
     }
-    splitted.erase(it_if_operator,range_end);
+    splitted.erase(it_if_operator, range_end);
     res = {op, std::move(tmp)};
   }
   return res;
@@ -702,7 +706,7 @@ GuardRule::BuildString(bool build_parent_hash,
   if (port) {
     res << " via-port ";
     res << map_operator.at(port->first);
-    if (port->first !=RuleOperator::no_operator) {
+    if (port->first != RuleOperator::no_operator) {
       res << " { ";
       for (const auto &p : port->second)
         res << QuoteIfNotQuoted(p) << " ";

@@ -175,7 +175,7 @@ private:
    * @return std::optional<std::string> value for parameter
    */
   std::optional<std::string>
-  ParseToken( std::vector<std::string> &splitted, const std::string &name,
+  ParseToken(std::vector<std::string> &splitted, const std::string &name,
              std::function<bool(const std::string &)> predicat) const;
 
   /**
@@ -190,7 +190,7 @@ private:
    */
   std::optional<std::pair<RuleOperator, std::vector<std::string>>>
   ParseTokenWithOperator(
-       std::vector<std::string> &splitted, const std::string &name,
+      std::vector<std::string> &splitted, const std::string &name,
       std::function<bool(const std::string &)> predicat) const;
 
   /**
@@ -201,7 +201,7 @@ private:
    * std::pair<RuleOperator, std::vector<std::pair<RuleConditions, bool>>>>
    */
   std::optional<std::pair<RuleOperator, std::vector<RuleWithBool>>>
-  ParseConditions( std::vector<std::string> &splitted);
+  ParseConditions(std::vector<std::string> &splitted);
 
   /**
    * @brief Parses one condition with or without params

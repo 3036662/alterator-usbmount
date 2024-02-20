@@ -88,7 +88,8 @@ ConfigStatus Guard::GetConfigStatus() {
 
 /******************************************************************************/
 
-std::optional<std::vector<guard::GuardRule>> Guard::DeleteRules(const std::vector<uint> &rule_indexes) noexcept{
+std::optional<std::vector<guard::GuardRule>>
+Guard::DeleteRules(const std::vector<uint> &rule_indexes) noexcept {
   ConfigStatus cs = GetConfigStatus();
 
   // make sure that old rules were successfully parsed
@@ -219,25 +220,26 @@ std::unordered_map<std::string, std::string> Guard::MapVendorCodesToNames(
 }
 /******************************************************************************/
 
-std::optional<std::string> Guard::ParseJsonRulesChanges(const std::string &msg) noexcept {
+std::optional<std::string>
+Guard::ParseJsonRulesChanges(const std::string &msg) noexcept {
   std::string res;
   std::vector<GuardRule> vec_rules;
   boost::json::array json_arr_OK;
   boost::json::array json_arr_BAD;
   std::vector<uint> rules_to_delete;
-  bool daemon_activate {false};
+  bool daemon_activate{false};
   namespace json = boost::json;
   // parse the json and process
   try {
     json::value json_value = json::parse(msg);
-    //std::cerr << json_value << std::endl;
+    // std::cerr << json_value << std::endl;
     json::object *ptr_jobj = json_value.if_object();
     // daemon target state (active or stopped)
-    if (ptr_jobj && ptr_jobj->contains("run_daemon")){
+    if (ptr_jobj && ptr_jobj->contains("run_daemon")) {
       daemon_activate = ptr_jobj->at("run_daemon").as_string() == "true";
-    }
-    else{
-      std::cerr << "[ERROR] No target daemon state is found in JSON"<<std::endl;
+    } else {
+      std::cerr << "[ERROR] No target daemon state is found in JSON"
+                << std::endl;
       return std::nullopt;
     }
     // if some new rules were added
@@ -271,17 +273,16 @@ std::optional<std::string> Guard::ParseJsonRulesChanges(const std::string &msg) 
         }
       }
     }
-     // delete rules array
-    if (ptr_jobj && 
-        ptr_jobj->contains("deleted_rules") && 
-        ptr_jobj->at("deleted_rules").is_array()){
-        for (const auto &el:ptr_jobj->at("deleted_rules").as_array()){
-          auto id= StrToUint(el.as_string().c_str());
-          if (id){
-            //std::cerr<< "Rule to delete"<< *id <<std::endl;
-            rules_to_delete.push_back(*id);
-          }
-        }  
+    // delete rules array
+    if (ptr_jobj && ptr_jobj->contains("deleted_rules") &&
+        ptr_jobj->at("deleted_rules").is_array()) {
+      for (const auto &el : ptr_jobj->at("deleted_rules").as_array()) {
+        auto id = StrToUint(el.as_string().c_str());
+        if (id) {
+          // std::cerr<< "Rule to delete"<< *id <<std::endl;
+          rules_to_delete.push_back(*id);
+        }
+      }
     }
   } catch (const std::exception &ex) {
     std::cerr << "[ERROR] Can't parse JSON" << std::endl;
@@ -292,41 +293,43 @@ std::optional<std::string> Guard::ParseJsonRulesChanges(const std::string &msg) 
   obj_result["rules_OK"] = std::move(json_arr_OK);
   obj_result["rules_BAD"] = std::move(json_arr_BAD);
   // if some rules are bad - just return a validation result
-  if (!obj_result.at("rules_BAD").as_array().empty()){
+  if (!obj_result.at("rules_BAD").as_array().empty()) {
     return json::serialize(std::move(obj_result));
   }
 
   // after all rules are parsed
-  std::optional<std::vector<guard::GuardRule>> new_rules= DeleteRules(rules_to_delete);
-  if (!new_rules.has_value()){
-    std::cerr <<"[ERROR] Can't delete rules"<<std::endl;
+  std::optional<std::vector<guard::GuardRule>> new_rules =
+      DeleteRules(rules_to_delete);
+  if (!new_rules.has_value()) {
+    std::cerr << "[ERROR] Can't delete rules" << std::endl;
     return std::nullopt;
   }
 
   // add parsed rules from json to new rules vector
-  for (auto& r : vec_rules){
-      new_rules->push_back(std::move(r));
+  for (auto &r : vec_rules) {
+    new_rules->push_back(std::move(r));
   }
   // build one string for file overwrite
   std::string str_new_rules;
-  for (const auto& r: *new_rules){
-    str_new_rules+=r.BuildString(true,true);
-    str_new_rules+="\n";
+  for (const auto &r : *new_rules) {
+    str_new_rules += r.BuildString(true, true);
+    str_new_rules += "\n";
   }
-  
-  auto cs=GetConfigStatus();
-  // overwrite the rules and test launch if some rules were added or deleted 
-  if (!rules_to_delete.empty() || !vec_rules.empty()){
-    if(!cs.OverwriteRulesFile(str_new_rules,daemon_activate)){
-      std::cerr<< "[ERROR] Can't launch the daemon with new rules"<<std::endl;
+
+  auto cs = GetConfigStatus();
+  // overwrite the rules and test launch if some rules were added or deleted
+  if (!rules_to_delete.empty() || !vec_rules.empty()) {
+    if (!cs.OverwriteRulesFile(str_new_rules, daemon_activate)) {
+      std::cerr << "[ERROR] Can't launch the daemon with new rules"
+                << std::endl;
       return std::nullopt;
     }
   }
 
-  if (!cs.ChangeDaemonStatus(daemon_activate,daemon_activate)){
-    std::cerr << "[ERROR] Change the daemon status FAILED" <<std::endl;
+  if (!cs.ChangeDaemonStatus(daemon_activate, daemon_activate)) {
+    std::cerr << "[ERROR] Change the daemon status FAILED" << std::endl;
   }
- 
+
   return json::serialize(std::move(obj_result));
 }
 
