@@ -855,14 +855,14 @@ void Test::Run14(){
                         "\"list_vidpid_rules\","
                         "\"target\":\"allow\",\""
                         "fields_arr\":"
-                        "[{\"vid\":\"a000\"},{\"pid\":\"s5a5\"}]}]}";
+                        "[{\"vid\":\"a000\"},{\"pid\":\"a5a5\"}]}]}";
     const boost::json::value jv= boost::json::parse(json);                    
     const boost::json::object* ptr_obj= jv.as_object().at("appended_rules").as_array().at(0).if_object();                   
     guard::GuardRule rule(ptr_obj);
     
     assert(rule.target == guard::Target::allow);
     assert(rule.vid == "a000");
-    assert(rule.pid == "s5a5");
+    assert(rule.pid == "a5a5");
     assert(rule.level == guard::StrictnessLevel::vid_pid);
 
   }
@@ -875,7 +875,7 @@ void Test::Run14(){
                         "\"list_vidpid_rules\","
                         "\"target\":\"allow\",\""
                         "fields_arr\":"
-                        "[{\"vid\":\"\"},{\"pid\":\"s5a5\"}]}]}";
+                        "[{\"vid\":\"\"},{\"pid\":\"a5a5\"}]}]}";
     const boost::json::value jv= boost::json::parse(json);                    
     const boost::json::object* ptr_obj= jv.as_object().at("appended_rules").as_array().at(0).if_object();  
     try{                 
@@ -953,7 +953,7 @@ void Test::Run14(){
                         "\"target\":\"allow\",\""
                         "fields_arr\":"
                         "[{\"vid\":\"a000\"},"
-                         "{\"pid\":\"s5a5\"},"
+                         "{\"pid\":\"a5a5\"},"
                          "{\"hash\":\"salkdjlskjf\"}"
                         "]}]}";
     const boost::json::value jv= boost::json::parse(json);                    
@@ -962,7 +962,7 @@ void Test::Run14(){
     
     assert(rule.target == guard::Target::allow);
     assert(rule.vid == "a000");
-    assert(rule.pid == "s5a5");
+    assert(rule.pid == "a5a5");
     assert(rule.hash == "salkdjlskjf");
     assert(rule.level == guard::StrictnessLevel::hash);
 
@@ -978,7 +978,7 @@ void Test::Run14(){
                         "\"target\":\"allow\",\""
                         "fields_arr\":"
                         "[{\"vid\":\"a000\"},"
-                         "{\"pid\":\"s5a5\"},"
+                         "{\"pid\":\"a5a5\"},"
                          "{\"hash\":\"salkdjlskjf\"},"
                          "{\"with_interface\":\"{04:00:* 01:11:00}\" }"
                         "]}]}";
@@ -989,7 +989,7 @@ void Test::Run14(){
     
     assert(rule.target == guard::Target::allow);
     assert(rule.vid == "a000");
-    assert(rule.pid == "s5a5");
+    assert(rule.pid == "a5a5");
     assert(rule.hash == "salkdjlskjf");
     assert(rule.level == guard::StrictnessLevel::hash);
 
@@ -1011,7 +1011,7 @@ void Test::Run14(){
                         "\"target\":\"allow\",\""
                         "fields_arr\":"
                         "[{\"vid\":\"a000\"},"
-                         "{\"pid\":\"s5a5\"},"
+                         "{\"pid\":\"a5a5\"},"
                          "{\"hash\":\"salkdjlskjf\"},"
                          "{\"with_interface\":\"{04:00:* 01:11:00 sal;dfk;}\" }"
                         "]}]}";
@@ -1036,7 +1036,7 @@ void Test::Run14(){
                         "\"target\":\"allow\",\""
                         "fields_arr\":"
                         "[{\"vid\":\"a000\"},"
-                         "{\"pid\":\"s5a5\"},"
+                         "{\"pid\":\"a5a5\"},"
                          "{\"with_interface\":\"{04:00:* 01:11:00}\" }"
                         "]}]}";
     // std::cerr <<json<<std::endl;                   
@@ -1046,7 +1046,7 @@ void Test::Run14(){
     
     assert(rule.target == guard::Target::allow);
     assert(rule.vid == "a000");
-    assert(rule.pid == "s5a5");
+    assert(rule.pid == "a5a5");
 
     std::pair<guard::RuleOperator,std::vector<std::string>> pair=std::make_pair(guard::RuleOperator::equals,std::vector<std::string>());
     pair.second.push_back("04:00:*");
@@ -1111,7 +1111,7 @@ void Test::Run14(){
                         "\"target\":\"allow\",\""
                         "fields_arr\":"
                         "[{\"vid\":\"a000\"},"
-                         "{\"pid\":\"s5a5\"},"
+                         "{\"pid\":\"a5a5\"},"
                          "{\"with_interface\":\"{04:00:* 01:11:00}\" },"
                          "{\"via-port\":\"none-of {usb1 usb2 usb3}\"}"
                         "]}]}";
@@ -1122,7 +1122,7 @@ void Test::Run14(){
     
     assert(rule.target == guard::Target::allow);
     assert(rule.vid == "a000");
-    assert(rule.pid == "s5a5");
+    assert(rule.pid == "a5a5");
 
     std::pair<guard::RuleOperator,std::vector<std::string>> pair=std::make_pair(guard::RuleOperator::equals,std::vector<std::string>());
     pair.second.push_back("04:00:*");
@@ -1149,7 +1149,7 @@ void Test::Run14(){
                         "\"target\":\"allow\",\""
                         "fields_arr\":"
                         "[{\"vid\":\"a000\"},"
-                         "{\"pid\":\"s5a5\"},"
+                         "{\"pid\":\"a5a5\"},"
                          "{\"with_interface\":\"{04:00:* 01:11:00}\" },"
                          "{\"via-port\":\"none-of {usb1 usb2 usb3}\"},"
                          "{\"with-connect-type\":\"hotplug\"}"
@@ -1161,7 +1161,7 @@ void Test::Run14(){
     
     assert(rule.target == guard::Target::allow);
     assert(rule.vid == "a000");
-    assert(rule.pid == "s5a5");
+    assert(rule.pid == "a5a5");
 
     std::pair<guard::RuleOperator,std::vector<std::string>> pair=std::make_pair(guard::RuleOperator::equals,std::vector<std::string>());
     pair.second.push_back("04:00:*");
@@ -1189,7 +1189,7 @@ void Test::Run14(){
                         "\"target\":\"allow\",\""
                         "fields_arr\":"
                         "[{\"vid\":\"a000\"},"
-                         "{\"pid\":\"s5a5\"},"
+                         "{\"pid\":\"a5a5\"},"
                          "{\"with_interface\":\"{04:00:* 01:11:00}\" },"
                          "{\"via-port\":\"none-of {usb1 usb2 usb3}\"},"
                          "{\"with-connect-type\":\"hotplug\"},"
@@ -1202,7 +1202,7 @@ void Test::Run14(){
     
     assert(rule.target == guard::Target::allow);
     assert(rule.vid == "a000");
-    assert(rule.pid == "s5a5");
+    assert(rule.pid == "a5a5");
 
     std::pair<guard::RuleOperator,std::vector<std::string>> pair=std::make_pair(guard::RuleOperator::equals,std::vector<std::string>());
     pair.second.push_back("04:00:*");
