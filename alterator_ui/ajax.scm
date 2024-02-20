@@ -153,4 +153,5 @@
   (form-bind "btn_prsnt_dev_add" "click" allow_device)
   (form-bind "btn_prsnt_dev_block" "click" block_device)
   (form-bind "hidden_manual_changes_data" "rules_json_ready" save_rules_handler) ;save changes event
+  (form-bind "save_rules" "rules_applied" ls_guard_rules)  
 )

@@ -106,6 +106,11 @@ $(document).ready(function () {
     if ( $(this).val()!==""){  
       var response=JSON.parse( $(this).val());
       $(this).val("");
+      if (response["rules_BAD"].length ===0){
+        $(".manual_appended").remove();
+        $(this).trigger("rules_applied");
+        return;
+      }
       for (const el of response["rules_BAD"]){
         $('#'+el).css("border", "3px red solid");
       }
