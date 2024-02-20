@@ -723,7 +723,7 @@ GuardRule::BuildString(bool build_parent_hash,
           with_interface->first != RuleOperator::equals) {
         res << map_operator.at(with_interface->first);
       }
-      res << " {";
+      res << "{";
       for (const auto &i : with_interface->second) {
         res << " " << i;
       }
