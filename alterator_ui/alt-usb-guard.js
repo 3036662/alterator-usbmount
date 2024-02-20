@@ -94,7 +94,8 @@ $(document).ready(function () {
     var deletedFields = localStorage.getItem('deletedFields');
     var rules_changes={
       deleted_rules:  JSON.parse(deletedFields),
-      appended_rules: collectAppendedRules()
+      appended_rules: collectAppendedRules(),
+      run_daemon: $("#checkbox_use_control_hidden").val()==="#t" ? "true":"false"
     }
     $("#hidden_manual_changes_data").val(JSON.stringify(rules_changes));
    // $(".manual_appended").remove();
@@ -108,6 +109,7 @@ $(document).ready(function () {
       $(this).val("");
       if (response["rules_BAD"].length ===0){
         $(".manual_appended").remove();
+        localStorage.removeItem("deletedFields");
         $(this).trigger("rules_applied");
         return;
       }

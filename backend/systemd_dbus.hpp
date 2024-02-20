@@ -32,6 +32,8 @@ public:
   std::optional<bool> StartUnit(const std::string &unit_name) noexcept;
   std::optional<bool> RestartUnit(const std::string &unit_name) noexcept;
   std::optional<bool> StopUnit(const std::string &unit_name) noexcept;
+  std::optional<bool> EnableUnit(const std::string &unit_name) noexcept;
+  std::optional<bool> DisableUnit(const std::string &unit_name) noexcept;
 
 private:
   const std::string destinationName = "org.freedesktop.systemd1";

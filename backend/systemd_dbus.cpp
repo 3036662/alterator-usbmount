@@ -95,6 +95,71 @@ std::optional<bool> Systemd::StartUnit(const std::string &unit_name) noexcept {
 }
 /******************************************************************************/
 
+std::optional<bool> Systemd::EnableUnit(const std::string &unit_name) noexcept{
+   if (!Health())
+    return std::nullopt;
+  try {
+    std::vector<std::string> arr_unit_names {unit_name};
+    auto proxy = CreateProxyToSystemd(objectPath);
+    auto method =
+        proxy->createMethodCall(systemd_interface_manager, "EnableUnitFiles");
+    method << arr_unit_names <<false<<true;
+    auto reply = proxy->callMethod(method);
+    auto isEnabled = IsUnitEnabled(unit_name);
+    if (isEnabled && isEnabled.value()) {
+      return true;
+    } else {
+      for (int i = 0; i < 10; ++i) {
+        std::cerr << "[INFO] Waiting for systemd starts the sevice ..."
+                  << std::endl;
+        std::this_thread::sleep_for(std::chrono::milliseconds(200));
+        isEnabled = IsUnitEnabled(unit_name);
+        if (isEnabled.has_value() && isEnabled.value())
+          return true;
+      }
+    }
+
+  } catch (const sdbus::Error &ex) {
+    std::cerr << "[Error] Can't enable " << unit_name << " unit is active"
+              << ex.what() << std::endl;
+  }
+  return std::nullopt;
+}
+
+/******************************************************************************/
+
+std::optional<bool> Systemd::DisableUnit(const std::string &unit_name) noexcept{
+   if (!Health())
+    return std::nullopt;
+  try {
+    std::vector<std::string> arr_unit_names {unit_name};
+    auto proxy = CreateProxyToSystemd(objectPath);
+    auto method =
+        proxy->createMethodCall(systemd_interface_manager, "DisableUnitFiles");
+    method <<arr_unit_names <<false;
+    auto reply = proxy->callMethod(method);
+    auto isEnabled = IsUnitEnabled(unit_name);
+    if (isEnabled && !isEnabled.value()) {
+      return true;
+    } else {
+      for (int i = 0; i < 10; ++i) {
+        std::cerr << "[INFO] Waiting for systemd starts the sevice ..."
+                  << std::endl;
+        std::this_thread::sleep_for(std::chrono::milliseconds(200));
+        isEnabled = IsUnitEnabled(unit_name);
+        if (isEnabled.has_value() && !isEnabled.value())
+          return true;
+      }
+    }
+
+  } catch (const sdbus::Error &ex) {
+    std::cerr << "[Error] Can't disable " << unit_name << " unit is active"
+              << ex.what() << std::endl;
+  }
+  return std::nullopt;
+}
+
+/******************************************************************************/
 std::optional<bool>
 Systemd::RestartUnit(const std::string &unit_name) noexcept {
   if (!Health())

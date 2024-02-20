@@ -117,7 +117,7 @@
     (let ((  status  (woo-read-first "/simple/usb_allow" 'usb_id  (form-value "list_prsnt_devices")) )) 
         (if   
             (equal? "OK" (woo-get-option status 'status))
-            (ls_usbs)
+            (update_after_rulles_applied)
             (woo-throw  "Error while trying to unblock selected device")
         )
     ); let
@@ -128,7 +128,7 @@
      (let ((  status  (woo-read-first "/simple/usb_block" 'usb_id  (form-value "list_prsnt_devices")) )) 
         (if   
             (equal? "OK" (woo-get-option status 'status))
-            (ls_usbs)
+            (update_after_rulles_applied)
             (woo-throw  "Error while trying to block selected device")
         )
     ); let
@@ -146,6 +146,12 @@
     ); //let 
 )
 
+(define (update_after_rulles_applied)
+    (config_status_check)
+    (ls_guard_rules)
+    (ls_usbs)
+)
+
 (define (init)
   (config_status_check)
   (ls_guard_rules)
@@ -153,5 +159,5 @@
   (form-bind "btn_prsnt_dev_add" "click" allow_device)
   (form-bind "btn_prsnt_dev_block" "click" block_device)
   (form-bind "hidden_manual_changes_data" "rules_json_ready" save_rules_handler) ;save changes event
-  (form-bind "save_rules" "rules_applied" ls_guard_rules)  
+  (form-bind "hidden_manual_changes_response" "rules_applied" update_after_rulles_applied)  
 )

@@ -61,7 +61,8 @@ public:
    */
   std::pair<std::vector<GuardRule>, uint> ParseGuardRulesFile() const noexcept;
 
-  bool OverwriteRulesFile(const std::string &new_content) noexcept;
+  bool OverwriteRulesFile(const std::string &new_content,bool run_daemon) noexcept;
+  bool ChangeDaemonStatus(bool active,bool enabled) noexcept;
 
 private:
   /// @brief Return path for the  daemon .conf file
@@ -84,7 +85,7 @@ private:
    * @return true
    * @return false
    */
-  bool TryToRun() noexcept;
+  bool TryToRun(bool run_daemon) noexcept;
 
 #ifdef UNIT_TEST
   friend class ::Test;
