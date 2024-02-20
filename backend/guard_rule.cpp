@@ -57,11 +57,28 @@ GuardRule::GuardRule(const std::string &raw_str) {
     return;
 
   // id (vid:pid)
-  // toke id MUST contain a ':' symbol
+  // token id MUST contain a ':' symbol
   std::optional<std::string> str_id =
       ParseToken(splitted, "id", [](const std::string &val) {
         if (val.find(':') == std::string::npos)
           return false;
+        std::vector<std::string> splitted;
+        boost::split(splitted,val,[](const char c){return c==':';});
+        if (splitted.size()!=2) return false;
+        if (splitted[0]=="*" && splitted[1]!="*") return false;
+        for (const auto& el: splitted){
+            if (el.size()>4) return false;
+              if (el.size()<4){
+                return el.find('*')!=std::string::npos;
+              }
+              try{
+                std::stoi(el,nullptr,16);
+              }
+              catch(const std::exception& ex){
+                std::cerr << "[ERROR] Can't parse id "<< el<<std::endl;
+                return false;
+              }
+        }
         return true;
       });
 
@@ -102,12 +119,31 @@ GuardRule::GuardRule(const std::string &raw_str) {
   }
   with_interface = ParseTokenWithOperator(
       splitted, "with-interface", [](const std::string &val) {
-        return val.size() > 2 && val.find(':') != std::string::npos;
+       // return val.size() > 2 && val.find(':') != std::string::npos;
+       std::vector<std::string> spl;
+       boost::split(spl,val,[](const char c){return c==':';});
+       if (spl.size()!=3) return false;
+       if (spl[0] =="*" && (spl[1]!="*" || spl[2]!="*")) return false;
+       if (spl[1] =="*" && spl[2]!="*") return false; 
+       for (const auto& el: spl){
+        if (el.size()!=2 && el=="*") return true;
+        try{
+          std::stoi(el,nullptr,16);
+        }
+        catch(const std::exception& ex){
+          std::cerr << "[ERROR] Can't parse interface " << val <<std::endl;
+          return false; 
+        }
+       }
+       return true;
       });
 
   conn_type = ParseToken(splitted, "with-connect-type", default_predicat);
   // Conditions may or may not exist in the string.
   cond = ParseConditions(splitted);
+
+  // check
+
 
   // ----------------------------------------
   // Determine the stricness level
@@ -651,8 +687,8 @@ GuardRule::BuildString(bool build_parent_hash,
   if (port) {
     res << " via-port ";
     res << map_operator.at(port->first);
-    if (port->second.size() > 1) {
-      res << "{ ";
+    if (port->first !=RuleOperator::no_operator) {
+      res << " { ";
       for (const auto &p : port->second)
         res << QuoteIfNotQuoted(p) << " ";
       res << "} ";
@@ -668,7 +704,7 @@ GuardRule::BuildString(bool build_parent_hash,
           with_interface->first != RuleOperator::equals) {
         res << map_operator.at(with_interface->first);
       }
-      res << "{";
+      res << " {";
       for (const auto &i : with_interface->second) {
         res << " " << i;
       }
