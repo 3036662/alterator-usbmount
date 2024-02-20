@@ -86,13 +86,14 @@ $(document).ready(function () {
   var new_unsorted_rules_row = 
     '<td><span class="alterator-label"><input type="text" class="input_appended" name="raw_rule"><span></td>';
   addRuleBehaviorAdd("#add_to_rules_unsorted", new_unsorted_rules_row, "#list_unsorted_rules");
-
-
   window.last_append_rule_id = 0;
+  
+  // on click "save rules"
   // read stored values, put them to hidden input, trigger "ready" event for it
   $("#save_rules_button").bind('click', function () {
     var deletedFields = localStorage.getItem('deletedFields');
     var rules_changes={
+      preset_mode: $("#presets_input_hidden").val(),
       deleted_rules:  JSON.parse(deletedFields),
       appended_rules: collectAppendedRules(),
       run_daemon: $("#checkbox_use_control_hidden").val()==="#t" ? "true":"false"
