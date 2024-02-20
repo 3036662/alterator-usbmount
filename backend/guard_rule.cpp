@@ -53,20 +53,20 @@ GuardRule::GuardRule(const std::string &raw_str) {
     throw ex;
   }
   target = it_target->first;
+  splitted.erase(splitted.begin());
   if (splitted.size() == 1)
     return;
-
   // id (vid:pid)
   // token id MUST contain a ':' symbol
   std::optional<std::string> str_id =
       ParseToken(splitted, "id", [](const std::string &val) {
         if (val.find(':') == std::string::npos)
           return false;
-        std::vector<std::string> splitted;
-        boost::split(splitted,val,[](const char c){return c==':';});
-        if (splitted.size()!=2) return false;
-        if (splitted[0]=="*" && splitted[1]!="*") return false;
-        for (const auto& el: splitted){
+        std::vector<std::string> spl;
+        boost::split(spl,val,[](const char c){return c==':';});
+        if (spl.size()!=2) return false;
+        if (spl[0]=="*" && spl[1]!="*") return false;
+        for (const auto& el: spl){
             if (el.size()>4) return false;
               if (el.size()<4){
                 return el.find('*')!=std::string::npos;
@@ -143,6 +143,14 @@ GuardRule::GuardRule(const std::string &raw_str) {
   cond = ParseConditions(splitted);
 
   // check
+  if (splitted.size()!=0){
+    std::cerr << "[ERROR] Not all token were parsed in the rule"<<std::endl;
+    for (const auto& tok:splitted){
+      std::cerr <<tok<<" ";
+    }
+    std::cerr <<std::endl;
+    throw std::logic_error("Not all tokens were parsed");
+  }
 
 
   // ----------------------------------------
@@ -342,7 +350,7 @@ bool GuardRule::IsReservedWord(const std::string &str) {
 /******************************************************************************/
 
 std::optional<std::string>
-GuardRule::ParseToken(const std::vector<std::string> &splitted,
+GuardRule::ParseToken( std::vector<std::string> &splitted,
                       const std::string &name,
                       std::function<bool(const std::string &)> predicat) const {
 
@@ -350,7 +358,8 @@ GuardRule::ParseToken(const std::vector<std::string> &splitted,
   std::optional<std::string> res;
   auto it_name = std::find(splitted.cbegin(), splitted.cend(), name);
   if (it_name != splitted.cend()) {
-    auto it_name_param = std::move(++it_name);
+    auto it_name_param =it_name;
+    ++it_name_param;
     if (it_name_param != splitted.cend() && predicat(*it_name_param)) {
       res = *it_name_param;
     } else {
@@ -358,6 +367,7 @@ GuardRule::ParseToken(const std::vector<std::string> &splitted,
                 << std::endl;
       throw ex;
     }
+    splitted.erase(it_name,++it_name_param);
   }
   return res;
 }
@@ -366,7 +376,7 @@ GuardRule::ParseToken(const std::vector<std::string> &splitted,
 
 std::optional<std::pair<RuleOperator, std::vector<std::string>>>
 GuardRule::ParseTokenWithOperator(
-    const std::vector<std::string> &splitted, const std::string &name,
+     std::vector<std::string> &splitted, const std::string &name,
     std::function<bool(const std::string &)> predicat) const {
 
   std::logic_error ex("Cant parse rule string");
@@ -375,7 +385,8 @@ GuardRule::ParseTokenWithOperator(
   bool have_operator{false};
   auto it_name = std::find(splitted.cbegin(), splitted.cend(), name);
   if (it_name != splitted.cend()) {
-    auto it_name_param1 = std::move(++it_name);
+    auto it_name_param1 = it_name;
+    ++it_name_param1;
     // if a value exists -> check may be it is an operator
     if (it_name_param1 == splitted.cend()) {
       std::cerr << "[ERROR] Parsing error. No values for param " << name
@@ -432,6 +443,7 @@ GuardRule::ParseTokenWithOperator(
         }
         ++it_val;
       }
+      splitted.erase(it_name,++it_range_end);
     }
   }
   return res;
@@ -440,7 +452,7 @@ GuardRule::ParseTokenWithOperator(
 /******************************************************************************/
 
 std::optional<std::pair<RuleOperator, std::vector<RuleWithBool>>>
-GuardRule::ParseConditions(const std::vector<std::string> &splitted) {
+GuardRule::ParseConditions( std::vector<std::string> &splitted) {
 
   std::logic_error ex("Cant parse conditions");
   std::optional<std::pair<RuleOperator, std::vector<RuleWithBool>>> res;
@@ -451,7 +463,8 @@ GuardRule::ParseConditions(const std::vector<std::string> &splitted) {
 
   // Check if there is any operator
   bool have_operator{false};
-  auto it_param1 = std::move(++it_if_operator);
+  auto it_param1 = it_if_operator;
+  ++it_param1;
   if (it_param1 == splitted.cend()) {
     std::cerr << "[ERROR] No value was found for condition" << std::endl;
     throw ex;
@@ -472,6 +485,7 @@ GuardRule::ParseConditions(const std::vector<std::string> &splitted) {
     if (it_param1 != splitted.cend()) {
       throw std::logic_error("Some text was found after a condition");
     }
+    splitted.erase(it_if_operator,it_param1);
   } else {
     RuleOperator op = it_operator->first; // goes to the result
 
@@ -503,6 +517,7 @@ GuardRule::ParseConditions(const std::vector<std::string> &splitted) {
     if (range_end != splitted.cend()) {
       throw std::logic_error("Some text was found after conditions array");
     }
+    splitted.erase(it_if_operator,range_end);
     res = {op, std::move(tmp)};
   }
   return res;
