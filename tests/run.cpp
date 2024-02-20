@@ -41,6 +41,9 @@ int main(int argc, char *argv[]) {
 
   //Test parsing json rule object
   test.Run14();
+
+  // Test guard ParseJsonRulesChanges
+  test.Run15();
   
   return 0;
 }

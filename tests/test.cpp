@@ -1231,7 +1231,49 @@ void Test::Run14(){
     assert(rule.cond == conds );
   }
   
-
-
   std::cerr << "[TEST] TEST 14 ... OK"<<std::endl;
+}
+
+void Test::Run15(){
+
+  {
+    guard::Guard guard;
+    std::string json ="{\"preset_mode\":\"manual_mode\",\"deleted_rules\":null,\"appended_rules\":[],\"run_daemon\":\"true\"}"; 
+    auto res=guard.ParseJsonRulesChanges(json);
+    assert(res.has_value());
+    //std::cerr << *res;
+    assert(*res =="{\"rules_OK\":[],\"rules_BAD\":[]}" );
+  }
+
+
+  {
+    //stop daemon
+    guard::Guard guard;
+    std::string json ="{\"preset_mode\":\"manual_mode\",\"deleted_rules\":null,\"appended_rules\":[],\"run_daemon\":\"false\"}"; 
+    auto res=guard.ParseJsonRulesChanges(json);
+    assert(res.has_value());
+    //std::cerr << *res;
+    assert(*res =="{\"rules_OK\":[],\"rules_BAD\":[]}" );
+
+    guard::ConfigStatus cs;
+    assert(!cs.guard_daemon_active);
+    assert(!cs.guard_daemon_enabled);
+  }
+  std::this_thread::sleep_for(std::chrono::milliseconds(100));
+
+  {
+    // run daemon
+    guard::Guard guard;
+    std::string json ="{\"preset_mode\":\"manual_mode\",\"deleted_rules\":null,\"appended_rules\":[],\"run_daemon\":\"true\"}"; 
+    auto res=guard.ParseJsonRulesChanges(json);
+    assert(res.has_value());
+    //std::cerr << *res;
+    assert(*res =="{\"rules_OK\":[],\"rules_BAD\":[]}" );
+
+    guard::ConfigStatus cs;
+    assert(cs.guard_daemon_active);
+    assert(cs.guard_daemon_enabled);
+  }
+
+  std::cerr << "[TEST] TEST 15 ... OK"<<std::endl;
 }
