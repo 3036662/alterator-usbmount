@@ -6,6 +6,8 @@
 #include <iostream>
 #include <sstream>
 #include <string>
+#include <thread>
+#include <chrono>
 
 namespace guard {
 
@@ -335,6 +337,8 @@ bool ConfigStatus::OverwriteRulesFile(const std::string &new_content) noexcept {
       file3 << old_content.str();
       file3.close();
       dbus_bindings::Systemd sd;
+      using namespace std::chrono_literals;
+      std::this_thread::sleep_for(100ms);
       auto start_result = sd.StartUnit(usb_guard_daemon_name);
       if (!start_result || *start_result) {
         std::cerr << "[ERROR] Can't start usbguard service"
