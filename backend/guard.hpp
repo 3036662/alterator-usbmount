@@ -63,6 +63,17 @@ private:
   ///@param i_type string with list of interfaces from usbguard
   std::vector<std::string> FoldUsbInterfacesList(std::string i_type) const;
 
+  /**
+   * @brief Process rules for "manual" mode
+   * 
+   * @param ptr_jobj Json object, containig "appended_rules" and "deleted_rules" arrays
+   * @return boost::json::object, containig "rules_OK" and "rules_BAD" arrays 
+   * @details rules_OK and rules_BAD contains html <tr> ids for validation
+   */
+  boost::json::object ProcessJsonManualMode(const boost::json::object* ptr_jobj,
+                                            std::vector<uint>& rules_to_delete,
+                                            std::vector<GuardRule>& rules_to_add) noexcept;
+
 #ifdef UNIT_TEST
   friend class ::Test;
 #endif

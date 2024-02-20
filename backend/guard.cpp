@@ -222,29 +222,119 @@ std::unordered_map<std::string, std::string> Guard::MapVendorCodesToNames(
 
 std::optional<std::string>
 Guard::ParseJsonRulesChanges(const std::string &msg) noexcept {
+   
   std::string res;
-  std::vector<GuardRule> vec_rules;
-  boost::json::array json_arr_OK;
-  boost::json::array json_arr_BAD;
-  std::vector<uint> rules_to_delete;
+  std::string preset_mode;
   bool daemon_activate{false};
   namespace json = boost::json;
   // parse the json and process
+  json::object *ptr_jobj=nullptr;
+  json::value json_value;
   try {
-    json::value json_value = json::parse(msg);
+    json_value = json::parse(msg);
     // std::cerr << json_value << std::endl;
-    json::object *ptr_jobj = json_value.if_object();
-    // daemon target state (active or stopped)
-    if (ptr_jobj && ptr_jobj->contains("run_daemon")) {
-      daemon_activate = ptr_jobj->at("run_daemon").as_string() == "true";
-    } else {
-      std::cerr << "[ERROR] No target daemon state is found in JSON"
+    ptr_jobj = json_value.if_object();
+  } 
+  catch (const std::exception &ex) {
+    std::cerr << "[ERROR] Can't parse JSON" << std::endl;
+    std::cerr << "[ERROR] " << ex.what() << std::endl;
+  }  
+
+   std::cerr << "===========" <<std::endl;
+    std::cerr << *ptr_jobj<<std::endl;
+  // daemon target state (active or stopped)
+  if (ptr_jobj && ptr_jobj->contains("run_daemon")) {
+    daemon_activate = ptr_jobj->at("run_daemon").as_string() == "true";
+  } else {
+    std::cerr << "[ERROR] No target daemon state is found in JSON"
+              << std::endl;
+    return std::nullopt;
+  }
+  
+  // preset mode
+  if (ptr_jobj && ptr_jobj->contains("preset_mode")){
+    preset_mode=ptr_jobj->at("preset_mode").as_string().c_str();
+  }
+  else {
+    std::cerr << "[ERROR] No preset mode is found in JSON"
+              << std::endl;
+    return std::nullopt;
+  }
+
+  // new rules will be stored here
+  std::optional<std::vector<guard::GuardRule>> new_rules;
+  std::vector<uint> rules_to_delete;
+  std::vector<GuardRule> rules_to_add;
+  auto cs = GetConfigStatus();
+
+  // result json 
+  boost::json::object obj_result;
+
+  // manual mode 
+  if (preset_mode=="manual_mode"){
+    obj_result= ProcessJsonManualMode(ptr_jobj,
+                                      rules_to_delete,
+                                      rules_to_add);
+    // if some rules are bad - just return a validation result
+    if (!obj_result.at("rules_BAD").as_array().empty()) {
+      return json::serialize(std::move(obj_result));
+    }
+  }
+
+    // block all except connected
+  //  if (preset_mode =="put_connected_to_white_list"){
+  //     // if the daemon is not active - try to run it
+  //     if (!HealthStatus()){
+  //       // if can't just start - start with no rules
+  //       if(!cs.ChangeDaemonStatus(true,false)&& !cs.OverwriteRulesFile("",true)){
+  //           std::cerr << "[ERROR] Can't start USBGuard even with no rules"<<std::endl;
+  //           return std::nullopt;
+  //       }
+  //     }
+      
+  // } 
+
+  // build a vector with new rules
+  new_rules =    DeleteRules(rules_to_delete);
+  if (!new_rules.has_value()) {
+      std::cerr << "[ERROR] Can't delete rules" << std::endl;
+      return std::nullopt;
+  }
+  // add rules_to_add to new rules vector
+  for (auto &r : rules_to_add) new_rules->push_back(std::move(r));
+  // build one string for file overwrite
+  std::string str_new_rules;
+  for (const auto &r : *new_rules) {
+    str_new_rules += r.BuildString(true, true);
+    str_new_rules += "\n";
+  }
+  // overwrite the rules and test launch if some rules were added or deleted
+  if (!rules_to_delete.empty() || !rules_to_add.empty()) {
+    if (!cs.OverwriteRulesFile(str_new_rules, daemon_activate)) {
+      std::cerr << "[ERROR] Can't launch the daemon with new rules"
                 << std::endl;
       return std::nullopt;
     }
-    // if some new rules were added
-    if (ptr_jobj && ptr_jobj->contains("appended_rules")) {
-      json::array *ptr_json_array_rules =
+  }
+  if (!cs.ChangeDaemonStatus(daemon_activate, daemon_activate)) {
+    std::cerr << "[ERROR] Change the daemon status FAILED" << std::endl;
+  }
+  return json::serialize(std::move(obj_result));
+}
+
+
+boost::json::object Guard::ProcessJsonManualMode(const boost::json::object* ptr_jobj,
+                                                 std::vector<uint>& rules_to_delete,
+                                                 std::vector<GuardRule>& rules_to_add) 
+                                                 noexcept{
+  namespace json=boost::json;
+  boost::json::array json_arr_OK;
+  boost::json::array json_arr_BAD;
+  // if some new rules were added
+  // put new rules to vector rules_to_add
+  // put rules ids to json_arr_OK and json_arr_BAD
+  if ( ptr_jobj && ptr_jobj->contains("appended_rules")) {
+     const json::array *ptr_json_array_rules =
           ptr_jobj->at("appended_rules").if_array();
       if (ptr_json_array_rules && !ptr_json_array_rules->empty()) {
         // for each rule
@@ -256,7 +346,7 @@ Guard::ParseJsonRulesChanges(const std::string &msg) noexcept {
             // try to build a rule
             try {
               GuardRule rule{ptr_json_rule};
-              vec_rules.push_back(std::move(rule));
+              rules_to_add.push_back(std::move(rule));
               if (tr_id && !tr_id->empty()) {
                 json_arr_OK.emplace_back(*tr_id);
               }
@@ -272,9 +362,10 @@ Guard::ParseJsonRulesChanges(const std::string &msg) noexcept {
           }
         }
       }
-    }
-    // delete rules array
-    if (ptr_jobj && ptr_jobj->contains("deleted_rules") &&
+  }
+  // if we need to remove some rules
+  // put rules numbers to "rules_to_delete"
+  if (ptr_jobj->contains("deleted_rules") &&
         ptr_jobj->at("deleted_rules").is_array()) {
       for (const auto &el : ptr_jobj->at("deleted_rules").as_array()) {
         auto id = StrToUint(el.as_string().c_str());
@@ -283,55 +374,14 @@ Guard::ParseJsonRulesChanges(const std::string &msg) noexcept {
           rules_to_delete.push_back(*id);
         }
       }
-    }
-  } catch (const std::exception &ex) {
-    std::cerr << "[ERROR] Can't parse JSON" << std::endl;
-    std::cerr << "[ERROR] " << ex.what() << std::endl;
   }
-
+  // put list of validated string to response json
   json::object obj_result;
   obj_result["rules_OK"] = std::move(json_arr_OK);
   obj_result["rules_BAD"] = std::move(json_arr_BAD);
-  // if some rules are bad - just return a validation result
-  if (!obj_result.at("rules_BAD").as_array().empty()) {
-    return json::serialize(std::move(obj_result));
-  }
-
-  // after all rules are parsed
-  std::optional<std::vector<guard::GuardRule>> new_rules =
-      DeleteRules(rules_to_delete);
-  if (!new_rules.has_value()) {
-    std::cerr << "[ERROR] Can't delete rules" << std::endl;
-    return std::nullopt;
-  }
-
-  // add parsed rules from json to new rules vector
-  for (auto &r : vec_rules) {
-    new_rules->push_back(std::move(r));
-  }
-  // build one string for file overwrite
-  std::string str_new_rules;
-  for (const auto &r : *new_rules) {
-    str_new_rules += r.BuildString(true, true);
-    str_new_rules += "\n";
-  }
-
-  auto cs = GetConfigStatus();
-  // overwrite the rules and test launch if some rules were added or deleted
-  if (!rules_to_delete.empty() || !vec_rules.empty()) {
-    if (!cs.OverwriteRulesFile(str_new_rules, daemon_activate)) {
-      std::cerr << "[ERROR] Can't launch the daemon with new rules"
-                << std::endl;
-      return std::nullopt;
-    }
-  }
-
-  if (!cs.ChangeDaemonStatus(daemon_activate, daemon_activate)) {
-    std::cerr << "[ERROR] Change the daemon status FAILED" << std::endl;
-  }
-
-  return json::serialize(std::move(obj_result));
+  return obj_result;
 }
+
 
 } // namespace guard
 
