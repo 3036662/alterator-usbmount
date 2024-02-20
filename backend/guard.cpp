@@ -223,7 +223,6 @@ std::unordered_map<std::string, std::string> Guard::MapVendorCodesToNames(
 std::optional<std::string>
 Guard::ParseJsonRulesChanges(const std::string &msg) noexcept {
    
-  std::string res;
   std::string preset_mode;
   bool daemon_activate{false};
   namespace json = boost::json;
@@ -240,10 +239,8 @@ Guard::ParseJsonRulesChanges(const std::string &msg) noexcept {
     std::cerr << "[ERROR] " << ex.what() << std::endl;
   }  
 
-   std::cerr << "===========" <<std::endl;
-    std::cerr << *ptr_jobj<<std::endl;
   // daemon target state (active or stopped)
-  if (ptr_jobj && ptr_jobj->contains("run_daemon")) {
+  if (ptr_jobj && ptr_jobj->contains("run_daemon") && ptr_jobj->at("run_daemon").if_string()) {
     daemon_activate = ptr_jobj->at("run_daemon").as_string() == "true";
   } else {
     std::cerr << "[ERROR] No target daemon state is found in JSON"
@@ -252,7 +249,7 @@ Guard::ParseJsonRulesChanges(const std::string &msg) noexcept {
   }
   
   // preset mode
-  if (ptr_jobj && ptr_jobj->contains("preset_mode")){
+  if (ptr_jobj && ptr_jobj->contains("preset_mode") && ptr_jobj->at("preset_mode").if_string()){
     preset_mode=ptr_jobj->at("preset_mode").as_string().c_str();
   }
   else {
@@ -368,6 +365,7 @@ boost::json::object Guard::ProcessJsonManualMode(const boost::json::object* ptr_
   if (ptr_jobj->contains("deleted_rules") &&
         ptr_jobj->at("deleted_rules").is_array()) {
       for (const auto &el : ptr_jobj->at("deleted_rules").as_array()) {
+        if (!el.if_string()) continue;
         auto id = StrToUint(el.as_string().c_str());
         if (id) {
           // std::cerr<< "Rule to delete"<< *id <<std::endl;
