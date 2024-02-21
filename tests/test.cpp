@@ -1242,7 +1242,7 @@ void Test::Run15(){
     auto res=guard.ParseJsonRulesChanges(json);
     assert(res.has_value());
     //std::cerr << *res;
-    assert(*res =="{\"rules_OK\":[],\"rules_BAD\":[]}" );
+    assert(*res =="{\"rules_OK\":[],\"rules_BAD\":[],\"STATUS\":\"OK\"}" );
   }
 
 
@@ -1253,7 +1253,7 @@ void Test::Run15(){
     auto res=guard.ParseJsonRulesChanges(json);
     assert(res.has_value());
     //std::cerr << *res;
-    assert(*res =="{\"rules_OK\":[],\"rules_BAD\":[]}" );
+    assert(*res =="{\"rules_OK\":[],\"rules_BAD\":[],\"STATUS\":\"OK\"}" );
 
     guard::ConfigStatus cs;
     assert(!cs.guard_daemon_active);
@@ -1268,7 +1268,7 @@ void Test::Run15(){
     auto res=guard.ParseJsonRulesChanges(json);
     assert(res.has_value());
     //std::cerr << *res;
-    assert(*res =="{\"rules_OK\":[],\"rules_BAD\":[]}" );
+    assert(*res =="{\"rules_OK\":[],\"rules_BAD\":[],\"STATUS\":\"OK\"}" );
 
     guard::ConfigStatus cs;
     assert(cs.guard_daemon_active);
@@ -1276,4 +1276,59 @@ void Test::Run15(){
   }
 
   std::cerr << "[TEST] TEST 15 ... OK"<<std::endl;
+}
+
+void Test::Run16(){
+  std::cerr << "[TEST] Test changing implicit policy"<<std::endl;
+  guard::ConfigStatus cs;
+  auto init_policy=cs.implicit_policy_target;
+
+  std::this_thread::sleep_for(std::chrono::milliseconds(100));
+
+  cs.ChangeImplicitPolicy(false);
+   std::cerr << "cs.policy "<< cs.implicit_policy_target <<std::endl;
+  assert(cs.implicit_policy_target =="allow");
+  
+  std::this_thread::sleep_for(std::chrono::milliseconds(100));
+
+  cs.ChangeImplicitPolicy(true);
+  std::cerr << "cs.policy "<< cs.implicit_policy_target <<std::endl;
+  assert(cs.implicit_policy_target =="block");
+  
+  std::this_thread::sleep_for(std::chrono::milliseconds(100));
+
+  cs.ChangeImplicitPolicy(init_policy=="block");
+  assert( cs.implicit_policy_target==init_policy);
+  std::cerr << "[TEST] TEST 16 ... OK"<<std::endl;
+}
+
+void Test::Run17(){
+  std::cerr << "[TEST] Test allow connected "<<std::endl;
+
+std::this_thread::sleep_for(std::chrono::milliseconds(100));
+
+{
+  guard::Guard guard;
+  std::string json ="{\"preset_mode\":\"put_connected_to_white_list\",\"deleted_rules\":null,\"appended_rules\":[],\"run_daemon\":\"true\"}";
+  auto result=guard.ParseJsonRulesChanges(json);
+  assert (result);
+  assert (result=="{\"STATUS\":\"OK\"}");
+  assert (guard.GetConfigStatus().guard_daemon_active);
+  assert (guard.GetConfigStatus().guard_daemon_enabled);
+}
+
+std::cerr << "Sleep 10 sec"<<std::endl;
+std::this_thread::sleep_for(std::chrono::milliseconds(10000));
+
+{
+  guard::Guard guard;
+  std::string json ="{\"preset_mode\":\"put_connected_to_white_list\",\"deleted_rules\":null,\"appended_rules\":[],\"run_daemon\":\"false\"}";
+  auto result=guard.ParseJsonRulesChanges(json);
+  assert (result);
+  assert (result=="{\"STATUS\":\"OK\"}");
+  assert (!guard.GetConfigStatus().guard_daemon_active);
+  assert (!guard.GetConfigStatus().guard_daemon_enabled);
+}
+
+  std::cerr << "[TEST] TEST 17 ... OK"<<std::endl;
 }

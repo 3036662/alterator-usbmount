@@ -73,21 +73,33 @@ public:
    */
   void Run12();
 
-/**
- * @brief Test systemd restart and stop
- * 
- */
+  /**
+   * @brief Test systemd restart and stop
+   *
+   */
   void Run13();
 
   /**
    * @brief Test parsing json rule object
-   * 
+   *
    */
-void Run14();
+  void Run14();
 
-/**
- * @brief ParseJsonRulesChanges
- * 
- */
-void Run15();
+  /**
+   * @brief ParseJsonRulesChanges
+   *
+   */
+  void Run15();
+
+  /**
+   * @brief test ConfigStatus:: ChangeImplicitPolicy
+   *
+   */
+  void Run16();
+
+  /**
+   * @brief  Test Guard:: ProcessJsonAllowConnected
+   *
+   */
+  void Run17();
 };
