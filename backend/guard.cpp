@@ -222,89 +222,80 @@ std::unordered_map<std::string, std::string> Guard::MapVendorCodesToNames(
 
 std::optional<std::string>
 Guard::ParseJsonRulesChanges(const std::string &msg) noexcept {
-   
+
   std::string preset_mode;
   bool daemon_activate{false};
   namespace json = boost::json;
   // parse the json and process
-  json::object *ptr_jobj=nullptr;
+  json::object *ptr_jobj = nullptr;
   json::value json_value;
   try {
     json_value = json::parse(msg);
     // std::cerr << json_value << std::endl;
     ptr_jobj = json_value.if_object();
-  } 
-  catch (const std::exception &ex) {
+  } catch (const std::exception &ex) {
     std::cerr << "[ERROR] Can't parse JSON" << std::endl;
     std::cerr << "[ERROR] " << ex.what() << std::endl;
-  }  
+  }
 
   // daemon target state (active or stopped)
-  if (ptr_jobj && ptr_jobj->contains("run_daemon") && ptr_jobj->at("run_daemon").if_string()) {
+  if (ptr_jobj && ptr_jobj->contains("run_daemon") &&
+      ptr_jobj->at("run_daemon").if_string()) {
     daemon_activate = ptr_jobj->at("run_daemon").as_string() == "true";
   } else {
-    std::cerr << "[ERROR] No target daemon state is found in JSON"
-              << std::endl;
+    std::cerr << "[ERROR] No target daemon state is found in JSON" << std::endl;
     return std::nullopt;
   }
-  
+
   // preset mode
-  if (ptr_jobj && ptr_jobj->contains("preset_mode") && ptr_jobj->at("preset_mode").if_string()){
-    preset_mode=ptr_jobj->at("preset_mode").as_string().c_str();
-  }
-  else {
-    std::cerr << "[ERROR] No preset mode is found in JSON"
-              << std::endl;
+  if (ptr_jobj && ptr_jobj->contains("preset_mode") &&
+      ptr_jobj->at("preset_mode").if_string()) {
+    preset_mode = ptr_jobj->at("preset_mode").as_string().c_str();
+  } else {
+    std::cerr << "[ERROR] No preset mode is found in JSON" << std::endl;
     return std::nullopt;
   }
 
   // new rules will be stored here
-  std::optional<std::vector<guard::GuardRule>> new_rules;
+  std::vector<guard::GuardRule> new_rules;
   std::vector<uint> rules_to_delete;
   std::vector<GuardRule> rules_to_add;
   auto cs = GetConfigStatus();
 
-  // result json 
+  // result json
   boost::json::object obj_result;
 
-  // manual mode 
-  if (preset_mode=="manual_mode"){
-    obj_result= ProcessJsonManualMode(ptr_jobj,
-                                      rules_to_delete,
-                                      rules_to_add);
+  // manual mode
+  if (preset_mode == "manual_mode") {
+    obj_result = ProcessJsonManualMode(ptr_jobj, rules_to_delete, rules_to_add);
     // if some rules are bad - just return a validation result
     if (!obj_result.at("rules_BAD").as_array().empty()) {
       return json::serialize(std::move(obj_result));
     }
-  }
-
-    // block all except connected
-  //  if (preset_mode =="put_connected_to_white_list"){
-  //     // if the daemon is not active - try to run it
-  //     if (!HealthStatus()){
-  //       // if can't just start - start with no rules
-  //       if(!cs.ChangeDaemonStatus(true,false)&& !cs.OverwriteRulesFile("",true)){
-  //           std::cerr << "[ERROR] Can't start USBGuard even with no rules"<<std::endl;
-  //           return std::nullopt;
-  //       }
-  //     }
-      
-  // } 
-
-  // build a vector with new rules
-  new_rules =    DeleteRules(rules_to_delete);
-  if (!new_rules.has_value()) {
+    // build a vector with new rules
+    auto to_new_rules = DeleteRules(rules_to_delete);
+    if (!to_new_rules.has_value()) {
       std::cerr << "[ERROR] Can't delete rules" << std::endl;
       return std::nullopt;
+    }
+    new_rules = std::move(*to_new_rules);
   }
+
+  // block all except connected
+  if (preset_mode == "put_connected_to_white_list") {
+    obj_result = ProcessJsonAllowConnected(rules_to_add);
+  }
+
   // add rules_to_add to new rules vector
-  for (auto &r : rules_to_add) new_rules->push_back(std::move(r));
+  for (auto &r : rules_to_add)
+    new_rules.push_back(std::move(r));
   // build one string for file overwrite
   std::string str_new_rules;
-  for (const auto &r : *new_rules) {
+  for (const auto &r : new_rules) {
     str_new_rules += r.BuildString(true, true);
     str_new_rules += "\n";
   }
+
   // overwrite the rules and test launch if some rules were added or deleted
   if (!rules_to_delete.empty() || !rules_to_add.empty()) {
     if (!cs.OverwriteRulesFile(str_new_rules, daemon_activate)) {
@@ -319,67 +310,123 @@ Guard::ParseJsonRulesChanges(const std::string &msg) noexcept {
   return json::serialize(std::move(obj_result));
 }
 
-
-boost::json::object Guard::ProcessJsonManualMode(const boost::json::object* ptr_jobj,
-                                                 std::vector<uint>& rules_to_delete,
-                                                 std::vector<GuardRule>& rules_to_add) 
-                                                 noexcept{
-  namespace json=boost::json;
+boost::json::object
+Guard::ProcessJsonManualMode(const boost::json::object *ptr_jobj,
+                             std::vector<uint> &rules_to_delete,
+                             std::vector<GuardRule> &rules_to_add) noexcept {
+  namespace json = boost::json;
   boost::json::array json_arr_OK;
   boost::json::array json_arr_BAD;
   // if some new rules were added
   // put new rules to vector rules_to_add
   // put rules ids to json_arr_OK and json_arr_BAD
-  if ( ptr_jobj && ptr_jobj->contains("appended_rules")) {
-     const json::array *ptr_json_array_rules =
-          ptr_jobj->at("appended_rules").if_array();
-      if (ptr_json_array_rules && !ptr_json_array_rules->empty()) {
-        // for each rule
-        for (auto it = ptr_json_array_rules->cbegin();
-             it != ptr_json_array_rules->cend(); ++it) {
-          const json::object *ptr_json_rule = it->if_object();
-          if (ptr_json_rule) {
-            const json::string *tr_id = ptr_json_rule->at("tr_id").if_string();
-            // try to build a rule
-            try {
-              GuardRule rule{ptr_json_rule};
-              rules_to_add.push_back(std::move(rule));
-              if (tr_id && !tr_id->empty()) {
-                json_arr_OK.emplace_back(*tr_id);
-              }
+  if (ptr_jobj && ptr_jobj->contains("appended_rules")) {
+    const json::array *ptr_json_array_rules =
+        ptr_jobj->at("appended_rules").if_array();
+    if (ptr_json_array_rules && !ptr_json_array_rules->empty()) {
+      // for each rule
+      for (auto it = ptr_json_array_rules->cbegin();
+           it != ptr_json_array_rules->cend(); ++it) {
+        const json::object *ptr_json_rule = it->if_object();
+        if (ptr_json_rule) {
+          const json::string *tr_id = ptr_json_rule->at("tr_id").if_string();
+          // try to build a rule
+          try {
+            GuardRule rule{ptr_json_rule};
+            rules_to_add.push_back(std::move(rule));
+            if (tr_id && !tr_id->empty()) {
+              json_arr_OK.emplace_back(*tr_id);
             }
-            // if failed
-            catch (const std::logic_error &ex) {
-              std::cerr << "[ERROR] Can't build the rule" << std::endl;
-              std::cerr << ex.what() << std::endl;
-              if (tr_id && !tr_id->empty()) {
-                json_arr_BAD.emplace_back(*tr_id);
-              }
+          }
+          // if failed
+          catch (const std::logic_error &ex) {
+            std::cerr << "[ERROR] Can't build the rule" << std::endl;
+            std::cerr << ex.what() << std::endl;
+            if (tr_id && !tr_id->empty()) {
+              json_arr_BAD.emplace_back(*tr_id);
             }
           }
         }
       }
+    }
   }
   // if we need to remove some rules
   // put rules numbers to "rules_to_delete"
   if (ptr_jobj->contains("deleted_rules") &&
-        ptr_jobj->at("deleted_rules").is_array()) {
-      for (const auto &el : ptr_jobj->at("deleted_rules").as_array()) {
-        if (!el.if_string()) continue;
-        auto id = StrToUint(el.as_string().c_str());
-        if (id) {
-          // std::cerr<< "Rule to delete"<< *id <<std::endl;
-          rules_to_delete.push_back(*id);
-        }
+      ptr_jobj->at("deleted_rules").is_array()) {
+    for (const auto &el : ptr_jobj->at("deleted_rules").as_array()) {
+      if (!el.if_string())
+        continue;
+      auto id = StrToUint(el.as_string().c_str());
+      if (id) {
+        // std::cerr<< "Rule to delete"<< *id <<std::endl;
+        rules_to_delete.push_back(*id);
       }
+    }
   }
   // put list of validated string to response json
   json::object obj_result;
   obj_result["rules_OK"] = std::move(json_arr_OK);
   obj_result["rules_BAD"] = std::move(json_arr_BAD);
+  obj_result["STATUS"] =
+      obj_result.at("rules_BAD").as_array().empty() ? "OK" : "BAD";
   return obj_result;
 }
 
+boost::json::object Guard::ProcessJsonAllowConnected(
+    std::vector<GuardRule> &rules_to_add) noexcept {
+  namespace json = boost::json;
+  json::object res;
+  auto cs = GetConfigStatus();
+  // temporary change the policy to "allow all"
+  // The purpose is to launch USBGuard without blocking anything
+  // to receive a list of devices
+  if (!cs.ChangeImplicitPolicy(false)) {
+    std::cerr << "[ERROR] Can't change usbguard policy" << std::endl;
+    res["STATUS"] = "error";
+    res["ERROR_MSG"] = "Failed to change usbguard policy";
+    return res;
+  }
+  std::cerr << "[INFO] USBguard implicit policy was changed to allow all"
+            << std::endl;
+  // make sure that USBGuard is running
+  ConnectToUsbGuard();
+  if (!HealthStatus()) {
+    cs.TryToRun(true);
+    ConnectToUsbGuard();
+    if (!HealthStatus()) {
+      std::cerr << "[ERROR] Can't launch usbguard" << std::endl;
+      res["STATUS"] = "error";
+      res["ERROR_MSG"] = "Failed to create policy";
+      return res;
+    }
+  }
+
+  // get list of devices
+  std::vector<UsbDevice> devs = ListCurrentUsbDevices();
+  for (const UsbDevice &dev : devs) {
+    std::stringstream ss;
+    ss << "allow name " << QuoteIfNotQuoted(dev.name) << " hash "
+       << QuoteIfNotQuoted(dev.hash);
+    try {
+      rules_to_add.emplace_back(ss.str());
+    } catch (const std::logic_error &ex) {
+      std::cerr << "[ERROR] Can't create a rule for device" << dev.name << "\n"
+                << ex.what() << std::endl;
+      res["STATUS"] = "error";
+      res["ERROR_MSG"] = "Failed to create policy";
+      break;
+    }
+  }
+
+  if (cs.implicit_policy_target != "block") {
+    std::cerr << "[INFO] Changing USBGuard policy to block all" << std::endl;
+    cs.ChangeImplicitPolicy(true);
+  }
+
+  res["STATUS"] = "OK";
+  return res;
+}
 
 } // namespace guard
 
