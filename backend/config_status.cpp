@@ -2,12 +2,11 @@
 #include "systemd_dbus.hpp"
 #include <algorithm>
 #include <boost/algorithm/string.hpp>
-#include <chrono>
 #include <fstream>
 #include <iostream>
 #include <sstream>
 #include <string>
-#include <thread>
+
 
 namespace guard {
 
@@ -299,6 +298,14 @@ ConfigStatus::ParseGuardRulesFile() const noexcept {
 
 bool ConfigStatus::OverwriteRulesFile(const std::string &new_content,
                                       bool run_daemon) noexcept {
+  // temporary change the policy to "allow all"
+  // The purpose is to launch USBGuard without blocking anything
+  // to make sure it can parse new rules
+  bool initial_policy = implicit_policy_target == "block";
+  if (!ChangeImplicitPolicy(false)) {
+    std::cerr << "[ERROR] Can't change usbguard policy" << std::endl;
+    return false;
+  }
   if (rules_files_exists) {
     // read old rules
     std::ifstream old_file(daemon_rules_file_path);
@@ -321,10 +328,9 @@ bool ConfigStatus::OverwriteRulesFile(const std::string &new_content,
     file << new_content;
     file.close();
 
-    std::cerr << new_content << std::endl;
-
     // parse new rules
     auto parsed_new_file = ParseGuardRulesFile();
+
     // If some errors occurred while parsing new rules - recover
     if (parsed_new_file.first.size() != parsed_new_file.second ||
         !TryToRun(run_daemon)) {
@@ -340,13 +346,18 @@ bool ConfigStatus::OverwriteRulesFile(const std::string &new_content,
       file3.close();
       dbus_bindings::Systemd sd;
       using namespace std::chrono_literals;
-      std::this_thread::sleep_for(100ms);
       auto start_result = sd.StartUnit(usb_guard_daemon_name);
       if (!start_result || *start_result) {
         std::cerr << "[ERROR] Can't start usbguard service" << std::endl;
       }
       return false;
     }
+  }
+
+  // restore the policy
+  if (!ChangeImplicitPolicy(initial_policy)) {
+    std::cerr << "[ERROR] Can't change usbguard policy" << std::endl;
+    return false;
   }
   return true;
 }
@@ -359,7 +370,6 @@ bool ConfigStatus::TryToRun(bool run_daemon) noexcept {
     return false;
   std::cerr << "[INFO] Usbguard is " << (*init_state ? "active" : "inactive")
             << std::endl;
-
   // if stopped - try to start
   if (!init_state.value()) {
     auto result = sd.StartUnit(usb_guard_daemon_name);
@@ -375,7 +385,7 @@ bool ConfigStatus::TryToRun(bool run_daemon) noexcept {
   auto result = sd.RestartUnit(usb_guard_daemon_name);
   std::cerr << "[INFO] Restart - "
             << ((result.has_value() && *result) ? "OK" : "FAIL") << std::endl;
-  if (!run_daemon) {
+  if (!init_state && !run_daemon) {
     sd.StopUnit(usb_guard_daemon_name);
   }
   return result.has_value() && *result;
@@ -434,6 +444,69 @@ bool ConfigStatus::ChangeDaemonStatus(bool active, bool enabled) noexcept {
 }
 
 /***********************************************************/
+
+bool ConfigStatus::ChangeImplicitPolicy(bool block) noexcept {
+  if (block && implicit_policy_target == "block")
+    return true;
+  if (!block && implicit_policy_target == "allow")
+    return true;
+  std::cerr << "[DEBUG] Changing implicit policy to "
+            << (block ? "block" : "allow") << std::endl;
+  try {
+    if (!std::filesystem::exists(daemon_config_file_path)) {
+      std::cerr << "[ERROR] Config file " << daemon_config_file_path
+                << "doesn't exist." << std::endl;
+      return false;
+    }
+  } catch (const std::exception &ex) {
+    std::cerr << "[ERROR] Error looking for config file at path "
+              << daemon_config_file_path << std::endl
+              << ex.what() << std::endl;
+    return false;
+  }
+
+  std::string new_target = block ? "block" : "allow";
+  // open config
+  std::ifstream f(daemon_config_file_path);
+  if (!f.is_open()) {
+    std::cerr << "[ERROR] Can't open daemon config file "
+              << daemon_config_file_path << std::endl;
+    return false;
+  }
+
+  std::stringstream new_content;
+  std::stringstream old_content;
+  std::string line;
+  while (getline(f, line)) {
+    old_content << line << "\n";
+    boost::trim(line);
+    if (boost::starts_with(line, "ImplicitPolicyTarget=")) {
+      size_t pos = line.find('=');
+      if (pos != std::string::npos && ++pos < line.size()) {
+        line.erase(pos, line.size() - pos);
+        line += new_target;
+      }
+    }
+    new_content << line << "\n";
+    line.clear();
+  }
+  f.close();
+
+  // write to config
+  std::ofstream f_out(daemon_config_file_path);
+  if (!f_out.is_open()) {
+    std::cerr << "[ERROR] Can't open file " << daemon_config_file_path
+              << " for writing" << std::endl;
+    return false;
+  }
+  f_out << new_content.str();
+  f_out.close();
+
+  ParseDaemonConfig();
+  return true;
+}
+
+/***********************************************************/
 // non-friend funcions
 
 std::unordered_map<std::string, std::string> InspectUdevRules(
@@ -449,8 +522,9 @@ std::unordered_map<std::string, std::string> InspectUdevRules(
   if (vec)
     udev_paths = *vec;
 #endif
+  std::cerr << "[INFO] Inspecting udev folders " << std::endl;
   for (const std::string &path : udev_paths) {
-    std::cerr << "[INFO] Inspecting udev folder " << path << std::endl;
+    // std::cerr << "[INFO] Inspecting udev folder " << path << std::endl;
     try {
       // find all files in folder
       std::vector<std::string> files =

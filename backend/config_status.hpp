@@ -61,9 +61,43 @@ public:
    */
   std::pair<std::vector<GuardRule>, uint> ParseGuardRulesFile() const noexcept;
 
+  /**
+   * @brief Overwrite rules file, recover if USBGuard fails to srart
+   *
+   * @param new_content New content of file
+   * @param run_daemon Leave USBGuard running
+   * @return true Success
+   * @return false Fail
+   */
   bool OverwriteRulesFile(const std::string &new_content,
                           bool run_daemon) noexcept;
+  /**
+   * @brief Changes USBGuard unitfile (.service) status
+   *
+   * @param active If true - equivalent to "systemctl start"
+   * @param enabled If true - equivalent ti "systemctl enable"
+   * @return true Success
+   * @return false Fail
+   */
   bool ChangeDaemonStatus(bool active, bool enabled) noexcept;
+
+  /**
+   * @brief Change USBGuard implicit policy
+   *
+   * @param block if true - apply "block" policy
+   * @return true Succeded
+   * @return false Failed
+   */
+  bool ChangeImplicitPolicy(bool block) noexcept;
+
+  /**
+   * @brief Try to run usbguard, just for a health check. Leaves a daemon in its
+   * initial state if parameter is false
+   * @param run_daemon true - leave daemon running
+   * @return true Succeded
+   * @return false Failed
+   */
+  bool TryToRun(bool run_daemon) noexcept;
 
 private:
   /// @brief Return path for the  daemon .conf file
@@ -78,15 +112,6 @@ private:
    * Looks for allowed users and groups.
    */
   void ParseDaemonConfig();
-
-  /**
-   * @brief Try to run usbguard, just for a health check. Leaves a daemon in its
-   * initial state.
-   *
-   * @return true
-   * @return false
-   */
-  bool TryToRun(bool run_daemon) noexcept;
 
 #ifdef UNIT_TEST
   friend class ::Test;
