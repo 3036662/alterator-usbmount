@@ -108,7 +108,7 @@ $(document).ready(function () {
     if ( $(this).val()!==""){  
       var response=JSON.parse( $(this).val());
       $(this).val("");
-      if (response["rules_BAD"].length ===0){
+      if (response["STATUS"] ==="OK"){
         $(".manual_appended").remove();
         localStorage.removeItem("deletedFields");
         $(this).trigger("rules_applied");
