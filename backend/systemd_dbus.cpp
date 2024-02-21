@@ -68,6 +68,7 @@ std::optional<bool> Systemd::StartUnit(const std::string &unit_name) noexcept {
   if (!Health())
     return std::nullopt;
   try {
+    std::this_thread::sleep_for(std::chrono::milliseconds(100));
     auto proxy = CreateProxyToSystemd(objectPath);
     auto method =
         proxy->createMethodCall(systemd_interface_manager, "StartUnit");
@@ -98,7 +99,9 @@ std::optional<bool> Systemd::StartUnit(const std::string &unit_name) noexcept {
 std::optional<bool> Systemd::EnableUnit(const std::string &unit_name) noexcept {
   if (!Health())
     return std::nullopt;
+
   try {
+    std::this_thread::sleep_for(std::chrono::milliseconds(100));
     std::vector<std::string> arr_unit_names{unit_name};
     auto proxy = CreateProxyToSystemd(objectPath);
     auto method =
@@ -133,6 +136,7 @@ Systemd::DisableUnit(const std::string &unit_name) noexcept {
   if (!Health())
     return std::nullopt;
   try {
+    std::this_thread::sleep_for(std::chrono::milliseconds(100));
     std::vector<std::string> arr_unit_names{unit_name};
     auto proxy = CreateProxyToSystemd(objectPath);
     auto method =
@@ -165,7 +169,9 @@ std::optional<bool>
 Systemd::RestartUnit(const std::string &unit_name) noexcept {
   if (!Health())
     return std::nullopt;
+
   try {
+    std::this_thread::sleep_for(std::chrono::milliseconds(100));
     auto proxy = CreateProxyToSystemd(objectPath);
     auto method =
         proxy->createMethodCall(systemd_interface_manager, "RestartUnit");
@@ -176,7 +182,7 @@ Systemd::RestartUnit(const std::string &unit_name) noexcept {
       return true;
     } else {
       for (int i = 0; i < 10; ++i) {
-        std::cerr << "[INFO] Waiting for systemd starts the sevice ..."
+        std::cerr << "[INFO] Waiting for systemd restarts the sevice ..."
                   << std::endl;
         std::this_thread::sleep_for(std::chrono::milliseconds(200));
         isActive = IsUnitActive(unit_name);
@@ -196,7 +202,9 @@ Systemd::RestartUnit(const std::string &unit_name) noexcept {
 std::optional<bool> Systemd::StopUnit(const std::string &unit_name) noexcept {
   if (!Health())
     return std::nullopt;
+
   try {
+    std::this_thread::sleep_for(std::chrono::milliseconds(100));
     // if a unit is already stopped
     auto isActive = IsUnitActive(unit_name);
     if (isActive && !isActive.value()) {
