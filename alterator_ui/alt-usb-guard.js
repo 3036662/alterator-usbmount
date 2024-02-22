@@ -96,7 +96,8 @@ $(document).ready(function () {
       preset_mode: $("#presets_input_hidden").val(),
       deleted_rules:  JSON.parse(deletedFields),
       appended_rules: collectAppendedRules(),
-      run_daemon: $("#checkbox_use_control_hidden").val()==="#t" ? "true":"false"
+      run_daemon: $("#checkbox_use_control_hidden").val()==="#t" ? "true":"false",
+      policy_type: $("#hidden_list_type").val() 
     }
     $("#hidden_manual_changes_data").val(JSON.stringify(rules_changes));
    // $(".manual_appended").remove();
