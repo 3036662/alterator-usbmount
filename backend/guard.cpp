@@ -282,8 +282,14 @@ Guard::ParseJsonRulesChanges(const std::string &msg) noexcept {
   }
 
   // block all except connected
-  if (preset_mode == "put_connected_to_white_list") {
+  if (preset_mode == "put_connected_to_white_list" ||
+      preset_mode == "put_connected_to_white_list_plus_HID") {
     obj_result = ProcessJsonAllowConnected(rules_to_add);
+  }
+
+  // add HID devices to white list
+  if (preset_mode =="put_connected_to_white_list_plus_HID"){
+    AddAllowHid(rules_to_add);
   }
 
   // add rules_to_add to new rules vector
@@ -426,6 +432,16 @@ boost::json::object Guard::ProcessJsonAllowConnected(
 
   res["STATUS"] = "OK";
   return res;
+}
+
+void Guard::AddAllowHid(std::vector<GuardRule> &rules_to_add) noexcept{
+  try{
+    rules_to_add.emplace_back("allow with-interface 03:*:*");
+  }
+  catch (const std::logic_error& ex){
+    std::cerr << "[ERROR] Can't add a rules for HID devices\n"
+              << ex.what() <<std::endl;
+  }
 }
 
 } // namespace guard

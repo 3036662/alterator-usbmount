@@ -82,6 +82,13 @@ private:
   boost::json::object
   ProcessJsonAllowConnected(std::vector<GuardRule> &rules_to_add) noexcept;
 
+  /**
+   * @brief Add a rule to allow all HID devices.
+   * 
+   * @param rules_to_add Vector,where a new rule will be appended.
+   */
+  void AddAllowHid(std::vector<GuardRule> &rules_to_add) noexcept;
+
 #ifdef UNIT_TEST
   friend class ::Test;
 #endif
