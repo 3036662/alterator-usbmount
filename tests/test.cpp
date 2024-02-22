@@ -1238,7 +1238,7 @@ void Test::Run15(){
 
   {
     guard::Guard guard;
-    std::string json ="{\"preset_mode\":\"manual_mode\",\"deleted_rules\":null,\"appended_rules\":[],\"run_daemon\":\"true\"}"; 
+    std::string json ="{\"policy_type\":\"radio_white_list\", \"preset_mode\":\"manual_mode\",\"deleted_rules\":null,\"appended_rules\":[],\"run_daemon\":\"true\"}"; 
     auto res=guard.ParseJsonRulesChanges(json);
     assert(res.has_value());
     //std::cerr << *res;
@@ -1249,7 +1249,7 @@ void Test::Run15(){
   {
     //stop daemon
     guard::Guard guard;
-    std::string json ="{\"preset_mode\":\"manual_mode\",\"deleted_rules\":null,\"appended_rules\":[],\"run_daemon\":\"false\"}"; 
+    std::string json ="{\"policy_type\":\"radio_white_list\",\"preset_mode\":\"manual_mode\",\"deleted_rules\":null,\"appended_rules\":[],\"run_daemon\":\"false\"}"; 
     auto res=guard.ParseJsonRulesChanges(json);
     assert(res.has_value());
     //std::cerr << *res;
@@ -1264,7 +1264,7 @@ void Test::Run15(){
   {
     // run daemon
     guard::Guard guard;
-    std::string json ="{\"preset_mode\":\"manual_mode\",\"deleted_rules\":null,\"appended_rules\":[],\"run_daemon\":\"true\"}"; 
+    std::string json ="{\"policy_type\":\"radio_white_list\",\"preset_mode\":\"manual_mode\",\"deleted_rules\":null,\"appended_rules\":[],\"run_daemon\":\"true\"}"; 
     auto res=guard.ParseJsonRulesChanges(json);
     assert(res.has_value());
     //std::cerr << *res;
@@ -1309,7 +1309,7 @@ std::this_thread::sleep_for(std::chrono::milliseconds(100));
 
 {
   guard::Guard guard;
-  std::string json ="{\"preset_mode\":\"put_connected_to_white_list\",\"deleted_rules\":null,\"appended_rules\":[],\"run_daemon\":\"true\"}";
+  std::string json ="{\"policy_type\":\"radio_white_list\",\"preset_mode\":\"put_connected_to_white_list\",\"deleted_rules\":null,\"appended_rules\":[],\"run_daemon\":\"true\"}";
   auto result=guard.ParseJsonRulesChanges(json);
   assert (result);
   assert (result=="{\"STATUS\":\"OK\"}");
@@ -1317,15 +1317,23 @@ std::this_thread::sleep_for(std::chrono::milliseconds(100));
   assert (guard.GetConfigStatus().guard_daemon_enabled);
 }
 
-std::cerr << "Sleep 10 sec"<<std::endl;
-std::this_thread::sleep_for(std::chrono::milliseconds(10000));
-
 {
   guard::Guard guard;
-  std::string json ="{\"preset_mode\":\"put_connected_to_white_list\",\"deleted_rules\":null,\"appended_rules\":[],\"run_daemon\":\"false\"}";
+  std::string json ="{\"policy_type\":\"radio_white_list\",\"preset_mode\":\"put_connected_to_white_list\",\"deleted_rules\":null,\"appended_rules\":[],\"run_daemon\":\"false\"}";
   auto result=guard.ParseJsonRulesChanges(json);
   assert (result);
   assert (result=="{\"STATUS\":\"OK\"}");
+  assert (!guard.GetConfigStatus().guard_daemon_active);
+  assert (!guard.GetConfigStatus().guard_daemon_enabled);
+}
+
+{
+  guard::Guard guard;
+  std::string json ="{\"policy_type\":\"radio_black_list\",\"preset_mode\":\"manual_mode\",\"deleted_rules\":null,\"appended_rules\":[],\"run_daemon\":\"false\"}";
+  auto result=guard.ParseJsonRulesChanges(json);
+  assert (result);
+  std::cerr <<*result;
+  assert (result=="{\"rules_OK\":[],\"rules_BAD\":[],\"STATUS\":\"OK\"}");
   assert (!guard.GetConfigStatus().guard_daemon_active);
   assert (!guard.GetConfigStatus().guard_daemon_enabled);
 }
