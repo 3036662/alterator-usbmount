@@ -229,6 +229,7 @@ Guard::ParseJsonRulesChanges(const std::string &msg) noexcept {
   // parse the json and process
   json::object *ptr_jobj = nullptr;
   json::value json_value;
+  bool rules_changed_by_policy;
   try {
     json_value = json::parse(msg);
     // std::cerr << json_value << std::endl;
@@ -244,6 +245,18 @@ Guard::ParseJsonRulesChanges(const std::string &msg) noexcept {
     daemon_activate = ptr_jobj->at("run_daemon").as_string() == "true";
   } else {
     std::cerr << "[ERROR] No target daemon state is found in JSON" << std::endl;
+    return std::nullopt;
+  }
+
+  // policy type
+  Target policy;
+  if (ptr_jobj && ptr_jobj->contains("policy_type") &&
+      ptr_jobj->at("policy_type").if_string()) {
+    policy = ptr_jobj->at("policy_type").as_string() == "radio_white_list"
+                 ? Target::block
+                 : Target::allow;
+  } else {
+    std::cerr << "[ERROR] No target policy is found in JSON" << std::endl;
     return std::nullopt;
   }
 
@@ -278,7 +291,19 @@ Guard::ParseJsonRulesChanges(const std::string &msg) noexcept {
       std::cerr << "[ERROR] Can't delete rules" << std::endl;
       return std::nullopt;
     }
-    new_rules = std::move(*to_new_rules);
+    // skip rules with conflicting policy,place rest to new_rules
+    // if implicit policy="allow" rules must be blow or reject
+    for (GuardRule &rule : *to_new_rules) {
+      if ((policy == Target::allow &&
+           (rule.target == Target::block || rule.target == Target::reject)) ||
+          (policy == Target::block && rule.target == Target::allow)) {
+        new_rules.emplace_back(std::move(rule));
+      } else {
+        rules_changed_by_policy = true;
+      }
+    }
+    // change policy (bool)
+    cs.ChangeImplicitPolicy(policy == Target::block);
   }
 
   // block all except connected
@@ -286,11 +311,19 @@ Guard::ParseJsonRulesChanges(const std::string &msg) noexcept {
       preset_mode == "put_connected_to_white_list_plus_HID") {
     obj_result = ProcessJsonAllowConnected(rules_to_add);
   }
-
   // add HID devices to white list
-  if (preset_mode =="put_connected_to_white_list_plus_HID"){
+  if (preset_mode == "put_connected_to_white_list_plus_HID") {
     AddAllowHid(rules_to_add);
   }
+
+  // block only usb mass storage  and MTP PTP
+  if (preset_mode == "put_disks_and_mtp_to_black"){
+    policy=Target::allow;
+    AddBlockUsbStorages(rules_to_add);
+    cs.ChangeImplicitPolicy(false);
+    obj_result["STATUS"]="OK";
+  }
+
 
   // add rules_to_add to new rules vector
   for (auto &r : rules_to_add)
@@ -303,7 +336,8 @@ Guard::ParseJsonRulesChanges(const std::string &msg) noexcept {
   }
 
   // overwrite the rules and test launch if some rules were added or deleted
-  if (!rules_to_delete.empty() || !rules_to_add.empty()) {
+  if (rules_changed_by_policy || !rules_to_delete.empty() ||
+      !rules_to_add.empty()) {
     if (!cs.OverwriteRulesFile(str_new_rules, daemon_activate)) {
       std::cerr << "[ERROR] Can't launch the daemon with new rules"
                 << std::endl;
@@ -434,13 +468,22 @@ boost::json::object Guard::ProcessJsonAllowConnected(
   return res;
 }
 
-void Guard::AddAllowHid(std::vector<GuardRule> &rules_to_add) noexcept{
-  try{
+void Guard::AddAllowHid(std::vector<GuardRule> &rules_to_add) noexcept {
+  try {
     rules_to_add.emplace_back("allow with-interface 03:*:*");
-  }
-  catch (const std::logic_error& ex){
+  } catch (const std::logic_error &ex) {
     std::cerr << "[ERROR] Can't add a rules for HID devices\n"
-              << ex.what() <<std::endl;
+              << ex.what() << std::endl;
+  }
+}
+
+void Guard::AddBlockUsbStorages(std::vector<GuardRule> &rules_to_add) noexcept{
+  try {
+    rules_to_add.emplace_back("block with-interface 08:*:*");
+    rules_to_add.emplace_back("block with-interface 06:*:*");
+  } catch (const std::logic_error &ex) {
+    std::cerr << "[ERROR] Can't add a rules for USB storages\n"
+              << ex.what() << std::endl;
   }
 }
 
