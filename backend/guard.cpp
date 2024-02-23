@@ -317,13 +317,21 @@ Guard::ParseJsonRulesChanges(const std::string &msg) noexcept {
   }
 
   // block only usb mass storage  and MTP PTP
-  if (preset_mode == "put_disks_and_mtp_to_black"){
-    policy=Target::allow;
+  if (preset_mode == "put_disks_and_mtp_to_black") {
+    policy = Target::allow;
     AddBlockUsbStorages(rules_to_add);
     cs.ChangeImplicitPolicy(false);
-    obj_result["STATUS"]="OK";
+    obj_result["STATUS"] = "OK";
   }
 
+  // block known android devices
+  if (preset_mode == "block_and_reject_android") {
+    policy = Target::allow;
+    if (!AddRejectAndroid(rules_to_add))
+      return std::nullopt;
+    cs.ChangeImplicitPolicy(false);
+    obj_result["STATUS"] = "OK";
+  }
 
   // add rules_to_add to new rules vector
   for (auto &r : rules_to_add)
@@ -477,7 +485,7 @@ void Guard::AddAllowHid(std::vector<GuardRule> &rules_to_add) noexcept {
   }
 }
 
-void Guard::AddBlockUsbStorages(std::vector<GuardRule> &rules_to_add) noexcept{
+void Guard::AddBlockUsbStorages(std::vector<GuardRule> &rules_to_add) noexcept {
   try {
     rules_to_add.emplace_back("block with-interface 08:*:*");
     rules_to_add.emplace_back("block with-interface 06:*:*");
@@ -485,6 +493,60 @@ void Guard::AddBlockUsbStorages(std::vector<GuardRule> &rules_to_add) noexcept{
     std::cerr << "[ERROR] Can't add a rules for USB storages\n"
               << ex.what() << std::endl;
   }
+}
+
+bool Guard::AddRejectAndroid(std::vector<GuardRule> &rules_to_add) noexcept {
+  const std::string path_to_vidpid = "/etc/usbguard/android_vidpid.json";
+  try {
+    if (!std::filesystem::exists(path_to_vidpid)) {
+      std::cerr << "[ERROR] File " << path_to_vidpid << "doesn't exist."
+                << std::endl;
+      return false;
+    }
+  } catch (const std::exception &ex) {
+    std::cerr << "[ERROR] Can't find file " << path_to_vidpid << "\n"
+              << ex.what() << std::endl;
+    return false;
+  }
+  std::stringstream buf;
+  std::ifstream f(path_to_vidpid);
+  if (!f.is_open()) {
+    std::cerr << "[ERROR] Can't open file" << path_to_vidpid << std::endl;
+    return false;
+  }
+  buf << f.rdbuf();
+  f.close();
+
+  boost::json::value json;
+  boost::json::array *ptr_arr;
+  try {
+    json = boost::json::parse(buf.str());
+  } catch (const std::exception &ex) {
+    std::cerr << "[ERROR] Can't parse a JSON file" << std::endl;
+    return false;
+  }
+  ptr_arr = json.if_array();
+  if (!ptr_arr || ptr_arr->empty()) {
+    std::cerr << "[ERROR] Empty json array" << std::endl;
+    return false;
+  }
+  for (auto it = ptr_arr->cbegin(); it != ptr_arr->cend(); ++it) {
+    if (it->if_object() && it->as_object().contains("vid") &&
+        it->as_object().contains("pid")) {
+      std::stringstream ss;
+      ss << "block id "
+         << UnQuote(it->as_object().at("vid").as_string().c_str()) << ":"
+         << UnQuote(it->as_object().at("pid").as_string().c_str());
+      try {
+        rules_to_add.emplace_back(ss.str());
+      } catch (const std::logic_error &ex) {
+        std::cerr << "[WARNING] Error creating a rule from JSON\n"
+                  << ss.str() << std::endl;
+        return false;
+      }
+    }
+  }
+  return true;
 }
 
 } // namespace guard

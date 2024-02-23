@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <boost/algorithm/string.hpp>
 #include <boost/algorithm/string/regex.hpp>
+#include <boost/json.hpp>
 #include <functional>
 #include <map>
 #include <sstream>
@@ -72,7 +73,7 @@ GuardRule::GuardRule(const std::string &raw_str) {
           if (el.size() > 4)
             return false;
           if (el.size() < 4) {
-            return el.find('*') != std::string::npos;
+            return el == "*";
           }
           try {
             std::stoi(el, nullptr, 16);

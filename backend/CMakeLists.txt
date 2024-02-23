@@ -36,5 +36,18 @@ install(FILES
     DESTINATION "/usr/share/alterator/design/scripts"
 )
 
+install(FILES
+    ${CMAKE_SOURCE_DIR}/alterator_ui/alt-usb-guard.js
+    DESTINATION "/usr/share/alterator/design/scripts"
+)
+
+install(FILES
+    ${CMAKE_SOURCE_DIR}/android_vidpid_parser/android_vidpid.json
+    DESTINATION "/etc/usbguard/"
+)
+
+
 install(CODE "execute_process(COMMAND service alteratord restart)")
 install(CODE "execute_process(COMMAND service ahttpd restart)")
+install(CODE "execute_process(COMMAND systemctl restart alteratord )")
+install(CODE "execute_process(COMMAND systemctl restart ahttpd )")
