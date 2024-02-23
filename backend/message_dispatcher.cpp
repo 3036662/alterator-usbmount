@@ -1,26 +1,29 @@
 #include "message_dispatcher.hpp"
 #include "guard_rule.hpp"
+#include "log.hpp"
 #include "utils.hpp"
 #include <boost/algorithm/algorithm.hpp>
 #include <boost/algorithm/string.hpp>
 
+using guard::utils::Log;
+
 MessageDispatcher::MessageDispatcher(guard::Guard &guard) : guard(guard) {}
 
 bool MessageDispatcher::Dispatch(const LispMessage &msg) {
-  std::cerr << msg << std::endl;
-  // std::cerr << "curr action " << msg.action << std::endl;
+  // std::cerr << msg << std::endl;
+  //  std::cerr << "curr action " << msg.action << std::endl;
 
   // list usbs
   if (msg.action == "list" && msg.objects == "list_curr_usbs") {
     auto start = std::chrono::steady_clock::now();
-    std::cerr << "[INFO] Time measurement has started" << std::endl;
+    Log::Debug() << "Time measurement has started";
     std::vector<guard::UsbDevice> vec_usb = guard.ListCurrentUsbDevices();
     std::cout << mess_beg;
     for (const auto &usb : vec_usb) {
       std::cout << ToLisp(usb);
     }
     std::cout << mess_end;
-    std::cerr << "[INFO] Elapsed(ms)=" << since(start).count() << std::endl;
+    Log::Debug() << "Elapsed(ms)=" << since(start).count();
     return true;
   }
 
@@ -29,7 +32,7 @@ bool MessageDispatcher::Dispatch(const LispMessage &msg) {
     if (!msg.params.count("usb_id") ||
         msg.params.find("usb_id")->second.empty()) {
       std::cout << mess_beg << mess_end;
-      std::cerr << "bad request for usb allow,doing nothing" << std::endl;
+      Log::Warning() << "Bad request for usb allow,doing nothing";
       return true;
     }
     if (guard.AllowOrBlockDevice(msg.params.find("usb_id")->second, true)) {
@@ -45,7 +48,7 @@ bool MessageDispatcher::Dispatch(const LispMessage &msg) {
     if (!msg.params.count("usb_id") ||
         msg.params.find("usb_id")->second.empty()) {
       std::cout << mess_beg << mess_end;
-      std::cerr << "bad request for usb allow,doing nothing" << std::endl;
+      Log::Warning() << "Bad request for usb allow,doing nothing";
       return true;
     }
     if (guard.AllowOrBlockDevice(msg.params.find("usb_id")->second, false)) {
@@ -58,7 +61,7 @@ bool MessageDispatcher::Dispatch(const LispMessage &msg) {
 
   // get udev rules list
   if (msg.action == "list" && msg.objects == "check_config_udev") {
-    std::cerr << "[Dispatcher] Check config" << std::endl;
+    Log::Info() << "Check config";
     std::string str = mess_beg;
     for (const auto &pair : guard.GetConfigStatus().udev_warnings) {
       str += ToLisp("label_udev_rules_filename", pair.first);
@@ -69,7 +72,7 @@ bool MessageDispatcher::Dispatch(const LispMessage &msg) {
   }
 
   if (msg.action == "read" && msg.objects == "config_status") {
-    std::cerr << "[Dispatcher] Get config status" << std::endl;
+    Log::Info() << "Get config status";
     std::cout << ToLispAssoc(guard.GetConfigStatus());
     return true;
   }
@@ -80,7 +83,7 @@ bool MessageDispatcher::Dispatch(const LispMessage &msg) {
     guard::StrictnessLevel level =
         guard::StrToStrictnessLevel(msg.params.at("level"));
     auto start = std::chrono::steady_clock::now();
-    std::cerr << "[INFO] Time measurement has started" << std::endl;
+    Log::Debug() << "Time measurement has started";
     std::vector<guard::GuardRule> vec_rules =
         guard.GetConfigStatus().ParseGuardRulesFile().first;
     std::cout << mess_beg;
@@ -106,18 +109,18 @@ bool MessageDispatcher::Dispatch(const LispMessage &msg) {
       }
     }
     std::cout << response << mess_end;
-    std::cerr << "[INFO]Elapsed(ms)=" << since(start).count() << std::endl;
+    Log::Debug() << "Elapsed(ms)=" << since(start).count();
     return true;
   }
 
   // save changes rules
   if (msg.action == "read" && msg.objects == "apply_changes") {
     auto start = std::chrono::steady_clock::now();
-    std::cerr << "[DEBUG] Time measurement has started" << std::endl;
+    Log::Debug() << "Time measurement has started";
     if (!msg.params.count("changes_json") ||
         msg.params.find("changes_json")->second.empty()) {
       std::cout << mess_beg << mess_end;
-      std::cerr << "bad request for rules,doing nothing" << std::endl;
+      Log::Warning() << "bad request for rules,doing nothing";
       return true;
     }
     std::string json_string = msg.params.at("changes_json");
@@ -136,7 +139,7 @@ bool MessageDispatcher::Dispatch(const LispMessage &msg) {
     std::cout << ToLispAssoc(
         SerializableForLisp<vecPairs>(std::move(vec_result)));
     std::cout.flush();
-    std::cerr << "[DEBUG] Elapsed(ms)=" << since(start).count() << std::endl;
+    Log::Debug() << "[DEBUG] Elapsed(ms)=" << since(start).count();
     return true;
   }
 

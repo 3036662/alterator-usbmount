@@ -1,4 +1,5 @@
 #include "config_status.hpp"
+#include "log.hpp"
 #include "systemd_dbus.hpp"
 #include <algorithm>
 #include <boost/algorithm/string.hpp>
@@ -7,8 +8,8 @@
 #include <sstream>
 #include <string>
 
-
 namespace guard {
+using guard::utils::Log;
 
 /**********************************************************/
 // ConfigStatus
@@ -50,13 +51,11 @@ void ConfigStatus::CheckDaemon() {
   if (enabled.has_value())
     guard_daemon_enabled = enabled.value();
   else
-    std::cerr << "[ERROR] Can't check if usbguard service is enabled"
-              << std::endl;
+    Log::Error() << "Can't check if usbguard service is enabled";
   if (active.has_value())
     guard_daemon_active = active.value();
   else
-    std::cerr << "[ERROR] Can't check if usbguard service is active"
-              << std::endl;
+    Log::Error() << "Can't check if usbguard service is active";
   guard_daemon_OK = guard_daemon_enabled && guard_daemon_active;
 }
 
@@ -83,17 +82,14 @@ std::string ConfigStatus::GetDaemonConfigPath() const {
               boost::trim(*it);
               if (std::filesystem::exists(*it)) {
                 res = std::move(*it);
-                std::cerr << "[INFO] Found config file for usbguard " << res
-                          << std::endl;
+                Log::Info() << "Found config file for usbguard " << res;
                 break;
               } else {
-                std::cerr << "[WARNING] Can't find path to .conf file in "
-                             ".service file"
-                          << std::endl;
+                Log::Warning()
+                    << "Can't find path to .conf file in .service file";
                 if (std::filesystem::exists(usbguard_default_config_path)) {
-                  std::cerr << "[WARINIG]"
-                            << "Default config found "
-                            << usbguard_default_config_path << std::endl;
+                  Log::Warning() << "Default config found "
+                                 << usbguard_default_config_path;
                   res = usbguard_default_config_path;
                   break;
                 }
@@ -104,12 +100,12 @@ std::string ConfigStatus::GetDaemonConfigPath() const {
         }
         f.close();
       } else {
-        std::cerr << "[ERROR] Can't read " << full_path_to_unit << std::endl;
+        Log::Error() << "Can't read " << full_path_to_unit;
       }
     }
   } catch (const std::exception &ex) {
-    std::cerr << "[ERROR] Can't find usbguard config file" << std::endl;
-    std::cerr << ex.what() << std::endl;
+    Log::Error() << "Can't find usbguard config file";
+    Log::Error() << ex.what();
   }
   return res;
 }
@@ -129,8 +125,7 @@ void ConfigStatus::ParseDaemonConfig() {
   // open config
   std::ifstream f(daemon_config_file_path);
   if (!f.is_open()) {
-    std::cerr << "[ERROR] Can't open daemon config file "
-              << daemon_config_file_path << std::endl;
+    Log::Error() << "Can't open daemon config file " << daemon_config_file_path;
     return;
   }
 
@@ -144,16 +139,15 @@ void ConfigStatus::ParseDaemonConfig() {
       if (pos != std::string::npos && ++pos < line.size()) {
         std::string path_to_rules(line, pos);
         boost::trim(path_to_rules);
-        std::cerr << "[INFO] Find path to rules file " << path_to_rules
-                  << std::endl;
+        Log::Info() << "Find path to rules file " << path_to_rules;
         if (!path_to_rules.empty()) {
           daemon_rules_file_path = std::move(path_to_rules);
           try {
             rules_files_exists =
                 std::filesystem::exists(daemon_rules_file_path);
           } catch (const std::exception &ex) {
-            std::cerr << "[ERROR] Can't check if rules file "
-                      << daemon_rules_file_path << " exists" << std::endl;
+            Log::Error() << "Can't check if rules file "
+                         << daemon_rules_file_path << " exists";
           }
         }
       }
@@ -166,7 +160,7 @@ void ConfigStatus::ParseDaemonConfig() {
       if (pos != std::string::npos && ++pos < line.size()) {
         std::string users_string(line, pos);
         boost::trim(users_string);
-        std::cerr << "[INFO] Found users in conf file " << line << std::endl;
+        Log::Info() << "Found users in conf file " << line;
         // split by space and add to set
         std::vector<std::string> splitted_string;
         boost::split(splitted_string, users_string,
@@ -187,7 +181,7 @@ void ConfigStatus::ParseDaemonConfig() {
       if (pos != std::string::npos && ++pos < line.size()) {
         std::string path_to_folder(line, pos);
         boost::trim(path_to_folder);
-        std::cerr << "[INFO] Found users control folder " << line << std::endl;
+        Log::Info() << "Found users control folder " << line;
         try {
           std::filesystem::path fs_path_to_folder(path_to_folder);
           std::vector<std::string> files =
@@ -195,15 +189,13 @@ void ConfigStatus::ParseDaemonConfig() {
           for (std::string &str : files) {
             boost::trim(str);
             if (!str.empty()) {
-              // std::cerr << "found file " << str <<std::endl;
               ipc_allowed_users.insert(
                   std::filesystem::path(str).filename().string());
             }
           }
         } catch (const std::exception &ex) {
-          std::cerr << "Can't check users control folder" << path_to_folder
-                    << std::endl;
-          std::cerr << ex.what();
+          Log::Error() << "Can't check users control folder" << path_to_folder;
+          Log::Error() << ex.what();
         }
       }
       continue;
@@ -235,8 +227,7 @@ void ConfigStatus::ParseDaemonConfig() {
         boost::trim(implicit_target);
         if (!implicit_target.empty()) {
           implicit_policy_target = std::move(implicit_target);
-          std::cerr << "[INFO] Implicit policy target = "
-                    << implicit_policy_target << std::endl;
+          Log::Info() << "Implicit policy target = " << implicit_policy_target;
         }
       }
       continue;
@@ -255,19 +246,16 @@ ConfigStatus::ParseGuardRulesFile() const noexcept {
   res.second = 0;
   try {
     if (!std::filesystem::exists(daemon_rules_file_path)) {
-      std::cerr << "[WATINIG] The rules file for usbguard doesn't exist."
-                << std::endl;
+      Log::Warning() << "The rules file for usbguard doesn't exist.";
       return res;
     }
   } catch (const std::exception &ex) {
-    std::cerr << "[ERROR] Can't parse rules file " << daemon_rules_file_path
-              << std::endl;
+    Log::Error() << "Can't parse rules file " << daemon_rules_file_path;
     return res;
   }
   std::ifstream file(daemon_rules_file_path);
   if (!file.is_open()) {
-    std::cerr << "[ERROR] Can't open file " << daemon_rules_file_path
-              << std::endl;
+    Log::Error() << "Can't open file " << daemon_rules_file_path;
     return res;
   }
   // Parse the file
@@ -280,7 +268,7 @@ ConfigStatus::ParseGuardRulesFile() const noexcept {
       res.first.back().number = counter;
       ++counter;
     } catch (const std::logic_error &ex) {
-      std::cerr << "[ERROR] Can't parse the rule " << line << std::endl;
+      Log::Error() << "Can't parse the rule " << line;
       ++counter_fails;
     }
     line.clear();
@@ -288,8 +276,8 @@ ConfigStatus::ParseGuardRulesFile() const noexcept {
   file.close();
 
   res.second = counter + counter_fails;
-  std::cerr << "[INFO] Parsed " << res.first.size() << " rules."
-            << " Failed " << counter_fails << std::endl;
+  Log::Info() << "Parsed " << res.first.size() << " rules."
+              << " Failed " << counter_fails;
 
   return res;
 }
@@ -303,15 +291,14 @@ bool ConfigStatus::OverwriteRulesFile(const std::string &new_content,
   // to make sure it can parse new rules
   bool initial_policy = implicit_policy_target == "block";
   if (!ChangeImplicitPolicy(false)) {
-    std::cerr << "[ERROR] Can't change usbguard policy" << std::endl;
+    Log::Error() << "Can't change usbguard policy";
     return false;
   }
   if (rules_files_exists) {
     // read old rules
     std::ifstream old_file(daemon_rules_file_path);
     if (!old_file.is_open()) {
-      std::cerr << "[ERROR] Can't open file " << daemon_rules_file_path
-                << std::endl;
+      Log::Error() << "Can't open file " << daemon_rules_file_path;
       return false;
     }
     std::stringstream old_content;
@@ -321,8 +308,8 @@ bool ConfigStatus::OverwriteRulesFile(const std::string &new_content,
     // write new rules
     std::ofstream file(daemon_rules_file_path);
     if (!file.is_open()) {
-      std::cerr << "[ERROR] Can't open file " << daemon_rules_file_path
-                << " for writing" << std::endl;
+      Log::Error() << "Can't open file " << daemon_rules_file_path
+                   << " for writing";
       return false;
     }
     file << new_content;
@@ -334,12 +321,11 @@ bool ConfigStatus::OverwriteRulesFile(const std::string &new_content,
     // If some errors occurred while parsing new rules - recover
     if (parsed_new_file.first.size() != parsed_new_file.second ||
         !TryToRun(run_daemon)) {
-      std::cerr << "[ERROR] Error parsing new rules,old file will be recovered"
-                << std::endl;
+      Log::Error() << "Error parsing new rules,old file will be recovered";
       std::ofstream file3(daemon_rules_file_path);
       if (!file3.is_open()) {
-        std::cerr << "[ERROR] Can't open file " << daemon_rules_file_path
-                  << " for writing" << std::endl;
+        Log::Error() << "[ERROR] Can't open file " << daemon_rules_file_path
+                     << " for writing";
         return false;
       }
       file3 << old_content.str();
@@ -348,7 +334,7 @@ bool ConfigStatus::OverwriteRulesFile(const std::string &new_content,
       using namespace std::chrono_literals;
       auto start_result = sd.StartUnit(usb_guard_daemon_name);
       if (!start_result || *start_result) {
-        std::cerr << "[ERROR] Can't start usbguard service" << std::endl;
+        Log::Error() << "Can't start usbguard service";
       }
       return false;
     }
@@ -356,7 +342,7 @@ bool ConfigStatus::OverwriteRulesFile(const std::string &new_content,
 
   // restore the policy
   if (!ChangeImplicitPolicy(initial_policy)) {
-    std::cerr << "[ERROR] Can't change usbguard policy" << std::endl;
+    Log::Error() << "Can't change usbguard policy";
     return false;
   }
   return true;
@@ -368,13 +354,12 @@ bool ConfigStatus::TryToRun(bool run_daemon) noexcept {
   auto init_state = sd.IsUnitActive(usb_guard_daemon_name);
   if (!init_state.has_value())
     return false;
-  std::cerr << "[INFO] Usbguard is " << (*init_state ? "active" : "inactive")
-            << std::endl;
+  Log::Info() << "Usbguard is " << (*init_state ? "active" : "inactive");
   // if stopped - try to start
   if (!init_state.value()) {
     auto result = sd.StartUnit(usb_guard_daemon_name);
-    std::cerr << "[INFO] Test run - "
-              << ((result.has_value() && *result) ? "OK" : "FAIL") << std::endl;
+    Log::Info() << "Test run - "
+                << ((result.has_value() && *result) ? "OK" : "FAIL");
     if (!run_daemon) {
       sd.StopUnit(usb_guard_daemon_name);
     }
@@ -383,8 +368,8 @@ bool ConfigStatus::TryToRun(bool run_daemon) noexcept {
 
   // if daemon is active - restart
   auto result = sd.RestartUnit(usb_guard_daemon_name);
-  std::cerr << "[INFO] Restart - "
-            << ((result.has_value() && *result) ? "OK" : "FAIL") << std::endl;
+  Log::Info() << "Restart - "
+              << ((result.has_value() && *result) ? "OK" : "FAIL");
   if (!init_state && !run_daemon) {
     sd.StopUnit(usb_guard_daemon_name);
   }
@@ -398,45 +383,42 @@ bool ConfigStatus::ChangeDaemonStatus(bool active, bool enabled) noexcept {
   auto init_state = sd.IsUnitActive(usb_guard_daemon_name);
   if (!init_state.has_value())
     return false;
-  std::cerr << "[INFO] Usbguard is " << (*init_state ? "active" : "inactive")
-            << std::endl;
+  Log::Info() << "Usbguard is " << (*init_state ? "active" : "inactive");
   auto enabled_state = sd.IsUnitEnabled(usb_guard_daemon_name);
   if (!enabled_state) {
-    std::cerr << "[ERROR] Can't define if USBGuard enabled or disabled"
-              << std::endl;
+    Log::Error() << "Can't define if USBGuard enabled or disabled";
     return false;
   }
-  std::cerr << "[INFO] Usbguard is "
-            << (*enabled_state ? "enabled" : "disabled") << std::endl;
+  Log::Info() << "Usbguard is " << (*enabled_state ? "enabled" : "disabled");
   // if we need to stop the service
   if (*init_state && !active) {
-    std::cerr << "[INFO] Stopping the service" << std::endl;
+    Log::Info() << "Stopping the service";
     auto res = sd.StopUnit(usb_guard_daemon_name);
     if (!res || !*res) {
-      std::cerr << "[ERROR] Can't stop the USBGuard" << std::endl;
+      Log::Error() << "Can't stop the USBGuard";
       return false;
     }
   } else if (!*init_state && active) {
-    std::cerr << "[INFO] Starting the service" << std::endl;
+    Log::Info() << "Starting the service";
     auto res = sd.StartUnit(usb_guard_daemon_name);
     if (!res || !*res) {
-      std::cerr << "[ERROR] Can't start the USBGuard" << std::endl;
+      Log::Error() << "Can't start the USBGuard";
       return false;
     }
   }
   // if now the daemon is enabled and we need to disable it
   if (*enabled_state && !enabled) {
-    std::cerr << "[INFO] Disabling the service" << std::endl;
+    Log::Info() << "Disabling the service";
     auto res = sd.DisableUnit(usb_guard_daemon_name);
     if (!res || !*res) {
-      std::cerr << "[ERROR] Can't disable the USBGuard" << std::endl;
+      Log::Error() << "Can't disable the USBGuard";
       return false;
     }
   } else if (!*enabled_state && enabled) {
     auto res = sd.EnableUnit(usb_guard_daemon_name);
-    std::cerr << "[INFO] Enabling the service" << std::endl;
+    Log::Info() << "Enabling the service";
     if (!res || !*res) {
-      std::cerr << "[ERROR] Can't enable the USBGuard" << std::endl;
+      Log::Error() << "Can't enable the USBGuard";
       return false;
     }
   }
@@ -450,18 +432,17 @@ bool ConfigStatus::ChangeImplicitPolicy(bool block) noexcept {
     return true;
   if (!block && implicit_policy_target == "allow")
     return true;
-  std::cerr << "[DEBUG] Changing implicit policy to "
-            << (block ? "block" : "allow") << std::endl;
+  Log::Debug() << "Changing implicit policy to " << (block ? "block" : "allow");
   try {
     if (!std::filesystem::exists(daemon_config_file_path)) {
-      std::cerr << "[ERROR] Config file " << daemon_config_file_path
-                << "doesn't exist." << std::endl;
+      Log::Error() << "Config file " << daemon_config_file_path
+                   << "doesn't exist.";
       return false;
     }
   } catch (const std::exception &ex) {
-    std::cerr << "[ERROR] Error looking for config file at path "
-              << daemon_config_file_path << std::endl
-              << ex.what() << std::endl;
+    Log::Error() << "Error looking for config file at path "
+                 << daemon_config_file_path;
+    Log::Error() << ex.what();
     return false;
   }
 
@@ -469,8 +450,7 @@ bool ConfigStatus::ChangeImplicitPolicy(bool block) noexcept {
   // open config
   std::ifstream f(daemon_config_file_path);
   if (!f.is_open()) {
-    std::cerr << "[ERROR] Can't open daemon config file "
-              << daemon_config_file_path << std::endl;
+    Log::Error() << "Can't open daemon config file " << daemon_config_file_path;
     return false;
   }
 
@@ -495,8 +475,8 @@ bool ConfigStatus::ChangeImplicitPolicy(bool block) noexcept {
   // write to config
   std::ofstream f_out(daemon_config_file_path);
   if (!f_out.is_open()) {
-    std::cerr << "[ERROR] Can't open file " << daemon_config_file_path
-              << " for writing" << std::endl;
+    Log::Error() << "Can't open file " << daemon_config_file_path
+                 << " for writing";
     return false;
   }
   f_out << new_content.str();
@@ -522,9 +502,9 @@ std::unordered_map<std::string, std::string> InspectUdevRules(
   if (vec)
     udev_paths = *vec;
 #endif
-  std::cerr << "[INFO] Inspecting udev folders " << std::endl;
+  Log::Info() << "Inspecting udev folders";
   for (const std::string &path : udev_paths) {
-    // std::cerr << "[INFO] Inspecting udev folder " << path << std::endl;
+    // Log::Info() << "Inspecting udev folder " << path;
     try {
       // find all files in folder
       std::vector<std::string> files =
@@ -558,16 +538,16 @@ std::unordered_map<std::string, std::string> InspectUdevRules(
           // if (found_usb && found_authorize) {
           // a rule can ruin program behavior even if only authorized and no usb
           if (found_authorize) {
-            std::cerr << "Found file " << str_path << std::endl;
+            Log::Info() << "Found file " << str_path;
             res.emplace(str_path, "usb_rule");
           }
         } else {
-          std::cerr << "Can't open file " << str_path << std::endl;
+          Log::Error() << "Can't open file " << str_path;
         }
       }
     } catch (const std::exception &ex) {
-      std::cerr << "Error checking " << path << std::endl;
-      std::cerr << ex.what() << std::endl;
+      Log::Error() << "Error checking " << path;
+      Log::Error() << ex.what();
     }
   }
   return res;

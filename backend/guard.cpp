@@ -1,10 +1,13 @@
 #include "guard.hpp"
+#include "log.hpp"
 #include "utils.hpp"
 #include <boost/algorithm/string.hpp>
 #include <boost/json.hpp>
 #include <unordered_set>
 
 namespace guard {
+
+using guard::utils::Log;
 
 /******************************************************************************/
 Guard::Guard() : ptr_ipc(nullptr) { ConnectToUsbGuard(); }
@@ -67,9 +70,9 @@ bool Guard::AllowOrBlockDevice(std::string id, bool allow, bool permanent) {
   try {
     ptr_ipc->applyDevicePolicy(*id_numeric, policy, permanent);
   } catch (const usbguard::Exception &ex) {
-    std::cerr << "[ERROR] Can't add rule."
-              << "May be rule conflict happened" << std::endl
-              << ex.what() << std::endl;
+    Log::Error() << "Can't add rule."
+                 << "May be rule conflict happened.";
+    Log::Error() << ex.what();
     return false;
   }
   return true;
@@ -96,8 +99,7 @@ Guard::DeleteRules(const std::vector<uint> &rule_indexes) noexcept {
   std::pair<std::vector<guard::GuardRule>, uint> parsed_rules =
       cs.ParseGuardRulesFile();
   if (parsed_rules.first.size() != parsed_rules.second) {
-    std::cerr << "[ERROR] The rules file is not completelly parsed, can't edit"
-              << std::endl;
+    Log::Error() << "The rules file is not completelly parsed, can't edit";
     return std::nullopt;
   }
 
@@ -118,8 +120,8 @@ void Guard::ConnectToUsbGuard() noexcept {
   try {
     ptr_ipc = std::make_unique<usbguard::IPCClient>(true);
   } catch (usbguard::Exception &e) {
-    std::cerr << "Error connecting to USBGuard daemon \n"
-              << e.what() << std::endl;
+    Log::Warning() << "Error connecting to USBGuard daemon.";
+    Log::Warning() << e.what();
   }
 }
 
@@ -144,8 +146,8 @@ Guard::FoldUsbInterfacesList(std::string i_type) const {
       try {
         vec_usb_types.emplace_back(el);
       } catch (const std::exception &e) {
-        std::cerr << "[ERROR] Can't parse a usb type" << el << std::endl;
-        std::cerr << e.what() << '\n';
+        Log::Error() << "Can't parse a usb type" << el;
+        Log::Error() << e.what();
       }
     }
     // fold if possible
@@ -206,15 +208,14 @@ std::unordered_map<std::string, std::string> Guard::MapVendorCodesToNames(
         }
         f.close();
       } else {
-        std::cerr << "[WARNING] Can't open file" << path_to_usb_ids
-                  << std::endl;
+        Log::Warning() << "Can't open file " << path_to_usb_ids;
       }
     } else {
-      std::cerr << "[WARNING] The file " << path_to_usb_ids << "doesn't exist";
+      Log::Error() << "The file " << path_to_usb_ids << "doesn't exist";
     }
   } catch (const std::exception &ex) {
-    std::cerr << "[ERROR] Can't map vendor IDs to vendor names." << std::endl
-              << ex.what() << std::endl;
+    Log::Error() << "Can't map vendor IDs to vendor names.";
+    Log::Error() << ex.what();
   }
   return res;
 }
@@ -232,11 +233,10 @@ Guard::ParseJsonRulesChanges(const std::string &msg) noexcept {
   bool rules_changed_by_policy;
   try {
     json_value = json::parse(msg);
-    // std::cerr << json_value << std::endl;
     ptr_jobj = json_value.if_object();
   } catch (const std::exception &ex) {
-    std::cerr << "[ERROR] Can't parse JSON" << std::endl;
-    std::cerr << "[ERROR] " << ex.what() << std::endl;
+    Log::Error() << "Can't parse JSON";
+    Log::Error() << ex.what();
   }
 
   // daemon target state (active or stopped)
@@ -244,7 +244,7 @@ Guard::ParseJsonRulesChanges(const std::string &msg) noexcept {
       ptr_jobj->at("run_daemon").if_string()) {
     daemon_activate = ptr_jobj->at("run_daemon").as_string() == "true";
   } else {
-    std::cerr << "[ERROR] No target daemon state is found in JSON" << std::endl;
+    Log::Error() << "No target daemon state is found in JSON";
     return std::nullopt;
   }
 
@@ -256,7 +256,7 @@ Guard::ParseJsonRulesChanges(const std::string &msg) noexcept {
                  ? Target::block
                  : Target::allow;
   } else {
-    std::cerr << "[ERROR] No target policy is found in JSON" << std::endl;
+    Log::Error() << "No target policy is found in JSON";
     return std::nullopt;
   }
 
@@ -265,7 +265,7 @@ Guard::ParseJsonRulesChanges(const std::string &msg) noexcept {
       ptr_jobj->at("preset_mode").if_string()) {
     preset_mode = ptr_jobj->at("preset_mode").as_string().c_str();
   } else {
-    std::cerr << "[ERROR] No preset mode is found in JSON" << std::endl;
+    Log::Error() << "No preset mode is found in JSON";
     return std::nullopt;
   }
 
@@ -288,7 +288,7 @@ Guard::ParseJsonRulesChanges(const std::string &msg) noexcept {
     // build a vector with new rules
     auto to_new_rules = DeleteRules(rules_to_delete);
     if (!to_new_rules.has_value()) {
-      std::cerr << "[ERROR] Can't delete rules" << std::endl;
+      Log::Error() << "Can't delete rules";
       return std::nullopt;
     }
     // skip rules with conflicting policy,place rest to new_rules
@@ -347,13 +347,12 @@ Guard::ParseJsonRulesChanges(const std::string &msg) noexcept {
   if (rules_changed_by_policy || !rules_to_delete.empty() ||
       !rules_to_add.empty()) {
     if (!cs.OverwriteRulesFile(str_new_rules, daemon_activate)) {
-      std::cerr << "[ERROR] Can't launch the daemon with new rules"
-                << std::endl;
+      Log::Error() << "Can't launch the daemon with new rules";
       return std::nullopt;
     }
   }
   if (!cs.ChangeDaemonStatus(daemon_activate, daemon_activate)) {
-    std::cerr << "[ERROR] Change the daemon status FAILED" << std::endl;
+    Log::Error() << "Change the daemon status FAILED";
   }
   return json::serialize(std::move(obj_result));
 }
@@ -388,8 +387,8 @@ Guard::ProcessJsonManualMode(const boost::json::object *ptr_jobj,
           }
           // if failed
           catch (const std::logic_error &ex) {
-            std::cerr << "[ERROR] Can't build the rule" << std::endl;
-            std::cerr << ex.what() << std::endl;
+            Log::Error() << "Can't build the rule";
+            Log::Error() << ex.what();
             if (tr_id && !tr_id->empty()) {
               json_arr_BAD.emplace_back(*tr_id);
             }
@@ -407,7 +406,6 @@ Guard::ProcessJsonManualMode(const boost::json::object *ptr_jobj,
         continue;
       auto id = StrToUint(el.as_string().c_str());
       if (id) {
-        // std::cerr<< "Rule to delete"<< *id <<std::endl;
         rules_to_delete.push_back(*id);
       }
     }
@@ -430,22 +428,21 @@ boost::json::object Guard::ProcessJsonAllowConnected(
   // The purpose is to launch USBGuard without blocking anything
   // to receive a list of devices
   if (!cs.ChangeImplicitPolicy(false)) {
-    std::cerr << "[ERROR] Can't change usbguard policy" << std::endl;
+    Log::Error() << "Can't change usbguard policy";
     res["STATUS"] = "error";
     res["ERROR_MSG"] = "Failed to change usbguard policy";
     return res;
   }
-  std::cerr << "[INFO] USBguard implicit policy was changed to allow all"
-            << std::endl;
+  Log::Info() << "USBguard implicit policy was changed to allow all";
   // make sure that USBGuard is running
   ConnectToUsbGuard();
   if (!HealthStatus()) {
     cs.TryToRun(true);
     ConnectToUsbGuard();
     if (!HealthStatus()) {
-      std::cerr << "[ERROR] Can't launch usbguard" << std::endl;
+      Log::Error() << "Can't launch usbguard";
       res["STATUS"] = "error";
-      res["ERROR_MSG"] = "Failed to create policy";
+      res["ERROR_MSG"] = "Failed to create policy.Can't launch usbguard";
       return res;
     }
   }
@@ -459,16 +456,18 @@ boost::json::object Guard::ProcessJsonAllowConnected(
     try {
       rules_to_add.emplace_back(ss.str());
     } catch (const std::logic_error &ex) {
-      std::cerr << "[ERROR] Can't create a rule for device" << dev.name << "\n"
-                << ex.what() << std::endl;
+      Log::Error() << "Can't create a rule for device"
+                   << "allow name " << QuoteIfNotQuoted(dev.name) << " hash "
+                   << QuoteIfNotQuoted(dev.hash);
+      Log::Error() << ex.what();
       res["STATUS"] = "error";
-      res["ERROR_MSG"] = "Failed to create policy";
-      break;
+      res["ERROR_MSG"] = "Failed to create policy.Failed";
+      return res;
     }
   }
 
   if (cs.implicit_policy_target != "block") {
-    std::cerr << "[INFO] Changing USBGuard policy to block all" << std::endl;
+    Log::Info() << "Changing USBGuard policy to block all";
     cs.ChangeImplicitPolicy(true);
   }
 
@@ -480,8 +479,8 @@ void Guard::AddAllowHid(std::vector<GuardRule> &rules_to_add) noexcept {
   try {
     rules_to_add.emplace_back("allow with-interface 03:*:*");
   } catch (const std::logic_error &ex) {
-    std::cerr << "[ERROR] Can't add a rules for HID devices\n"
-              << ex.what() << std::endl;
+    Log::Error() << "Can't add a rules for HID devices";
+    Log::Error() << ex.what();
   }
 }
 
@@ -490,8 +489,8 @@ void Guard::AddBlockUsbStorages(std::vector<GuardRule> &rules_to_add) noexcept {
     rules_to_add.emplace_back("block with-interface 08:*:*");
     rules_to_add.emplace_back("block with-interface 06:*:*");
   } catch (const std::logic_error &ex) {
-    std::cerr << "[ERROR] Can't add a rules for USB storages\n"
-              << ex.what() << std::endl;
+    Log::Error() << "Can't add a rules for USB storages";
+    Log::Error() << ex.what();
   }
 }
 
@@ -499,19 +498,17 @@ bool Guard::AddRejectAndroid(std::vector<GuardRule> &rules_to_add) noexcept {
   const std::string path_to_vidpid = "/etc/usbguard/android_vidpid.json";
   try {
     if (!std::filesystem::exists(path_to_vidpid)) {
-      std::cerr << "[ERROR] File " << path_to_vidpid << "doesn't exist."
-                << std::endl;
+      Log::Error() << "File " << path_to_vidpid << "doesn't exist.";
       return false;
     }
   } catch (const std::exception &ex) {
-    std::cerr << "[ERROR] Can't find file " << path_to_vidpid << "\n"
-              << ex.what() << std::endl;
+    Log::Error() << "Can't find file " << path_to_vidpid << "\n" << ex.what();
     return false;
   }
   std::stringstream buf;
   std::ifstream f(path_to_vidpid);
   if (!f.is_open()) {
-    std::cerr << "[ERROR] Can't open file" << path_to_vidpid << std::endl;
+    Log::Error() << "Can't open file" << path_to_vidpid;
     return false;
   }
   buf << f.rdbuf();
@@ -522,12 +519,12 @@ bool Guard::AddRejectAndroid(std::vector<GuardRule> &rules_to_add) noexcept {
   try {
     json = boost::json::parse(buf.str());
   } catch (const std::exception &ex) {
-    std::cerr << "[ERROR] Can't parse a JSON file" << std::endl;
+    Log::Error() << "Can't parse a JSON file";
     return false;
   }
   ptr_arr = json.if_array();
   if (!ptr_arr || ptr_arr->empty()) {
-    std::cerr << "[ERROR] Empty json array" << std::endl;
+    Log::Error() << "Empty json array";
     return false;
   }
   for (auto it = ptr_arr->cbegin(); it != ptr_arr->cend(); ++it) {
@@ -540,8 +537,8 @@ bool Guard::AddRejectAndroid(std::vector<GuardRule> &rules_to_add) noexcept {
       try {
         rules_to_add.emplace_back(ss.str());
       } catch (const std::logic_error &ex) {
-        std::cerr << "[WARNING] Error creating a rule from JSON\n"
-                  << ss.str() << std::endl;
+        Log::Warning() << "Error creating a rule from JSON";
+        Log::Warning() << ss.str();
         return false;
       }
     }

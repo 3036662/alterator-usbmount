@@ -1,5 +1,6 @@
 #include "guard.hpp"
 #include "guard_rule.hpp"
+#include "log.hpp"
 #include "systemd_dbus.hpp"
 #include <algorithm>
 #include <cassert>
@@ -11,8 +12,10 @@
 #include <unordered_map>
 #include <unordered_set>
 
+using guard::utils::Log;
+
 void Test::Run1() {
-  std::cout << "Test udev rules files search" << std::endl;
+  Log::Test() << "Test udev rules files search";
   // guard::Guard guard_obj;
   std::string curr_path = std::filesystem::current_path().string();
 
@@ -77,7 +80,7 @@ void Test::Run1() {
       std::pair<std::string, std::string>{
           file6, "usb_rule"}}; // even if only authorized
   assert(map == expected_map);
-  std::cout << "TEST1 ... OK" << std::endl;
+  Log::Test() << "TEST1 ... OK";
 }
 
 void Test::Run2() {
@@ -91,9 +94,9 @@ void Test::Run2() {
   }
 
   cs.CheckDaemon();
-  std::cout << " ACTIVE " << cs.guard_daemon_active << " ENABLED "
-            << cs.guard_daemon_enabled << " DAEMON_OK " << cs.guard_daemon_OK
-            << " UDEV_RULES_OK " << cs.udev_rules_OK << std::endl;
+  Log::Test() << " ACTIVE " << cs.guard_daemon_active << " ENABLED "
+              << cs.guard_daemon_enabled << " DAEMON_OK " << cs.guard_daemon_OK
+              << " UDEV_RULES_OK " << cs.udev_rules_OK;
   assert(cs.guard_daemon_active == false);
   assert(cs.guard_daemon_enabled == false);
 
@@ -104,40 +107,40 @@ void Test::Run2() {
     throw std::logic_error("can't enable usbguard");
   }
   cs.CheckDaemon();
-  std::cout << " ACTIVE " << cs.guard_daemon_active << " ENABLED "
-            << cs.guard_daemon_enabled << " DAEMON_OK " << cs.guard_daemon_OK
-            << " UDEV_RULES_OK " << cs.udev_rules_OK << std::endl;
+  Log::Test() << " ACTIVE " << cs.guard_daemon_active << " ENABLED "
+              << cs.guard_daemon_enabled << " DAEMON_OK " << cs.guard_daemon_OK
+              << " UDEV_RULES_OK " << cs.udev_rules_OK;
   assert(cs.guard_daemon_active == true);
   assert(cs.guard_daemon_enabled == true);
-  std::cout << "TEST2 ... OK" << std::endl;
+  Log::Test() << "TEST2 ... OK";
 }
 
 void Test::Run3() {
   guard::ConfigStatus cs;
   std::string res = cs.GetDaemonConfigPath();
-  std::cerr << "Config path is " << res << std::endl;
+  Log::Test() << "Config path is " << res;
   assert(std::filesystem::exists(res));
-  std::cout << "TEST3 ... OK" << std::endl;
+  Log::Test() << "TEST3 ... OK";
 }
 
 void Test::Run4() {
   guard::ConfigStatus cs;
   cs.ParseDaemonConfig();
-  std::cerr << "Found rules file " << cs.daemon_rules_file_path << std::endl;
-  std::cerr << "Rules file exists = " << cs.rules_files_exists << std::endl;
+  Log::Test() << "Found rules file " << cs.daemon_rules_file_path;
+  Log::Test() << "Rules file exists = " << cs.rules_files_exists;
   assert(!cs.daemon_rules_file_path.empty() &&
          cs.daemon_rules_file_path == "/etc/usbguard/rules.conf" &&
          cs.rules_files_exists ==
              std::filesystem::exists(cs.daemon_rules_file_path));
-  std::cout << "TEST4 ... OK" << std::endl;
+  Log::Test() << "TEST4 ... OK";
 }
 
 void Test::Run5() {
   guard::ConfigStatus cs;
   cs.ParseDaemonConfig();
-  std::cerr << "Users found:" << std::endl;
+  Log::Test() << "Users found:";
   for (const std::string &user : cs.ipc_allowed_users) {
-    std::cerr << user << std::endl;
+    Log::Test() << user;
   }
 
   const std::string path_to_users = "/etc/usbguard/IPCAccessControl.d/";
@@ -149,7 +152,7 @@ void Test::Run5() {
   }
   cs.ParseDaemonConfig();
   for (const std::string &user : cs.ipc_allowed_users) {
-    std::cerr << user << std::endl;
+    Log::Test() << user;
   }
   expected_set.insert("test");
   assert(cs.ipc_allowed_users == expected_set);
@@ -159,24 +162,24 @@ void Test::Run5() {
   }
   cs.ParseDaemonConfig();
   for (const std::string &user : cs.ipc_allowed_users) {
-    std::cerr << user << std::endl;
+    Log::Test() << user;
   }
   expected_set.erase("test");
   assert(cs.ipc_allowed_users == expected_set);
 
-  std::cerr << "TEST5 ... OK" << std::endl;
+  Log::Test() << "TEST5 ... OK";
 }
 
 void Test::Run6() {
   guard::ConfigStatus cs;
   cs.ParseDaemonConfig();
-  std::cerr << "Groups found:" << std::endl;
+  Log::Test() << "Groups found:";
   for (const std::string &group : cs.ipc_allowed_groups) {
-    std::cerr << group << std::endl;
+    Log::Test() << group;
   }
   std::set<std::string> expected{"wheel"};
   assert(cs.ipc_allowed_groups == expected);
-  std::cerr << "TEST6 ... OK" << std::endl;
+  Log::Test() << "TEST6 ... OK";
 }
 
 void Test::Run7() {
@@ -202,7 +205,7 @@ void Test::Run7() {
   res = guard.FoldUsbInterfacesList("with-interface { 03=01=:02 04:/1:01 }");
   exp = {};
   assert(res == exp);
-  std::cerr << "TEST7 .... OK" << std::endl;
+  Log::Test() << "TEST7 .... OK";
 };
 
 void Test::Run8() {
@@ -223,7 +226,7 @@ void Test::Run8() {
   vendors.insert("blablalbla");
   assert(guard.MapVendorCodesToNames(vendors) == expected);
   assert(guard.MapVendorCodesToNames(vendors).size() < vendors.size());
-  std::cerr << "TEST8  ... OK" << std::endl;
+  Log::Test() << "TEST8  ... OK";
 }
 
 void Test::Run9() {
@@ -268,7 +271,7 @@ void Test::Run9() {
     std::vector<std::string> expected{"\"\"", "\" \""};
     assert(parser.SplitRawRule(" \"\"    \" \" ") == expected);
   }
-  std::cerr << "TEST9 ...OK" << std::endl;
+  Log::Test() << "TEST9 ...OK";
 }
 
 void Test::Run10() {
@@ -349,7 +352,7 @@ void Test::Run10() {
     try {
       guard::GuardRule parser(str);
     } catch (const std::logic_error &ex) {
-      std::cerr << "Catched expected exception" << std::endl;
+      Log::Test() << "Catched expected exception";
       assert(std::string(ex.what()) == "Cant parse rule string");
     }
   }
@@ -359,7 +362,7 @@ void Test::Run10() {
     try {
       guard::GuardRule parser(str);
     } catch (const std::logic_error &ex) {
-      std::cerr << "Catched expected exception" << std::endl;
+      Log::Test() << "Catched expected exception";
       assert(std::string(ex.what()) == "Cant parse rule string");
     }
   }
@@ -369,7 +372,7 @@ void Test::Run10() {
     try {
       guard::GuardRule parser(str);
     } catch (const std::logic_error &ex) {
-      std::cerr << "Catched expected exception" << std::endl;
+      Log::Test() << "Catched expected exception";
       assert(std::string(ex.what()) == "Cant parse rule string");
     }
   }
@@ -392,7 +395,6 @@ void Test::Run10() {
   str = "allow via-port all-of {" + WrapWithQuotes("1-2") + " " +
         WrapWithQuotes("2-2") + "}";
   {
-    // std::cerr << "START" << std::endl;
     guard::GuardRule parser(str);
     std::vector<std::string> ports_expected{"\"1-2\"", "\"2-2\""};
     std::pair<guard::RuleOperator, std::vector<std::string>> expected_port{
@@ -407,12 +409,11 @@ void Test::Run10() {
   str = "allow via-port all-of {" + WrapWithQuotes("1-2") + " " +
         WrapWithQuotes("2-2") + "";
   {
-    // std::cerr << "START" << std::endl;
     try {
       guard::GuardRule parser(str);
     } catch (const std::logic_error &ex) {
-      std::cerr << "Catched expected exception" << std::endl;
-      std::cerr << ex.what() << std::endl;
+      Log::Test() << "Catched expected exception";
+      Log::Test() << ex.what();
     }
   }
 
@@ -420,7 +421,6 @@ void Test::Run10() {
   str = "allow via-port all-of {" + WrapWithQuotes("1-2") + " " +
         WrapWithQuotes("2-2") + "} with-interface 08:06:50";
   {
-    // std::cerr << "START" << std::endl;
     guard::GuardRule parser(str);
     std::vector<std::string> ports_expected{"\"1-2\"", "\"2-2\""};
     std::pair<guard::RuleOperator, std::vector<std::string>> expected_port{
@@ -456,12 +456,12 @@ void Test::Run10() {
   }
 
   // conditioins
-  std::cerr << "[TEST] START CONDITIONS TEST" << std::endl;
+  Log::Test() << "START CONDITIONS TEST";
 
   // clang-format off
   using namespace guard;
 
-std::cerr << "[TEST] Localtime time with parameter" <<std::endl;
+Log::Test() << "Localtime time with parameter";
   str = "allow if localtime(00:00-12:00)";
   {
     GuardRule parser(str);
@@ -485,7 +485,7 @@ std::cerr << "[TEST] Localtime time with parameter" <<std::endl;
   }
 
   //******************************************************************
-  std::cerr << "[TEST] Localtime time with unclosed braces " <<std::endl;
+  Log::Test() << "Localtime time with unclosed braces ";
   str = "allow if localtime(00:00-12:00";
   {
      bool cought{false};
@@ -493,13 +493,13 @@ std::cerr << "[TEST] Localtime time with parameter" <<std::endl;
       GuardRule parser(str);
     }
     catch (const std::logic_error& ex){
-      std::cerr << "[TEST] Cought an expected exception." <<std::endl;
+      Log::Test() << "Cought an expected exception.";
       cought =true;
     }
     assert(cought);
   }
   //******************************************************************
-  std::cerr << "[TEST] Localtime time with unclosed braces " <<std::endl;
+  Log::Test() << "Localtime time with unclosed braces ";
   str = "allow if localtime)00:00-12:00)";
   
   {
@@ -508,7 +508,7 @@ std::cerr << "[TEST] Localtime time with parameter" <<std::endl;
       GuardRule parser(str);
     }
     catch (const std::logic_error& ex){
-      std::cerr << "[TEST] Cought an expected exception." <<std::endl;
+      Log::Test() << "Cought an expected exception.";
       cought =true;
     }
     assert(cought);
@@ -516,7 +516,7 @@ std::cerr << "[TEST] Localtime time with parameter" <<std::endl;
 
   //******************************************************************
 
-std::cerr << "[TEST] rule-applied time without parameter" <<std::endl;
+Log::Test() << "Rule-applied time without parameter";
   str = "allow if !rule-applied";
   {
     GuardRule parser(str);
@@ -526,7 +526,7 @@ std::cerr << "[TEST] rule-applied time without parameter" <<std::endl;
     vec.push_back(rule_with_bool);
     std::pair<RuleOperator,std::vector<RuleWithBool>> pair {RuleOperator::no_operator,vec};
 
-    std::cerr << parser.ConditionsToString()<<std::endl;
+    Log::Test() << parser.ConditionsToString();
 
     assert(parser.target ==guard::Target::allow &&
           !parser.pid &&
@@ -540,53 +540,53 @@ std::cerr << "[TEST] rule-applied time without parameter" <<std::endl;
   }
 
 
-std::cerr << "[TEST] rule-applied time with parameter" <<std::endl;
+Log::Test() << "rule-applied time with parameter";
   str = "allow if !rule-applied(HH__SMM_MM)";
   {
     GuardRule parser(str);
     std::string cond_result=parser.ConditionsToString();
     std::string expected="!rule-applied(HH__SMM_MM)";
-    std::cerr <<cond_result <<"==" << expected<<std::endl;
+    Log::Test() <<cond_result <<"==" << expected;
     assert(cond_result == expected);
   }
 
-std::cerr << "[TEST] rule-evaluated time with no parameter" <<std::endl;
+Log::Test() << "rule-evaluated time with no parameter";
   str = "allow if !rule-evaluated";
   {
     GuardRule parser(str);
     std::string cond_result=parser.ConditionsToString();
     std::string expected="!rule-evaluated";
-    std::cerr <<cond_result <<"==" << expected<<std::endl;
+    Log::Test() <<cond_result <<"==" << expected;
     assert(cond_result == expected);
   }
 
-  std::cerr << "[TEST] rule-evaluated with  parameters" <<std::endl;
+  Log::Test() << "rule-evaluated with  parameters";
   str = "allow if rule-evaluated(HH:MM:SS)";
   {
     GuardRule parser(str);
     std::string cond_result=parser.ConditionsToString();
     std::string expected="rule-evaluated(HH:MM:SS)";
-    std::cerr <<cond_result <<"==" << expected<<std::endl;
+    Log::Test() <<cond_result <<"==" << expected;
     assert(cond_result == expected);
   }
 
-  std::cerr << "[TEST] one-of  with sequense of coditions" <<std::endl;
+  Log::Test() << "One-of  with sequense of coditions";
   str = "allow if one-of{!rule-evaluated(HH:MM:SS) true}";
   {
     GuardRule parser(str);
     std::string cond_result=parser.ConditionsToString();
     std::string expected="one-of{!rule-evaluated(HH:MM:SS) true}";
-    std::cerr <<cond_result <<"==" << expected<<std::endl;
+    Log::Test() <<cond_result <<"==" << expected;
     assert(cond_result == expected);
   }
 
-  std::cerr << "[TEST] id, none-of  with sequense of coditions" <<std::endl;
+  Log::Test()<< "id, none-of  with sequense of coditions";
   str = "allow id 8564:1000 if one-of{!rule-evaluated(HH:MM:SS) true}";
   {
     GuardRule parser(str);
     std::string cond_result=parser.ConditionsToString();
     std::string expected="one-of{!rule-evaluated(HH:MM:SS) true}";
-    std::cerr <<cond_result <<"==" << expected<<std::endl;
+    Log::Test() <<cond_result <<"==" << expected;
     assert(cond_result == expected);
     assert(parser.target == Target::allow);
     assert(*parser.vid=="8564");
@@ -607,20 +607,15 @@ std::cerr << "[TEST] rule-evaluated time with no parameter" <<std::endl;
     assert(*parser.serial=="\"0000:00:0d.0\"");
     assert(parser.with_interface->first == guard::RuleOperator::no_operator);
     assert(parser.with_interface->second.at(0) == "09:00:00");
-
-
-
   }
 
-
-
-  std::cerr << "[TEST] id, none-of  with sequense of coditions +localtime" <<std::endl;
+  Log::Test() << "id, none-of  with sequense of coditions +localtime";
   str = "allow id 8564:1000 if one-of{localtime(HH:MM:SS) true}";
   {
     GuardRule parser(str);
     std::string cond_result=parser.ConditionsToString();
     std::string expected="one-of{localtime(HH:MM:SS) true}";
-    std::cerr <<cond_result <<"==" << expected<<std::endl;
+    Log::Test() <<cond_result <<"==" << expected;
     assert(cond_result == expected);
     assert(parser.target == Target::allow);
     assert(*parser.vid=="8564");
@@ -628,59 +623,59 @@ std::cerr << "[TEST] rule-evaluated time with no parameter" <<std::endl;
   }
 
 
-  std::cerr << "[TEST] id, one-of  with sequense of coditions +allow-matches" <<std::endl;
+  Log::Test() << "id, one-of  with sequense of coditions +allow-matches";
   str = "allow id 8564:1000 if one-of{allowed-matches(query) localtime(HH:MM:SS)}";
   {
     GuardRule parser(str);
     std::string cond_result=parser.ConditionsToString();
     std::string expected="one-of{allowed-matches(query) localtime(HH:MM:SS)}";
-    std::cerr <<cond_result <<"==" << expected<<std::endl;
+    Log::Test() <<cond_result <<"==" << expected;
     assert(cond_result == expected);
     assert(parser.target == Target::allow);
     assert(*parser.vid=="8564");
     assert(*parser.pid=="1000");
   }
 
-   std::cerr << "[TEST] id, one-of  with sequense of coditions +allow-matches ++ rule-applied(past_duration)" <<std::endl;
+   Log::Test() << "[TEST] id, one-of  with sequense of coditions +allow-matches ++ rule-applied(past_duration)";
   str = "allow id 8564:1000 if one-of{allowed-matches(query) localtime(HH:MM:SS) rule-applied(past_duration)}";
   {
     GuardRule parser(str);
     std::string cond_result=parser.ConditionsToString();
     std::string expected="one-of{allowed-matches(query) localtime(HH:MM:SS) rule-applied(past_duration)}";
-    std::cerr <<cond_result <<"==" << expected<<std::endl;
+    Log::Test() <<cond_result <<"==" << expected;
     assert(cond_result == expected);
     assert(parser.target == Target::allow);
     assert(*parser.vid=="8564");
     assert(*parser.pid=="1000");
   }
 
-    std::cerr << "[TEST] id, one-of  with sequense of coditions +allow-matches ++ rule-applied(past_duration)  rule-applied  + random(p_true) +random" <<std::endl;
+    Log::Test() << "id, one-of  with sequense of coditions +allow-matches ++ rule-applied(past_duration)  rule-applied  + random(p_true) +random";
   str = "allow id 8564:1000 if one-of{allowed-matches(query) localtime(HH:MM:SS) rule-applied(past_duration) rule-applied random(p_true)}";
   {
     GuardRule parser(str);
     std::string cond_result=parser.ConditionsToString();
     std::string expected="one-of{allowed-matches(query) localtime(HH:MM:SS) rule-applied(past_duration) rule-applied random(p_true)}";
-    std::cerr <<cond_result <<"==" << expected<<std::endl;
+    Log::Test() <<cond_result <<"==" << expected;
     assert(cond_result == expected);
     assert(parser.target == Target::allow);
     assert(*parser.vid=="8564");
     assert(*parser.pid=="1000");
   }
 
-  std::cerr << "[TEST] id, one-of  with sequense of coditions  true +allow-matches ++ rule-applied(past_duration)  rule-applied  + random(p_true) +random" <<std::endl;
+  Log::Test() << "id, one-of  with sequense of coditions  true +allow-matches ++ rule-applied(past_duration)  rule-applied  + random(p_true) +random";
   str = "allow id 8564:1000 if one-of{true allowed-matches(query) localtime(HH:MM:SS) rule-applied(past_duration) rule-applied random(p_true)}";
   {
     GuardRule parser(str);
     std::string cond_result=parser.ConditionsToString();
     std::string expected="one-of{true allowed-matches(query) localtime(HH:MM:SS) rule-applied(past_duration) rule-applied random(p_true)}";
-    std::cerr <<cond_result <<"==" << expected<<std::endl;
+    Log::Test() <<cond_result <<"==" << expected;
     assert(cond_result == expected);
     assert(parser.target == Target::allow);
     assert(*parser.vid=="8564");
     assert(*parser.pid=="1000");
   }
 
-  std::cerr << "[TEST] allowed-matches without params fails" <<std::endl;
+  Log::Test() << "allowed-matches without params fails";
   str = "allow id 8564:1000 if allowed-matches";
   {
     try{
@@ -692,7 +687,7 @@ std::cerr << "[TEST] rule-evaluated time with no parameter" <<std::endl;
     }
   }
 
-  std::cerr << "[TEST] allowed-matches without params fails" <<std::endl;
+  Log::Test() << "allowed-matches without params fails";
   str = "allow if true)";
   {
     try{
@@ -706,7 +701,7 @@ std::cerr << "[TEST] rule-evaluated time with no parameter" <<std::endl;
   }
   
   {
-    std::cerr << "[TEST] empty array fails" <<std::endl;
+    Log::Test() << "empty array fails";
     str = "allow id 1000:2000 hash \"sdaasdklkjd\" name \"device_name\" via-port all-of{}";
     try{
       GuardRule parser(str);
@@ -720,9 +715,16 @@ std::cerr << "[TEST] rule-evaluated time with no parameter" <<std::endl;
   str="allow id 30c9:0030 serial \"0001\" name \"Integrated Camera\" hash \"94ed2Mm6HGRsDZTjqV8TdnQWRDdUvlDdTmMm+henvVk=\" parent-hash \"jEP/6WzviqdJ5VSeTUY8PatCNBKeaREvo2OqdplND/o=\" with-interface { 0e:01:00 0e:02:00 0e:02:00 0e:02:00 0e:02:00 0e:02:00 0e:02:00 0e:02:00 0e:02:00 } with-connect-type \"hardwired\"";
   {
     GuardRule parser(str);
+  } 
+
+
+  str="allow id 1d6b:0002 serial \"0000:03:00.0\" name \"xHCI Host Controller\" hash \"Lw/Cdah32MiEGYi1D+rX5Vcs8544WKd6bqSOuVKqKn4=\" parent-hash \"w3c++Hva/cvMNTcx3y72UlxkR0WUPCWne2mlaosYanw=\" via-port \"usb1\" with-interface 09:00:00 with-connect-type \"\"";
+  {
+    GuardRule parser(str);
+    assert (parser.BuildString() ==str);
   }  
 
-  std::cerr << "TEST10 .... OK" << std::endl;
+  Log::Test() << "TEST10 .... OK";
 }
 
 void Test::Run11(){
@@ -733,26 +735,28 @@ void Test::Run11(){
    guard::ConfigStatus cs (guard.GetConfigStatus());
    std::vector<guard::GuardRule> result = cs.ParseGuardRulesFile().first;
 
-  std::cerr <<"[TEST] parse config rules. Build each rule from object,compare with the source. "<<std::endl;
+  Log::Test() <<"parse config rules. Build each rule from object,compare with the source. ";
 
   std::ifstream file(cs.daemon_rules_file_path);
   std::string line;
   int line_counter=0;
   while(std::getline(file,line)){
-    std::cerr <<"\n=================================" << std::endl;
-    std::cerr << "\n[TEST] RULE NUMBER " << line_counter<< "\n" << line << "\n" << result[line_counter].BuildString(true,true) <<std::endl;
+    Log::Test() <<"=================================";
+    Log::Test() << "RULE NUMBER " << line_counter;
+    Log::Test() << line;
+    Log::Test() << result[line_counter].BuildString(true,true);
     assert(line == result[line_counter].BuildString(true,true));
     line.clear();
     ++line_counter;
   }
   file.close();
 
-  std::cerr << "[TEST] TEST11 ... OK"<<std::endl;
+  Log::Test() << "TEST11 ... OK";
 
 }
 
 void Test::Run12(){
-  std::cerr << "[TEST Test 12. Parsing json uint array" <<std::endl;
+  Log::Test() << "[TEST Test 12. Parsing json uint array";
   {
     std::vector<uint> excpeted{12};
     std::string json ="[\"12\"]";
@@ -784,7 +788,7 @@ void Test::Run12(){
     std::string json ="[\"ы\"]";
     assert (ParseJsonIntArray(json)== excpeted);
   }
-  std::cerr << "[TEST] TEST12 ... OK" <<std::endl;
+  Log::Test() << "[TEST] TEST12 ... OK";
 }
 
 
@@ -792,10 +796,10 @@ void Test::Run12(){
 void Test::Run13(){
   dbus_bindings::Systemd sd;
 
-  std::cerr << "\n[TEST] TEST13 Test usbguard start stop and restart"<<std::endl;
+  Log::Test() << "TEST13 Test usbguard start stop and restart";
   auto init_state=sd.IsUnitActive("usbguard.service");
   assert (init_state.has_value());
-  std::cerr << "[TEST] Start service ...";
+  Log::Test() << "Start service ...";
   // start if stopped
   if (init_state && !init_state.value()){
     if (std::system("systemctl start usbguard")) {
@@ -806,49 +810,49 @@ void Test::Run13(){
     assert (val.has_value() && val.value());
     }
   }
-  std::cerr <<"OK"<< std::endl;
+  Log::Test() <<"OK";
  std::this_thread::sleep_for(std::chrono::milliseconds(100));
   // stop
-  std::cerr <<"[TEST] Stop service ...";
+  Log::Test() <<"Stop service ...";
   {
     auto val=sd.StopUnit("usbguard.service");
     assert (val.has_value() && val.value());
   }
-  std::cerr <<"OK"<<std::endl;
+  Log::Test() <<"OK";
 
   std::this_thread::sleep_for(std::chrono::milliseconds(100));
   // start
-  std::cerr << "[TEST] Start service ...";
+  Log::Test() << "Start service ...";
   {
     auto val=sd.StartUnit("usbguard.service");
     assert (val.has_value() && val.value());
   }
-  std::cerr <<"OK"<<std::endl;
+  Log::Test() <<"OK";
 
   std::this_thread::sleep_for(std::chrono::milliseconds(100));
   // restart
-   std::cerr << "[TEST] Restart service ...";
+   Log::Test() << "Restart service ...";
   {
     auto val=sd.IsUnitActive("usbguard.service");
     assert (val.has_value() && val.value());
   }
-  std::cerr <<"OK"<<std::endl;
+  Log::Test() <<"OK";
   std::this_thread::sleep_for(std::chrono::milliseconds(100));
   //  return to init state
   if (init_state && !init_state.value()){
     sd.StopUnit("usbguard.service");
   }
 
-  std::cerr << "[TEST] TEST13 ... OK" <<std::endl;
+  Log::Test() << "TEST13 ... OK";
 }
 
 // JSON RULE  OBJECTS PARSING
 
 void Test::Run14(){
-  std::cerr<< "[TEST] Test GuardRule building from json string"<<std::endl;
+  Log::Test() <<" Test GuardRule building from json string";
 
   {
-    std::cerr <<"[TEST] "<< "Normal json with vid pid "<<std::endl;
+    Log::Test() << "Normal json with vid pid ";
     std::string json="{\"deleted_rules\":null,"
                       "\"appended_rules\":"
                       "[{\"table_id\":"
@@ -868,7 +872,7 @@ void Test::Run14(){
   }
 
    {
-    std::cerr <<"[TEST] "<< "Empty pid "<<std::endl;
+    Log::Test() << "Empty pid ";
     std::string json="{\"deleted_rules\":null,"
                       "\"appended_rules\":"
                       "[{\"table_id\":"
@@ -887,7 +891,7 @@ void Test::Run14(){
   }
 
   {
-    std::cerr <<"[TEST] "<< "Empty pid "<<std::endl;
+    Log::Test() << "Empty pid ";
     std::string json="{\"deleted_rules\":null,"
                       "\"appended_rules\":"
                       "[{\"table_id\":"
@@ -906,7 +910,7 @@ void Test::Run14(){
   }
 
    {
-    std::cerr <<"[TEST] "<< "Empty fields arr "<<std::endl;
+    Log::Test() << "Empty fields arr ";
     std::string json="{\"deleted_rules\":null,"
                       "\"appended_rules\":"
                       "[{\"table_id\":"
@@ -920,13 +924,12 @@ void Test::Run14(){
       guard::GuardRule rule(ptr_obj);
     }
     catch(const std::logic_error& ex){
-      //std::cerr <<ex.what();
       assert(std::string (ex.what()) == "Can't find any fields for a rule" );
     }
   }
 
   {
-    std::cerr <<"[TEST] "<< "Empty target "<<std::endl;
+    Log::Test() << "Empty target ";
     std::string json="{\"deleted_rules\":null,"
                       "\"appended_rules\":"
                       "[{\"table_id\":"
@@ -945,7 +948,7 @@ void Test::Run14(){
 
 
   {
-    std::cerr <<"[TEST] "<< "Normal with hash "<<std::endl;
+    Log::Test() << "Normal with hash ";
     std::string json="{\"deleted_rules\":null,"
                       "\"appended_rules\":"
                       "[{\"table_id\":"
@@ -970,7 +973,7 @@ void Test::Run14(){
 
 
   {
-    std::cerr <<"[TEST] "<< "With hash and interface "<<std::endl;
+    Log::Test() << "With hash and interface ";
     std::string json="{\"deleted_rules\":null,"
                       "\"appended_rules\":"
                       "[{\"table_id\":"
@@ -981,8 +984,7 @@ void Test::Run14(){
                          "{\"pid\":\"a5a5\"},"
                          "{\"hash\":\"salkdjlskjf\"},"
                          "{\"with_interface\":\"{04:00:* 01:11:00}\" }"
-                        "]}]}";
-    // std::cerr <<json<<std::endl;                   
+                        "]}]}";         
     const boost::json::value jv= boost::json::parse(json);                    
     const boost::json::object* ptr_obj= jv.as_object().at("appended_rules").as_array().at(0).if_object();                   
     guard::GuardRule rule(ptr_obj);
@@ -1003,7 +1005,7 @@ void Test::Run14(){
 
 
   {
-    std::cerr <<"[TEST] "<< "Bad interface "<<std::endl;
+    Log::Test() << "Bad interface ";
     std::string json="{\"deleted_rules\":null,"
                       "\"appended_rules\":"
                       "[{\"table_id\":"
@@ -1014,8 +1016,7 @@ void Test::Run14(){
                          "{\"pid\":\"a5a5\"},"
                          "{\"hash\":\"salkdjlskjf\"},"
                          "{\"with_interface\":\"{04:00:* 01:11:00 sal;dfk;}\" }"
-                        "]}]}";
-    // std::cerr <<json<<std::endl;                   
+                        "]}]}";                   
     const boost::json::value jv= boost::json::parse(json);                    
     const boost::json::object* ptr_obj= jv.as_object().at("appended_rules").as_array().at(0).if_object();  
     try{                 
@@ -1028,7 +1029,7 @@ void Test::Run14(){
   }
 
   {
-    std::cerr <<"[TEST] "<< "With vidpid and interface "<<std::endl;
+    Log::Test() << "With vidpid and interface ";
     std::string json="{\"deleted_rules\":null,"
                       "\"appended_rules\":"
                       "[{\"table_id\":"
@@ -1038,8 +1039,7 @@ void Test::Run14(){
                         "[{\"vid\":\"a000\"},"
                          "{\"pid\":\"a5a5\"},"
                          "{\"with_interface\":\"{04:00:* 01:11:00}\" }"
-                        "]}]}";
-    // std::cerr <<json<<std::endl;                   
+                        "]}]}";       
     const boost::json::value jv= boost::json::parse(json);                    
     const boost::json::object* ptr_obj= jv.as_object().at("appended_rules").as_array().at(0).if_object();                   
     guard::GuardRule rule(ptr_obj);
@@ -1059,7 +1059,7 @@ void Test::Run14(){
 
   
   {
-    std::cerr <<"[TEST] "<< "With only an interface "<<std::endl;
+    Log::Test() << "With only an interface ";
     std::string json="{\"deleted_rules\":null,"
                       "\"appended_rules\":"
                       "[{\"table_id\":"
@@ -1067,8 +1067,7 @@ void Test::Run14(){
                         "\"target\":\"block\",\""
                         "fields_arr\":["
                          "{\"with_interface\":\"{04:00:* 01:11:00}\" }"
-                        "]}]}";
-    // std::cerr <<json<<std::endl;                   
+                        "]}]}";          
     const boost::json::value jv= boost::json::parse(json);                    
     const boost::json::object* ptr_obj= jv.as_object().at("appended_rules").as_array().at(0).if_object();                   
     guard::GuardRule rule(ptr_obj);
@@ -1081,7 +1080,7 @@ void Test::Run14(){
   }
 
    {
-    std::cerr <<"[TEST] "<< "With only an interface "<<std::endl;
+    Log::Test()<< "With only an interface ";
     std::string json="{\"deleted_rules\":null,"
                       "\"appended_rules\":"
                       "[{\"table_id\":"
@@ -1089,21 +1088,18 @@ void Test::Run14(){
                         "\"target\":\"block\",\""
                         "fields_arr\":["
                          "{\"with_interface\":\"{04:00:* 01:11:00}\" }"
-                        "]}]}";
-    // std::cerr <<json<<std::endl;                   
+                        "]}]}";           
     const boost::json::value jv= boost::json::parse(json);                    
     const boost::json::object* ptr_obj= jv.as_object().at("appended_rules").as_array().at(0).if_object();                   
     guard::GuardRule rule(ptr_obj);
     
     assert(rule.target == guard::Target::block);
-
-
     assert(rule.with_interface.has_value());
     assert(rule.level == guard::StrictnessLevel::interface);
   }
 
   {
-    std::cerr <<"[TEST] "<< "With vidpid, interface, ports "<<std::endl;
+    Log::Test() << "With vidpid, interface, ports ";
     std::string json="{\"deleted_rules\":null,"
                       "\"appended_rules\":"
                       "[{\"table_id\":"
@@ -1114,8 +1110,7 @@ void Test::Run14(){
                          "{\"pid\":\"a5a5\"},"
                          "{\"with_interface\":\"{04:00:* 01:11:00}\" },"
                          "{\"via-port\":\"none-of {usb1 usb2 usb3}\"}"
-                        "]}]}";
-    // std::cerr <<json<<std::endl;                   
+                        "]}]}";   
     const boost::json::value jv= boost::json::parse(json);                    
     const boost::json::object* ptr_obj= jv.as_object().at("appended_rules").as_array().at(0).if_object();                   
     guard::GuardRule rule(ptr_obj);
@@ -1141,7 +1136,7 @@ void Test::Run14(){
   }
 
   {
-    std::cerr <<"[TEST] "<< "With vidpid, interface, ports,conn type "<<std::endl;
+    Log::Test() << "With vidpid, interface, ports,conn type ";
     std::string json="{\"deleted_rules\":null,"
                       "\"appended_rules\":"
                       "[{\"table_id\":"
@@ -1154,7 +1149,6 @@ void Test::Run14(){
                          "{\"via-port\":\"none-of {usb1 usb2 usb3}\"},"
                          "{\"with-connect-type\":\"hotplug\"}"
                         "]}]}";
-    // std::cerr <<json<<std::endl;                   
     const boost::json::value jv= boost::json::parse(json);                    
     const boost::json::object* ptr_obj= jv.as_object().at("appended_rules").as_array().at(0).if_object();                   
     guard::GuardRule rule(ptr_obj);
@@ -1181,7 +1175,7 @@ void Test::Run14(){
   }
 
   {
-    std::cerr <<"[TEST] "<< "With vidpid, interface, ports,conn type, conditions "<<std::endl;
+    Log::Test()<< "With vidpid, interface, ports,conn type, conditions ";
     std::string json="{\"deleted_rules\":null,"
                       "\"appended_rules\":"
                       "[{\"table_id\":"
@@ -1195,7 +1189,6 @@ void Test::Run14(){
                          "{\"with-connect-type\":\"hotplug\"},"
                          "{\"cond\":\"if one-of {!localtime(00:00:00) true}\"}"
                         "]}]}";
-    // std::cerr <<json<<std::endl;                   
     const boost::json::value jv= boost::json::parse(json);                    
     const boost::json::object* ptr_obj= jv.as_object().at("appended_rules").as_array().at(0).if_object();                   
     guard::GuardRule rule(ptr_obj);
@@ -1231,7 +1224,7 @@ void Test::Run14(){
     assert(rule.cond == conds );
   }
   
-  std::cerr << "[TEST] TEST 14 ... OK"<<std::endl;
+  Log::Test() << "[TEST] TEST 14 ... OK";
 }
 
 void Test::Run15(){
@@ -1241,7 +1234,6 @@ void Test::Run15(){
     std::string json ="{\"policy_type\":\"radio_white_list\", \"preset_mode\":\"manual_mode\",\"deleted_rules\":null,\"appended_rules\":[],\"run_daemon\":\"true\"}"; 
     auto res=guard.ParseJsonRulesChanges(json);
     assert(res.has_value());
-    //std::cerr << *res;
     assert(*res =="{\"rules_OK\":[],\"rules_BAD\":[],\"STATUS\":\"OK\"}" );
   }
 
@@ -1252,7 +1244,6 @@ void Test::Run15(){
     std::string json ="{\"policy_type\":\"radio_white_list\",\"preset_mode\":\"manual_mode\",\"deleted_rules\":null,\"appended_rules\":[],\"run_daemon\":\"false\"}"; 
     auto res=guard.ParseJsonRulesChanges(json);
     assert(res.has_value());
-    //std::cerr << *res;
     assert(*res =="{\"rules_OK\":[],\"rules_BAD\":[],\"STATUS\":\"OK\"}" );
 
     guard::ConfigStatus cs;
@@ -1267,7 +1258,6 @@ void Test::Run15(){
     std::string json ="{\"policy_type\":\"radio_white_list\",\"preset_mode\":\"manual_mode\",\"deleted_rules\":null,\"appended_rules\":[],\"run_daemon\":\"true\"}"; 
     auto res=guard.ParseJsonRulesChanges(json);
     assert(res.has_value());
-    //std::cerr << *res;
     assert(*res =="{\"rules_OK\":[],\"rules_BAD\":[],\"STATUS\":\"OK\"}" );
 
     guard::ConfigStatus cs;
@@ -1275,48 +1265,51 @@ void Test::Run15(){
     assert(cs.guard_daemon_enabled);
   }
 
-  std::cerr << "[TEST] TEST 15 ... OK"<<std::endl;
+  Log::Test() << "[TEST] TEST 15 ... OK";
 }
 
 void Test::Run16(){
-  std::cerr << "[TEST] Test changing implicit policy"<<std::endl;
+  Log::Test() << "Test changing implicit policy";
   guard::ConfigStatus cs;
   auto init_policy=cs.implicit_policy_target;
 
   std::this_thread::sleep_for(std::chrono::milliseconds(100));
 
   cs.ChangeImplicitPolicy(false);
-   std::cerr << "cs.policy "<< cs.implicit_policy_target <<std::endl;
+   Log::Test() << "cs.policy "<< cs.implicit_policy_target ;
   assert(cs.implicit_policy_target =="allow");
   
   std::this_thread::sleep_for(std::chrono::milliseconds(100));
 
   cs.ChangeImplicitPolicy(true);
-  std::cerr << "cs.policy "<< cs.implicit_policy_target <<std::endl;
+  Log::Test() << "cs.policy "<< cs.implicit_policy_target;
   assert(cs.implicit_policy_target =="block");
   
   std::this_thread::sleep_for(std::chrono::milliseconds(100));
 
   cs.ChangeImplicitPolicy(init_policy=="block");
   assert( cs.implicit_policy_target==init_policy);
-  std::cerr << "[TEST] TEST 16 ... OK"<<std::endl;
+  Log::Test() << "TEST 16 ... OK";
 }
 
 void Test::Run17(){
-  std::cerr << "[TEST] Test allow connected "<<std::endl;
-
-std::this_thread::sleep_for(std::chrono::milliseconds(100));
-
+  Log::Test() << " Test allow connected ";
+  Log::Warning() <<"Test with sleep 10sec";
+std::this_thread::sleep_for(std::chrono::milliseconds(10000));
+Log::Info() <<"Sleep ...";
 {
   guard::Guard guard;
-  std::string json ="{\"policy_type\":\"radio_white_list\",\"preset_mode\":\"put_connected_to_white_list\",\"deleted_rules\":null,\"appended_rules\":[],\"run_daemon\":\"true\"}";
+  std::string json ="{\"policy_type\":\"radio_white_list\",\"preset_mode\":\"put_connected_to_white_list\",\"deleted_rules\":[],\"appended_rules\":[],\"run_daemon\":\"true\"}";
   auto result=guard.ParseJsonRulesChanges(json);
   assert (result);
+  Log::Test() <<*result;
   assert (result=="{\"STATUS\":\"OK\"}");
   assert (guard.GetConfigStatus().guard_daemon_active);
   assert (guard.GetConfigStatus().guard_daemon_enabled);
 }
 
+Log::Info() <<"Sleep ...";
+std::this_thread::sleep_for(std::chrono::milliseconds(10000));
 {
   guard::Guard guard;
   std::string json ="{\"policy_type\":\"radio_white_list\",\"preset_mode\":\"put_connected_to_white_list\",\"deleted_rules\":null,\"appended_rules\":[],\"run_daemon\":\"false\"}";
@@ -1326,17 +1319,17 @@ std::this_thread::sleep_for(std::chrono::milliseconds(100));
   assert (!guard.GetConfigStatus().guard_daemon_active);
   assert (!guard.GetConfigStatus().guard_daemon_enabled);
 }
-
+Log::Info() <<"Sleep ...";
+std::this_thread::sleep_for(std::chrono::milliseconds(10000));
 {
   guard::Guard guard;
   std::string json ="{\"policy_type\":\"radio_black_list\",\"preset_mode\":\"manual_mode\",\"deleted_rules\":null,\"appended_rules\":[],\"run_daemon\":\"false\"}";
   auto result=guard.ParseJsonRulesChanges(json);
   assert (result);
-  std::cerr <<*result;
+  Log::Test() <<*result;
   assert (result=="{\"rules_OK\":[],\"rules_BAD\":[],\"STATUS\":\"OK\"}");
   assert (!guard.GetConfigStatus().guard_daemon_active);
   assert (!guard.GetConfigStatus().guard_daemon_enabled);
 }
-
-  std::cerr << "[TEST] TEST 17 ... OK"<<std::endl;
+  Log::Test() << "TEST 17 ... OK";
 }

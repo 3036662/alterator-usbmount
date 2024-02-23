@@ -1,4 +1,5 @@
 #include "guard_rule.hpp"
+#include "log.hpp"
 #include "utils.hpp"
 #include <algorithm>
 #include <boost/algorithm/string.hpp>
@@ -9,6 +10,8 @@
 #include <sstream>
 
 namespace guard {
+
+using guard::utils::Log;
 
 /******************************************************************************/
 // static
@@ -78,7 +81,7 @@ GuardRule::GuardRule(const std::string &raw_str) {
           try {
             std::stoi(el, nullptr, 16);
           } catch (const std::exception &ex) {
-            std::cerr << "[ERROR] Can't parse id " << el << std::endl;
+            Log::Error() << "Can't parse id " << el;
             return false;
           }
         }
@@ -137,7 +140,7 @@ GuardRule::GuardRule(const std::string &raw_str) {
           try {
             std::stoi(el, nullptr, 16);
           } catch (const std::exception &ex) {
-            std::cerr << "[ERROR] Can't parse interface " << val << std::endl;
+            Log::Error() << "Can't parse interface " << val;
             return false;
           }
         }
@@ -149,12 +152,16 @@ GuardRule::GuardRule(const std::string &raw_str) {
   cond = ParseConditions(splitted);
 
   // check
+  for (std::string &s : splitted)
+    boost::trim(s);
+  std::remove_if(splitted.begin(), splitted.end(),
+                 [](const std::string &str) { return str.empty(); });
   if (splitted.size() != 0) {
-    std::cerr << "[ERROR] Not all token were parsed in the rule" << std::endl;
+    Log::Error() << "Not all token were parsed in the rule";
+    Log::Error err;
     for (const auto &tok : splitted) {
-      std::cerr << tok << " ";
+      err << "token" << tok << " ";
     }
-    std::cerr << std::endl;
     throw std::logic_error("Not all tokens were parsed");
   }
 
@@ -270,9 +277,9 @@ GuardRule::GuardRule(const boost::json::object *const ptr_obj) {
     if (!condition.empty())
       ss << condition;
   }
-  // std::cerr << "BUILD FROM JSON " << ss.str() << std::endl;
+  // Log::Debug() << "BUILD FROM JSON " << ss.str();
   *this = GuardRule(ss.str());
-  // std::cerr << "BUILD FROM OBJ " << BuildString() << std::endl;
+  // Log::Debug() << "BUILD FROM OBJ " << BuildString();
 }
 
 /******************************************************************************/
@@ -368,8 +375,7 @@ GuardRule::ParseToken(std::vector<std::string> &splitted,
     if (it_name_param != splitted.cend() && predicat(*it_name_param)) {
       res = *it_name_param;
     } else {
-      std::cerr << "[ERROR] Parsing error, token " << *it_name_param
-                << std::endl;
+      Log::Error() << "Parsing error, token " << *it_name_param;
       throw ex;
     }
     splitted.erase(it_name, ++it_name_param);
@@ -394,11 +400,10 @@ GuardRule::ParseTokenWithOperator(
     ++it_name_param1;
     // if a value exists -> check may be it is an operator
     if (it_name_param1 == splitted.cend()) {
-      std::cerr << "[ERROR] Parsing error. No values for param " << name
-                << " found." << std::endl;
+      Log::Error() << "Parsing error. No values for param " << name
+                   << " found.";
       throw ex;
     }
-    // std::cerr << "it_name_param1 " << *it_name_param1 << std::endl;
     //  check if first param is an operator
     auto it_operator = std::find_if(
         map_operator.cbegin(), map_operator.cend(),
@@ -423,14 +428,12 @@ GuardRule::ParseTokenWithOperator(
       ++it_range_begin;
       // if no array found -> throw exception
       if (it_range_begin == splitted.cend() || *it_range_begin != "{") {
-        std::cerr << "[ERROR] Error parsing values for " << name << " param."
-                  << std::endl;
+        Log::Error() << "Error parsing values for " << name << " param.";
         throw ex;
       }
       auto it_range_end = std::find(it_range_begin, splitted.cend(), "}");
       if (it_range_end == splitted.cend()) {
-        std::cerr << "[ERROR] A closing \"}\" expectend for sequence."
-                  << std::endl;
+        Log::Error() << "A closing \"}\" expectend for sequence.";
         throw ex;
       }
       if (std::distance(it_range_begin, it_range_end) == 1) {
@@ -443,7 +446,7 @@ GuardRule::ParseTokenWithOperator(
         if (predicat(*it_val)) {
           res->second.emplace_back(*it_val);
         } else {
-          std::cerr << "[ERROR]Parsing error, token " << *it_val << std::endl;
+          Log::Error() << "Parsing error, token " << *it_val;
           throw ex;
         }
         ++it_val;
@@ -471,7 +474,7 @@ GuardRule::ParseConditions(std::vector<std::string> &splitted) {
   auto it_param1 = it_if_operator;
   ++it_param1;
   if (it_param1 == splitted.cend()) {
-    std::cerr << "[ERROR] No value was found for condition" << std::endl;
+    Log::Error() << "No value was found for condition";
     throw ex;
   }
   auto it_operator = std::find_if(

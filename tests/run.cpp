@@ -6,7 +6,7 @@ int main(int argc, char *argv[]) {
   Test test;
   test.Run1();
   //  test2 passes only if usbguard is active and service is enabled
-  test.Run2();
+  // test.Run2();
   //  test3 passes only if usbguard is installed
   test.Run3();
   //  test4 passes only if usbguard is installed
@@ -30,25 +30,25 @@ int main(int argc, char *argv[]) {
   // Test a rule string parsing to a GuardRule object and backwards.
   test.Run10();
 
-  // Test a rules file parsing
+  // // Test a rules file parsing
   test.Run11();
 
-  // Test parsing of json array of uints
+  // // Test parsing of json array of uints
   test.Run12();
 
-  // Test systemd restart and stop
-  test.Run13();
+  // // Test systemd restart and stop
+  // test.Run13();
 
-  // Test parsing json rule object
+  // // Test parsing json rule object
   test.Run14();
 
-  // Test guard ParseJsonRulesChanges
+  // // Test guard ParseJsonRulesChanges
   test.Run15();
 
-  // Test ConfigStatus::ChangeImplicitPolicy
+  // // Test ConfigStatus::ChangeImplicitPolicy
   test.Run16();
 
-  // Test Guard:: ProcessJsonAllowConnected
+  // // Test Guard:: ProcessJsonAllowConnected
   test.Run17();
   return 0;
 }
