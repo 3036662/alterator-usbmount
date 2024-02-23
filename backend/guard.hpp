@@ -30,7 +30,7 @@ public:
    * @param[in] allow false - block, true - allow
    * @param[in] permanent  true(default) - create permanent UsbGuard rule
    */
-  bool AllowOrBlockDevice(std::string id, bool allow = false,
+  bool AllowOrBlockDevice(const std::string &device_id, bool allow = false,
                           bool permanent = true);
   /**
    * @brief check configuration of UsbGuard daemon
@@ -44,7 +44,7 @@ public:
    * @return std::map<std::string,std::string> Vendor ID : Vendor Name
    */
   std::unordered_map<std::string, std::string>
-  MapVendorCodesToNames(const std::unordered_set<std::string> vendors) const;
+  MapVendorCodesToNames(const std::unordered_set<std::string> &vendors) const;
 
   std::optional<std::vector<guard::GuardRule>>
   DeleteRules(const std::vector<uint> &rule_indexes) noexcept;

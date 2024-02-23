@@ -45,19 +45,19 @@ template <typename T> std::string ToLisp(const SerializableForLisp<T> &obj) {
   vecPairs vec{obj.SerializeForLisp()};
   res += "(";
   // ignore firs name, use only value
-  auto it = vec.cbegin();
-  if (it != vec.cend()) {
-    res += WrapWithQuotes(it->second);
+  auto iter = vec.cbegin();
+  if (iter != vec.cend()) {
+    res += WrapWithQuotes(iter->second);
     res += " ";
-    ++it;
+    ++iter;
   }
   // use name:value
-  while (it != vec.cend()) {
-    res += WrapWithQuotes(it->first);
+  while (iter != vec.cend()) {
+    res += WrapWithQuotes(iter->first);
     res += " ";
-    res += WrapWithQuotes(it->second);
+    res += WrapWithQuotes(iter->second);
     res += " ";
-    ++it;
+    ++iter;
   }
   res += ")";
   // std::cerr << "result string: " <<std::endl <<res << std::endl;

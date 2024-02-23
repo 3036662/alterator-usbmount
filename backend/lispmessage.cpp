@@ -7,11 +7,11 @@ LispMessage::LispMessage(
     const std::unordered_map<std::string, std::string> &prms)
     : action(act), objects(obj), params(prms) {}
 
-std::ostream &operator<<(std::ostream &os, const LispMessage &mes) {
-  os << "Action: " << mes.action << std::endl
-     << "Objects: " << mes.objects << std::endl;
+std::ostream &operator<<(std::ostream &ostream, const LispMessage &mes) {
+  ostream << "Action: " << mes.action << "\n"
+     << "Objects: " << mes.objects << "\n";
   for (auto it = mes.params.cbegin(); it != mes.params.end(); ++it) {
-    os << it->first << " : " << it->second << std::endl;
+    ostream << it->first << " : " << it->second << "\n";
   }
-  return os;
+  return ostream;
 }

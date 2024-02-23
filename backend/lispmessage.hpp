@@ -29,6 +29,6 @@ public:
 /// @param os Stream
 /// @param mes LispMessage object
 /// @return Stream
-std::ostream &operator<<(std::ostream &os, const LispMessage &mes);
+std::ostream &operator<<(std::ostream &ostream, const LispMessage &mes);
 
 #endif // LISPMESSAGE_HPP

@@ -124,7 +124,7 @@ public:
    * }
    * @endcode
    */
-  explicit GuardRule(const boost::json::object *const ptr_obj);
+  explicit GuardRule(const boost::json::object * ptr_obj);
 
   GuardRule &operator=(const GuardRule &) noexcept = default;
   GuardRule &operator=(GuardRule &&) noexcept = default;

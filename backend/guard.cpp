@@ -59,10 +59,10 @@ std::vector<UsbDevice> Guard::ListCurrentUsbDevices() {
 
 /******************************************************************************/
 
-bool Guard::AllowOrBlockDevice(std::string id, bool allow, bool permanent) {
-  if (id.empty() || !HealthStatus())
+bool Guard::AllowOrBlockDevice(const std::string &device_id, bool allow, bool permanent) {
+  if (device_id.empty() || !HealthStatus())
     return false;
-  std::optional<uint32_t> id_numeric = StrToUint(id);
+  std::optional<uint32_t> id_numeric = StrToUint(device_id);
   if (!id_numeric)
     return false;
   usbguard::Rule::Target policy =
@@ -182,7 +182,7 @@ Guard::FoldUsbInterfacesList(std::string i_type) const {
 /******************************************************************************/
 
 std::unordered_map<std::string, std::string> Guard::MapVendorCodesToNames(
-    const std::unordered_set<std::string> vendors) const {
+    const std::unordered_set<std::string> &vendors) const {
   std::unordered_map<std::string, std::string> res;
   const std::string path_to_usb_ids = "/usr/share/misc/usb.ids";
   try {
@@ -318,7 +318,6 @@ Guard::ParseJsonRulesChanges(const std::string &msg) noexcept {
 
   // block only usb mass storage  and MTP PTP
   if (preset_mode == "put_disks_and_mtp_to_black") {
-    policy = Target::allow;
     AddBlockUsbStorages(rules_to_add);
     cs.ChangeImplicitPolicy(false);
     obj_result["STATUS"] = "OK";
@@ -326,7 +325,6 @@ Guard::ParseJsonRulesChanges(const std::string &msg) noexcept {
 
   // block known android devices
   if (preset_mode == "block_and_reject_android") {
-    policy = Target::allow;
     if (!AddRejectAndroid(rules_to_add))
       return std::nullopt;
     cs.ChangeImplicitPolicy(false);

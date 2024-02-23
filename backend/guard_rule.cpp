@@ -154,8 +154,9 @@ GuardRule::GuardRule(const std::string &raw_str) {
   // check
   for (std::string &s : splitted)
     boost::trim(s);
-  std::remove_if(splitted.begin(), splitted.end(),
+  auto it_end= std::remove_if(splitted.begin(), splitted.end(),
                  [](const std::string &str) { return str.empty(); });
+  splitted.erase(it_end,splitted.end()) ;                
   if (splitted.size() != 0) {
     Log::Error() << "Not all token were parsed in the rule";
     Log::Error err;
@@ -182,7 +183,7 @@ GuardRule::GuardRule(const std::string &raw_str) {
 // It just parses a JSON objects and puts values into a string.
 // When finished, it will try to construct a GuardRule object from a string
 
-GuardRule::GuardRule(const boost::json::object *const ptr_obj) {
+GuardRule::GuardRule(const boost::json::object *ptr_obj) {
   namespace json = boost::json;
   std::string target;
   std::string vid;

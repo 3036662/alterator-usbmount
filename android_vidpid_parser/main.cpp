@@ -11,8 +11,6 @@ https://github.com/M0Rf30/android-udev-rules/blob/main/51-android.rules
 #include <boost/algorithm/string.hpp>
 #include <boost/json.hpp>
 #include <iostream>
-#include <memory>
-#include <sstream>
 #include <string>
 
 int main(int argc, const char *argv[]) {
