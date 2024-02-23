@@ -1,7 +1,6 @@
 #include "message_reader.hpp"
 #include <boost/algorithm/algorithm.hpp>
 #include <boost/algorithm/string.hpp>
-#include <fstream>
 #include <iostream>
 #include <unordered_map>
 
@@ -27,8 +26,7 @@ void MessageReader::Loop() {
       continue;
     }
     // end of messages
-    else {
-      if (!msg_in_progress)
+    if(!boost::contains(line, "_message:begin") && !msg_in_progress) {      
         break;
     }
 
