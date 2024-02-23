@@ -100,6 +100,8 @@ std::string ToLisp([[maybe_unused]] const std::string &name,
 /// @return Escaped string
 std::string EscapeQuotes(const std::string &str);
 
+std::string UnQuote(const std::string &str);
+
 /**
  * @brief Parse json string ["1","2","n"] to vector of int
  *

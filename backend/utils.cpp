@@ -38,6 +38,16 @@ std::string QuoteIfNotQuoted(const std::string &str) {
   return str;
 }
 
+std::string UnQuote(const std::string &str) {
+  std::string res = str;
+  if (str.size() >= 2 && str[0] == '\"' && str.back() == '\"') {
+    res = str;
+    res.erase(res.front());
+    res.erase(res.back());
+  }
+  return res;
+}
+
 std::vector<guard::UsbDevice> fakeLibGetUsbList() {
   std::vector<guard::UsbDevice> res;
   for (int i = 0; i < 10; ++i) {
