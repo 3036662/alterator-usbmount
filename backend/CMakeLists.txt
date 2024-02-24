@@ -1,4 +1,5 @@
 
+
 add_executable(simple main.cpp
     lispmessage.hpp lispmessage.cpp
     message_reader.hpp message_reader.cpp
@@ -11,6 +12,10 @@ add_executable(simple main.cpp
     guard_rule.cpp guard_rule.cpp
     boost_json.cpp
     )
+
+include(Format)
+Format(simple .)
+
 
 include_directories(simple PUBLIC ${USBGUARD_INCLUDE_DIRS})
 include_directories(simple PUBLIC $CMAKE_SOURCE_DIR/tests) 

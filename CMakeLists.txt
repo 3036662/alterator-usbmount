@@ -13,6 +13,7 @@ find_package(Boost REQUIRED)
 
 include(GNUInstallDirs)
 
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
 
 # dbus + systemd
 find_package(sdbus-c++ REQUIRED)
