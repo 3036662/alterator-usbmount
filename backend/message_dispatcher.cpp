@@ -7,9 +7,10 @@
 
 using guard::utils::Log;
 
-MessageDispatcher::MessageDispatcher(guard::Guard &guard) noexcept : guard(guard) {}
+MessageDispatcher::MessageDispatcher(guard::Guard &guard) noexcept
+    : guard(guard) {}
 
-bool MessageDispatcher::Dispatch(const LispMessage &msg) noexcept{
+bool MessageDispatcher::Dispatch(const LispMessage &msg) noexcept {
   // list usbs
   if (msg.action == "list" && msg.objects == "list_curr_usbs") {
     return ListUsbDevices();

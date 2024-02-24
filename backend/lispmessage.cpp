@@ -9,7 +9,7 @@ LispMessage::LispMessage(
 
 std::ostream &operator<<(std::ostream &ostream, const LispMessage &mes) {
   ostream << "Action: " << mes.action << "\n"
-     << "Objects: " << mes.objects << "\n";
+          << "Objects: " << mes.objects << "\n";
   for (auto it = mes.params.cbegin(); it != mes.params.end(); ++it) {
     ostream << it->first << " : " << it->second << "\n";
   }

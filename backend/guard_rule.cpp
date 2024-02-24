@@ -154,9 +154,10 @@ GuardRule::GuardRule(const std::string &raw_str) {
   // check
   for (std::string &s : splitted)
     boost::trim(s);
-  auto it_end= std::remove_if(splitted.begin(), splitted.end(),
-                 [](const std::string &str) { return str.empty(); });
-  splitted.erase(it_end,splitted.end()) ;                
+  auto it_end =
+      std::remove_if(splitted.begin(), splitted.end(),
+                     [](const std::string &str) { return str.empty(); });
+  splitted.erase(it_end, splitted.end());
   if (splitted.size() != 0) {
     Log::Error() << "Not all token were parsed in the rule";
     Log::Error err;

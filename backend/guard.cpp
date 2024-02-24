@@ -59,7 +59,8 @@ std::vector<UsbDevice> Guard::ListCurrentUsbDevices() {
 
 /******************************************************************************/
 
-bool Guard::AllowOrBlockDevice(const std::string &device_id, bool allow, bool permanent) {
+bool Guard::AllowOrBlockDevice(const std::string &device_id, bool allow,
+                               bool permanent) {
   if (device_id.empty() || !HealthStatus())
     return false;
   std::optional<uint32_t> id_numeric = StrToUint(device_id);

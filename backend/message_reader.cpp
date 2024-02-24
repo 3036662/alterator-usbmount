@@ -25,8 +25,8 @@ void MessageReader::Loop() {
       continue;
     }
     // end of loop
-    if(!boost::contains(line, "_message:begin") && !msg_in_progress) {      
-        break;
+    if (!boost::contains(line, "_message:begin") && !msg_in_progress) {
+      break;
     }
     // the end of a message
     if (boost::contains(line, "_message:end")) {

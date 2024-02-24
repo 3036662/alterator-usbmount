@@ -515,7 +515,7 @@ std::unordered_map<std::string, std::string> InspectUdevRules(
         std::ifstream f(str_path);
         if (f.is_open()) {
           std::string tmp_str;
-          //bool found_usb{false};
+          // bool found_usb{false};
           bool found_authorize{false};
           // for each string
           while (getline(f, tmp_str)) {
