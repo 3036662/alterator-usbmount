@@ -18,18 +18,16 @@ void MessageReader::Loop() {
   // read stdin loop
   while (std::getline(std::cin, line)) {
     boost::trim(line);
-
     // message begin
     if (boost::contains(line, "_message:begin")) {
       msg_in_progress = true;
       line.clear();
       continue;
     }
-    // end of messages
+    // end of loop
     if(!boost::contains(line, "_message:begin") && !msg_in_progress) {      
         break;
     }
-
     // the end of a message
     if (boost::contains(line, "_message:end")) {
       msg_in_progress = false;
@@ -43,7 +41,6 @@ void MessageReader::Loop() {
       line.clear();
       continue;
     }
-
     // find action
     if (boost::starts_with(line, str_action)) {
       boost::erase_first(line, str_action);
@@ -52,7 +49,6 @@ void MessageReader::Loop() {
       line.clear();
       continue;
     }
-
     // find object
     if (boost::starts_with(line, str_objects)) {
       boost::erase_first(line, str_objects);
@@ -61,7 +57,6 @@ void MessageReader::Loop() {
       line.clear();
       continue;
     }
-
     // find parameters
     size_t pos = line.find(':');
     if (pos != std::string::npos) {
@@ -69,7 +64,6 @@ void MessageReader::Loop() {
                      line.substr(pos + 1) // value
       );
     }
-
     line.clear();
   }
 }
