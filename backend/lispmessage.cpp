@@ -3,9 +3,9 @@
 LispMessage::LispMessage() {}
 
 LispMessage::LispMessage(
-    const std::string &act, const std::string &obj,
-    const std::unordered_map<std::string, std::string> &prms)
-    : action(act), objects(obj), params(prms) {}
+    const MsgAction &act, const MsgObject &obj,
+    const std::unordered_map<std::string, std::string> &prms) noexcept
+    : action(act.val), objects(obj.val), params(prms) {}
 
 std::ostream &operator<<(std::ostream &ostream, const LispMessage &mes) {
   ostream << "Action: " << mes.action << "\n"

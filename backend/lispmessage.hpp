@@ -9,16 +9,23 @@
  * @class LispMessage
  * @brief Represents a message from alterator frontend
  */
-class LispMessage {
-public:
+struct LispMessage {
+  struct MsgAction {
+    std::string val;
+  };
+
+  struct MsgObject {
+    std::string val;
+  };
   /// @brief Constructor for an empty message
   LispMessage();
   /// @brief Constructor for full-fledged message
   /// @param act String action (read,list,etc.)
   /// @param obj Alterator path to backend
   /// @param prms A map of string pairs repres. parameters
-  LispMessage(const std::string &act, const std::string &obj,
-              const std::unordered_map<std::string, std::string> &prms);
+  LispMessage(
+      const MsgAction &act, const MsgObject &obj,
+      const std::unordered_map<std::string, std::string> &prms) noexcept;
 
   std::string action;
   std::string objects;
