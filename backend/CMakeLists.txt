@@ -2,7 +2,7 @@
 add_library(boost_json OBJECT boost_json.cpp)
 
 add_executable(simple main.cpp
-    lispmessage.hpp lispmessage.cpp
+    lisp_message.hpp lisp_message.cpp
     message_reader.hpp message_reader.cpp
     message_dispatcher.cpp message_dispatcher.hpp
     utils.cpp utils.hpp

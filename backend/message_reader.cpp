@@ -1,10 +1,9 @@
 #include "message_reader.hpp"
+#include "lisp_message.hpp"
 #include <boost/algorithm/algorithm.hpp>
 #include <boost/algorithm/string.hpp>
 #include <iostream>
 #include <unordered_map>
-
-#include "lispmessage.hpp"
 
 MessageReader::MessageReader(guard::Guard &guard) : dispatcher(guard) {}
 

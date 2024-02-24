@@ -1,5 +1,5 @@
-#ifndef LISPMESSAGE_HPP
-#define LISPMESSAGE_HPP
+#ifndef LISP_MESSAGE_HPP
+#define LISP_MESSAGE_HPP
 
 #include <iostream>
 #include <string>
@@ -38,4 +38,4 @@ struct LispMessage {
 /// @return Stream
 std::ostream &operator<<(std::ostream &ostream, const LispMessage &mes);
 
-#endif // LISPMESSAGE_HPP
+#endif // LISP_MESSAGE_HPP
