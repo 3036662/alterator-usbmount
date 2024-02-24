@@ -2,7 +2,6 @@
 #include "guard_rule.hpp"
 #include "log.hpp"
 #include "systemd_dbus.hpp"
-#include <algorithm>
 #include <cassert>
 #include <cstdlib>
 #include <filesystem>
@@ -184,25 +183,25 @@ void Test::Run6() {
 
 void Test::Run7() {
   guard::Guard guard;
-  std::vector<std::string> res = guard.FoldUsbInterfacesList(
+  std::vector<std::string> res = guard::FoldUsbInterfacesList(
       "with-interface { 0e:01:00 0e:02:00 0e:02:00 0e:02:00 0e:02:00 0e:02:00 "
       "0e:02:00 0e:02:00 0e:02:00 }");
   std::vector<std::string> exp = {"0e:*:*"};
   assert(res == exp);
-  res = guard.FoldUsbInterfacesList("with-interface { 03:01:02 04:01:01 }");
+  res = guard::FoldUsbInterfacesList("with-interface { 03:01:02 04:01:01 }");
   exp = {"03:01:02", "04:01:01"};
   assert(res == exp);
-  res = guard.FoldUsbInterfacesList("with-interface 09:00:00");
+  res = guard::FoldUsbInterfacesList("with-interface 09:00:00");
   exp = {"09:00:00"};
   assert(res == exp);
-  res = guard.FoldUsbInterfacesList("wsdsafsdga");
+  res = guard::FoldUsbInterfacesList("wsdsafsdga");
   exp = {"wsdsafsdga"};
   assert(res == exp);
-  res = guard.FoldUsbInterfacesList("");
+  res = guard::FoldUsbInterfacesList("");
   exp = {""};
   assert(res == exp);
 
-  res = guard.FoldUsbInterfacesList("with-interface { 03=01=:02 04:/1:01 }");
+  res = guard::FoldUsbInterfacesList("with-interface { 03=01=:02 04:/1:01 }");
   exp = {};
   assert(res == exp);
   Log::Test() << "TEST7 .... OK";
@@ -218,14 +217,14 @@ void Test::Run8() {
       {"03ea", "Data Broadcasting Corp."},
       {"04c5", "Fujitsu, Ltd"},
       {"06cd", "Keyspan"}};
-  assert(guard.MapVendorCodesToNames(vendors) == expected);
+  assert(guard::MapVendorCodesToNames(vendors) == expected);
 
   vendors.insert("06cf");
   expected.emplace("06cf", "SpheronVR AG");
-  assert(guard.MapVendorCodesToNames(vendors) == expected);
+  assert(guard::MapVendorCodesToNames(vendors) == expected);
   vendors.insert("blablalbla");
-  assert(guard.MapVendorCodesToNames(vendors) == expected);
-  assert(guard.MapVendorCodesToNames(vendors).size() < vendors.size());
+  assert(guard::MapVendorCodesToNames(vendors) == expected);
+  assert(guard::MapVendorCodesToNames(vendors).size() < vendors.size());
   Log::Test() << "TEST8  ... OK";
 }
 

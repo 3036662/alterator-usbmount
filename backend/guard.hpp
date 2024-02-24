@@ -1,11 +1,11 @@
 #pragma once
 #include "config_status.hpp"
+#include "guard_rule.hpp"
 #include "usb_device.hpp"
 #include <IPCClient.hpp>
 #include <USBGuard.hpp>
 #include <memory>
 #include <string>
-#include <unordered_set>
 
 namespace guard {
 
@@ -23,7 +23,7 @@ public:
    * @brief List current usb devices
    * @return vector<UsbDevices>
    */
-  std::vector<UsbDevice> ListCurrentUsbDevices();
+  std::vector<UsbDevice> ListCurrentUsbDevices() noexcept;
   /**
    * @brief Allow or block device
    * @param[in] id  string, containing numerical id of usb device
@@ -31,23 +31,27 @@ public:
    * @param[in] permanent  true(default) - create permanent UsbGuard rule
    */
   bool AllowOrBlockDevice(const std::string &device_id, bool allow = false,
-                          bool permanent = true);
+                          bool permanent = true) noexcept;
   /**
    * @brief check configuration of UsbGuard daemon
    * @return ConfigStatus object
    */
-  ConfigStatus GetConfigStatus();
-  /**
-   * @brief Creates map vendor ID : vendor Name with in one pass to file
-   *
-   * @param vendors set of vendor IDs
-   * @return std::map<std::string,std::string> Vendor ID : Vendor Name
-   */
-  std::unordered_map<std::string, std::string>
-  MapVendorCodesToNames(const std::unordered_set<std::string> &vendors) const;
+  ConfigStatus GetConfigStatus() noexcept;
 
-  std::optional<std::vector<guard::GuardRule>>
-  DeleteRules(const std::vector<uint> &rule_indexes) noexcept;
+  /**
+   * @brief Reads rules from USB Guard config,
+   * deletes by index, and skips rules, conflicting with a new policy
+   * @param rule_indexes Order numbers of rules to delete
+   * @param new_policy New implicit policy (allow || block)
+   * @param[out] new_rules Vector, where the result will be appended
+   * @param[out] deleted_by_policy_change If function will skip some
+   * rules via conflict with new policy, this flag will be set to true
+   * @return true on success
+   */
+  bool DeleteRules(const std::vector<uint> &rule_indexes, Target new_policy,
+                   std::vector<GuardRule> &new_rules,
+                   bool &deleted_by_policy_change) noexcept;
+
   std::optional<std::string>
   ParseJsonRulesChanges(const std::string &msg) noexcept;
 
@@ -55,13 +59,21 @@ private:
   const std::string default_query = "match";
   std::unique_ptr<usbguard::IPCClient> ptr_ipc;
   /// True if daemon is active
-  bool HealthStatus() const;
+  bool HealthStatus() const noexcept;
   /// try to connect the UsbGuardDaemon
   void ConnectToUsbGuard() noexcept;
 
-  ///@brief fold list of interface { 03:01:02 03:01:01 } to [03:*:*]
-  ///@param i_type string with list of interfaces from usbguard
-  std::vector<std::string> FoldUsbInterfacesList(std::string i_type) const;
+  boost::json::object
+  ProcessJsonAllowConnected(std::vector<GuardRule> &rules_to_add) noexcept;
+
+  static std::optional<bool>
+  ExtractDaemonTargetState(boost::json::object *p_obj) noexcept;
+
+  static std::optional<Target>
+  ExtractTargetPolicy(boost::json::object *p_obj) noexcept;
+
+  static std::optional<std::string>
+  ExtractPresetMode(boost::json::object *p_obj) noexcept;
 
   /**
    * @brief Process rules for "manual" mode
@@ -74,33 +86,43 @@ private:
    * @return boost::json::object, containig "rules_OK" and "rules_BAD" arrays
    * @details rules_OK and rules_BAD contains html <tr> ids for validation
    */
-  boost::json::object
+  static boost::json::object
   ProcessJsonManualMode(const boost::json::object *ptr_jobj,
                         std::vector<uint> &rules_to_delete,
                         std::vector<GuardRule> &rules_to_add) noexcept;
 
-  boost::json::object
-  ProcessJsonAllowConnected(std::vector<GuardRule> &rules_to_add) noexcept;
-
+  static boost::json::
+      object
+      /**
+       * @brief Parses "appended" rules from json
+       * @param[in] ptr_json_array_rules A pointer to json array with rules
+       * @param rules_to_add Vector, where new rulles will be appended
+       * @return JSON object, containig arrays of html ids - "rules_OK" and
+       * "rules_BAD"
+       * @details This function is called from ProcessJsonManualMode
+       */
+      ProcessJsonAppended(const boost::json::array *ptr_json_array_rules,
+                          std::vector<GuardRule> &rules_to_add) noexcept;
   /**
    * @brief Add a rule to allow all HID devices.
    *
    * @param rules_to_add Vector,where a new rule will be appended.
    */
-  void AddAllowHid(std::vector<GuardRule> &rules_to_add) noexcept;
+  static void AddAllowHid(std::vector<GuardRule> &rules_to_add) noexcept;
   /**
    * @brief Add a rule to block 08 and 06 - usb and mtp.
    *
    * @param rules_to_add Vector,where a new rule will be appended.
    */
-  void AddBlockUsbStorages(std::vector<GuardRule> &rules_to_add) noexcept;
+  static void
+  AddBlockUsbStorages(std::vector<GuardRule> &rules_to_add) noexcept;
 
   /**
    * @brief Add rules to reject known android devices
    *
    * @param rules_to_add Vector,where a new rule will be appended.
    */
-  bool AddRejectAndroid(std::vector<GuardRule> &rules_to_add) noexcept;
+  static bool AddRejectAndroid(std::vector<GuardRule> &rules_to_add) noexcept;
 
 #ifdef UNIT_TEST
   friend class ::Test;
