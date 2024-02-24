@@ -1,4 +1,5 @@
 
+add_library(boost_json OBJECT boost_json.cpp)
 
 add_executable(simple main.cpp
     lispmessage.hpp lispmessage.cpp
@@ -10,16 +11,18 @@ add_executable(simple main.cpp
     config_status.cpp config_status.hpp
     systemd_dbus.cpp systemd_dbus.hpp
     guard_rule.cpp guard_rule.cpp
-    boost_json.cpp
-    )
+)
 
 include(Format)
 Format(simple .)
+include(ClangTidy)
+#AddClangTidy(simple)
 
 
 include_directories(simple PUBLIC ${USBGUARD_INCLUDE_DIRS})
 include_directories(simple PUBLIC $CMAKE_SOURCE_DIR/tests) 
 
+target_link_libraries(simple PRIVATE boost_json)
 target_link_libraries(simple PRIVATE PkgConfig::USBGUARD)
 target_link_libraries(simple PRIVATE SDBusCpp::sdbus-c++)
 

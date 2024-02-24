@@ -57,3 +57,5 @@ else (DOXYGEN_FOUND)
     message ("Doxygen is required to be installed to generate documentation.")
 endif (DOXYGEN_FOUND)
 ENDIF (DEFINED BUILD_DOCS)
+
+#cmake -S . -B build -DUNIT_TEST=1 -DCMAKE_CXX_COMPILER:FILEPATH=/usr/bin/clang++ -G Ninja

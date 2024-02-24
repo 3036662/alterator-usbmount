@@ -9,10 +9,11 @@ add_executable(test
                ../backend/systemd_dbus.cpp
                ../backend/guard_rule.cpp
                ../backend/systemd_dbus.cpp
-               ../backend/boost_json.cpp
                )
 target_include_directories(test PRIVATE ../backend)
 target_include_directories(test PRIVATE .)
 include_directories(test PUBLIC ${USBGUARD_INCLUDE_DIRS})
+
+target_link_libraries(test PRIVATE boost_json)
 target_link_libraries(test PRIVATE PkgConfig::USBGUARD)
 target_link_libraries(test PRIVATE SDBusCpp::sdbus-c++)
