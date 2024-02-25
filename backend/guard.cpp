@@ -158,7 +158,7 @@ Guard::ParseJsonRulesChanges(const std::string &msg) noexcept {
   if (!preset_mode.has_value())
     return std::nullopt;
   // new rules will be stored here
-  bool rules_changed_by_policy;
+  bool rules_changed_by_policy{false};
   std::vector<guard::GuardRule> new_rules;
   std::vector<uint> rules_to_delete;
   std::vector<GuardRule> rules_to_add;
