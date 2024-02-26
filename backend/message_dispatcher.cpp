@@ -78,7 +78,7 @@ bool MessageDispatcher::SaveChangeRules(const LispMessage &msg) const noexcept {
 bool MessageDispatcher::ListUsbGuardRules(
     const LispMessage &msg) const noexcept {
   guard::StrictnessLevel level =
-      guard::StrToStrictnessLevel(msg.params.at("level"));
+      guard::GuardRule::StrToStrictnessLevel(msg.params.at("level"));
   auto start = std::chrono::steady_clock::now();
   Log::Debug() << "Time measurement has started";
   std::vector<guard::GuardRule> vec_rules =
