@@ -43,7 +43,7 @@ private:
   const std::string systemd_interface_unit = "org.freedesktop.systemd1.Unit";
   std::unique_ptr<sdbus::IConnection> connection;
   void ConnectToSystemDbus() noexcept;
-  bool Health(); /// check if normally connectted
+  bool Health() noexcept; /// check if normally connectted
 
   /**
    * @brief Create proxy for systemd particular path

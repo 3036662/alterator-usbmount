@@ -31,7 +31,7 @@ std::optional<uint32_t> StrToUint(const std::string &str) noexcept;
 /// @warning may throw exceptions
 std::vector<std::string>
 FindAllFilesInDirRecursive(const std::string &dir,
-                           const std::string &ext = std::string());
+                           const std::string &ext = std::string()) noexcept;
 
 /**
  * @brief Converts vec of string pairs to a LispSring

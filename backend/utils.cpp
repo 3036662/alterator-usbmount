@@ -70,8 +70,9 @@ std::optional<uint32_t> StrToUint(const std::string &str) noexcept {
   return res;
 }
 
-std::vector<std::string> FindAllFilesInDirRecursive(const std::string &dir,
-                                                    const std::string &ext) {
+std::vector<std::string>
+FindAllFilesInDirRecursive(const std::string &dir,
+                           const std::string &ext) noexcept {
   // TODO think about enabling symlinks support
   namespace fs = std::filesystem;
   const int max_depth = 30;

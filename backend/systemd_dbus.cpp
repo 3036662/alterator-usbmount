@@ -242,7 +242,7 @@ void Systemd::ConnectToSystemDbus() noexcept {
 
 /******************************************************************************/
 
-bool Systemd::Health() {
+bool Systemd::Health() noexcept {
   if (!connection)
     ConnectToSystemDbus();
   return static_cast<bool>(connection);

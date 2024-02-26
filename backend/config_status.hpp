@@ -3,17 +3,10 @@
 #include "guard_rule.hpp"
 #include "serializible_for_lisp.hpp"
 #include "types.hpp"
-#include "utils.hpp"
 #include <set>
 #include <unordered_map>
 
-#ifdef UNIT_TEST
-#include "test.hpp"
-#endif
-
 namespace guard {
-
-/************************************************************/
 
 /**
  * @class ConfigStatus
@@ -51,7 +44,7 @@ public:
   vecPairs SerializeForLisp() const;
 
   /// @brief Checks the daemon status,fills status fields
-  void CheckDaemon();
+  void CheckDaemon() noexcept;
 
   /**
    * @brief Parses usbguard rules.conf file
@@ -104,30 +97,72 @@ private:
   /// @return A string path, empty string if failed
   /// @details usbguard.service is expected to be installed in
   /// /lib/systemd/system
-  std::string GetDaemonConfigPath() const;
+  std::string GetDaemonConfigPath() const noexcept;
 
   /**
    * @brief Parses usbguard .conf file.
    * @details Looks for rules-file path.
    * Looks for allowed users and groups.
    */
-  void ParseDaemonConfig();
+  void ParseDaemonConfig() noexcept;
+
+  /**
+   * @brief Extracts a confing filename from string
+   *
+   * @param line String line from config
+   * @return std::string config filename or empty string if nothing found
+   */
+  std::optional<std::string>
+  ExctractConfigFileName(const std::string &line) const noexcept;
+
+  /**
+   * @brief Utility function to extcract path to a rules file
+   * from string to this.daemon_rules_file_path
+   */
+  bool ExtractRuleFilePath(const std::string &line) noexcept;
+  /**
+   * @brief Utility function to extract users
+   * from daemon config to this.ipc_allowed_users
+   */
+  bool ExctractUsers(const std::string &line) noexcept;
+  /**
+   * @brief Utility function to exctract users
+   * from folder,defined by IPCAccessControlFiles param
+   * to this.ipc_allowed_users
+   */
+  bool CheckUserFiles(const std::string &line) noexcept;
+  /**
+   * @brief Utility function to exctract IPCAllowedGroups
+   * from folder,defined by IPCAllowedGroups param
+   * to this.ipc_allowed_groups
+   */
+  bool ExtractGroups(const std::string &line) noexcept;
+
+  /**
+   * @brief Utility function to exctract ImplicitPolicyTarget
+   * from folder,defined by ImplicitPolicyTarget param
+   * to this.implicit_policy_target
+   */
+  bool ExtractPolicy(const std::string &line) noexcept;
+
+  /**
+   * @brief Incpect a udev rule file.
+   * @throws std::runtime_error if can't open the file
+   */
+  static bool IsSuspiciousUdevFile(const std::string &str_path);
+
+  /// @brief  inspect udev rules for suspicious files
+  /// @param vec just for testing purposes
+  /// @return map of string file:warning
+  static std::unordered_map<std::string, std::string> InspectUdevRules(
+#ifdef UNIT_TEST
+      const std::vector<std::string> *vec = nullptr
+#endif
+      ) noexcept;
 
 #ifdef UNIT_TEST
   friend class ::Test;
 #endif
 };
-
-/*************************************************************/
-// non-friend funcions
-
-/// @brief  inspect udev rules for suspicious files
-/// @param vec just for testing purposes
-/// @return map of string file:warning
-std::unordered_map<std::string, std::string> InspectUdevRules(
-#ifdef UNIT_TEST
-    const std::vector<std::string> *vec = nullptr
-#endif
-);
 
 } // namespace guard

@@ -81,7 +81,7 @@ class GuardRule : public SerializableForLisp<GuardRule> {
   static const std::map<RuleOperator, std::string> map_operator;
 
 public:
-  int number = 0; ///@brief number of line (from the beginnig of file)
+  uint number = 0; ///@brief number of line (from the beginnig of file)
   Target target;
   std::optional<std::string> vid;
   std::optional<std::string> pid;

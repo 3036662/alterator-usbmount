@@ -1,3 +1,4 @@
+#include "config_status.hpp"
 #include "guard.hpp"
 #include "guard_rule.hpp"
 #include "log.hpp"
@@ -10,6 +11,7 @@
 #include <thread>
 #include <unordered_map>
 #include <unordered_set>
+#include "utils.hpp"
 
 using guard::utils::Log;
 
@@ -72,7 +74,7 @@ void Test::Run1() {
       "sdgzg098gav\\c" // bad path
   };
   const std::unordered_map<std::string, std::string> map =
-      guard::InspectUdevRules(&vec_mock);
+      guard::ConfigStatus::InspectUdevRules(&vec_mock);
   const std::unordered_map<std::string, std::string> expected_map{
       std::pair<std::string, std::string>{file1, "usb_rule"},
       std::pair<std::string, std::string>{file5, "usb_rule"},
