@@ -1,12 +1,7 @@
 #include "usb_device.hpp"
-#include "log.hpp"
 #include <boost/algorithm/string.hpp>
-#include <exception>
-#include <filesystem>
-#include <fstream>
 #include <limits>
 #include <string>
-#include <unordered_set>
 #include <vector>
 namespace guard {
 
