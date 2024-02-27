@@ -12,6 +12,8 @@
 namespace guard {
 
 using guard::utils::Log;
+using ::utils::EscapeQuotes;
+using ::utils::QuoteIfNotQuoted;
 
 /******************************************************************************/
 // static

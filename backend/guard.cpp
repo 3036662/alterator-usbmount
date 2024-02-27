@@ -3,18 +3,22 @@
 #include "guard_rule.hpp"
 #include "json_rule.hpp"
 #include "log.hpp"
+#include "usb_device.hpp"
 #include "utils.hpp"
 #include <boost/algorithm/string.hpp>
 #include <boost/json.hpp>
 #include <boost/json/array.hpp>
 #include <exception>
+#include <filesystem>
 #include <memory>
 #include <optional>
 #include <unordered_set>
-
 namespace guard {
 
 using guard::utils::Log;
+using ::utils::QuoteIfNotQuoted;
+using ::utils::StrToUint;
+using ::utils::UnQuote;
 
 Guard::Guard() : ptr_ipc(nullptr) { ConnectToUsbGuard(); }
 
@@ -37,12 +41,20 @@ std::vector<UsbDevice> Guard::ListCurrentUsbDevices() noexcept {
         std::vector<std::string> vid_pid;
         boost::split(vid_pid, rule.getDeviceID().toString(),
                      [](const char symbol) { return symbol == ':'; });
-        res.emplace_back(rule.getRuleID(),
-                         usbguard::Rule::targetToString(rule.getTarget()),
-                         rule.getName(), !vid_pid.empty() ? vid_pid[0] : "",
-                         vid_pid.size() > 1 ? vid_pid[1] : "",
-                         rule.getViaPort(), rule.getWithConnectType(), i_type,
-                         rule.getSerial(), rule.getHash());
+        UsbDevice::DeviceData dev_data{
+            rule.getRuleID(),
+            usbguard::Rule::targetToString(rule.getTarget()),
+            rule.getName(),
+            !vid_pid.empty() ? vid_pid[0] : "",
+            vid_pid.size() > 1 ? vid_pid[1] : "",
+            rule.getViaPort(),
+            rule.getWithConnectType(),
+            i_type,
+            rule.getSerial(),
+            rule.getHash()
+
+        };
+        res.emplace_back(std::move(dev_data));
       }
     }
   } catch (const std::exception &ex) {
@@ -53,13 +65,13 @@ std::vector<UsbDevice> Guard::ListCurrentUsbDevices() noexcept {
   // fill all vendor names with one read of file
   std::unordered_set<std::string> vendors_to_search;
   for (const UsbDevice &usb : res) {
-    vendors_to_search.insert(usb.vid);
+    vendors_to_search.insert(usb.vid());
   }
   std::unordered_map<std::string, std::string> vendors_names{
       MapVendorCodesToNames(vendors_to_search)};
   for (UsbDevice &usb : res) {
-    if (vendors_names.count(usb.vid) != 0) {
-      usb.vendor_name = vendors_names[usb.vid];
+    if (vendors_names.count(usb.vid()) != 0) {
+      usb.vendor_name(vendors_names[usb.vid()]);
     }
   }
   return res;
@@ -330,14 +342,14 @@ boost::json::object Guard::ProcessJsonAllowConnected(
   std::vector<UsbDevice> devs = ListCurrentUsbDevices();
   for (const UsbDevice &dev : devs) {
     std::stringstream string_builder;
-    string_builder << "allow name " << QuoteIfNotQuoted(dev.name) << " hash "
-                   << QuoteIfNotQuoted(dev.hash);
+    string_builder << "allow name " << QuoteIfNotQuoted(dev.name()) << " hash "
+                   << QuoteIfNotQuoted(dev.hash());
     try {
       rules_to_add.emplace_back(string_builder.str());
     } catch (const std::logic_error &ex) {
       Log::Error() << "Can't create a rule for device"
-                   << "allow name " << QuoteIfNotQuoted(dev.name) << " hash "
-                   << QuoteIfNotQuoted(dev.hash);
+                   << "allow name " << QuoteIfNotQuoted(dev.name()) << " hash "
+                   << QuoteIfNotQuoted(dev.hash());
       Log::Error() << ex.what();
       res["STATUS"] = "error";
       res["ERROR_MSG"] = "Failed to create policy.Failed";

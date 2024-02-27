@@ -3,55 +3,66 @@
 #include <boost/algorithm/string.hpp>
 #include <filesystem>
 #include <fstream>
+#include <limits>
 #include <set>
 #include <string>
 #include <vector>
 namespace guard {
 
-UsbDevice::UsbDevice(int num, const std::string &status_,
-                     const std::string &name_, const std::string &vid_,
-                     const std::string &pid_, const std::string &port_,
-                     const std::string &connection_, const std::string &i_type_,
-                     const std::string &sn_, const std::string &hash_)
-    : number(num), status(status_), name(name_), vid(vid_), pid(pid_),
-      port(port_), connection(connection_), i_type(i_type_), sn(sn_),
-      hash(hash_) {}
+UsbDevice::UsbDevice(const DeviceData &data)
+    : number(data.num), status_(data.status), name_(data.name), vid_(data.vid),
+      pid_(data.pid), port_(data.port), connection_(data.conn),
+      i_type_(data.i_type), sn_(data.sn), hash_(data.hash) {}
 
 vecPairs UsbDevice::SerializeForLisp() const {
   vecPairs res;
   res.emplace_back("label_prsnt_usb_number", std::to_string(number));
-  res.emplace_back("label_prsnt_usb_port", port);
-  res.emplace_back("label_prsnt_usb_class", i_type);
-  res.emplace_back("label_prsnt_usb_vid", vid);
-  res.emplace_back("label_prsnt_usb_pid", pid);
-  res.emplace_back("label_prsnt_usb_status", status);
-  res.emplace_back("label_prsnt_usb_name", name);
+  res.emplace_back("label_prsnt_usb_port", port_);
+  res.emplace_back("label_prsnt_usb_class", i_type_);
+  res.emplace_back("label_prsnt_usb_vid", vid_);
+  res.emplace_back("label_prsnt_usb_pid", pid_);
+  res.emplace_back("label_prsnt_usb_status", status_);
+  res.emplace_back("label_prsnt_usb_name", name_);
   // res.emplace_back("label_prsnt_usb_connection", connection);
-  res.emplace_back("label_prsnt_usb_serial", sn);
-  res.emplace_back("label_prsnt_usb_hash", hash);
-  res.emplace_back("label_prsnt_usb_vendor", vendor_name);
+  res.emplace_back("label_prsnt_usb_serial", sn_);
+  res.emplace_back("label_prsnt_usb_hash", hash_);
+  res.emplace_back("label_prsnt_usb_vendor", vendor_name_);
   return res;
 }
 
 UsbType::UsbType(const std::string &str) {
-  std::logic_error ex = std::logic_error("Can't parse CC::SS::PP " + str);
+  std::logic_error ex_common =
+      std::logic_error("Can't parse CC::SS::PP " + str);
   std::vector<std::string> splitted;
-  boost::split(splitted, str, [](const char c) { return c == ':'; });
+  boost::split(splitted, str, [](const char symbol) { return symbol == ':'; });
   if (splitted.size() != 3) {
-    throw ex;
+    throw ex_common;
   }
-  for (std::string &el : splitted) {
-    boost::trim(el);
-    if (el.size() > 2) {
-      throw ex;
+  for (std::string &element : splitted) {
+    boost::trim(element);
+    if (element.size() > 2) {
+      throw ex_common;
     }
   }
-  base = stoi(splitted[0], nullptr, 16);
-  base_str = std::move(splitted[0]);
-  sub = stoi(splitted[1], nullptr, 16);
-  sub_str = std::move(splitted[1]);
-  protocol = stoi(splitted[2], nullptr, 16);
-  protocol_str = std::move(splitted[2]);
+  int limit = std::numeric_limits<char>::max();
+  if (stoi(splitted[0], nullptr, 16) <= limit) {
+    base_ = static_cast<char>(stoi(splitted[0], nullptr, 16));
+    base_str_ = std::move(splitted[0]);
+  } else {
+    throw ex_common;
+  }
+  if (stoi(splitted[1], nullptr, 16) <= limit) {
+    sub_ = static_cast<char>(stoi(splitted[1], nullptr, 16));
+    sub_str_ = std::move(splitted[1]);
+  } else {
+    throw ex_common;
+  }
+  if (stoi(splitted[2], nullptr, 16) <= limit) {
+    protocol_ = static_cast<char>(stoi(splitted[2], nullptr, 16));
+    protocol_str_ = std::move(splitted[2]);
+  } else {
+    throw ex_common;
+  }
 }
 
 std::vector<std::string> FoldUsbInterfacesList(std::string i_type) {
@@ -82,22 +93,22 @@ std::vector<std::string> FoldUsbInterfacesList(std::string i_type) {
     // put to multiset bases
     std::multiset<char> set;
     for (const UsbType &usb_type : vec_usb_types) {
-      set.emplace(usb_type.base);
+      set.emplace(usb_type.base());
     }
     // if a key is not unique, create a mask.
     auto it_unique_end =
         std::unique(vec_usb_types.begin(), vec_usb_types.end(),
                     [](const UsbType &first, const UsbType &second) {
-                      return first.base == second.base;
+                      return first.base() == second.base();
                     });
     for (auto it = vec_usb_types.begin(); it != it_unique_end; ++it) {
-      size_t numb = set.count(it->base);
-      std::string tmp = it->base_str;
+      size_t numb = set.count(it->base());
+      std::string tmp = it->base_str();
       if (numb == 1) {
         tmp += ':';
-        tmp += it->sub_str;
+        tmp += it->sub_str();
         tmp += ':';
-        tmp += it->protocol_str;
+        tmp += it->protocol_str();
       } else {
         tmp += ":*:*";
       }
