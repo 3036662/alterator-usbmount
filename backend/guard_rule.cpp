@@ -62,30 +62,7 @@ GuardRule::GuardRule(const std::string &raw_str) {
   // id (vid:pid)
   // token id MUST contain a ':' symbol
   std::optional<std::string> str_id =
-      ParseToken(splitted, "id", [](const std::string &val) {
-        if (val.find(':') == std::string::npos)
-          return false;
-        std::vector<std::string> spl;
-        boost::split(spl, val, [](const char symbol) { return symbol == ':'; });
-        if (spl.size() != 2)
-          return false;
-        if (spl[0] == "*" && spl[1] != "*")
-          return false;
-        for (const auto &element : spl) {
-          if (element.size() > 4)
-            return false;
-          if (element.size() < 4) {
-            return element == "*";
-          }
-          try {
-            std::stoi(element, nullptr, 16);
-          } catch (const std::exception &ex) {
-            Log::Error() << "Can't parse id " << element;
-            return false;
-          }
-        }
-        return true;
-      });
+      ParseToken(splitted, "id", VidPidValidator);
 
   if (str_id) {
     size_t separator = str_id->find(':');
@@ -122,29 +99,8 @@ GuardRule::GuardRule(const std::string &raw_str) {
       splitted.insert(it_with_interface, "equals");
     }
   }
-  with_interface = ParseTokenWithOperator(
-      splitted, "with-interface", [](const std::string &val) {
-        // return val.size() > 2 && val.find(':') != std::string::npos;
-        std::vector<std::string> spl;
-        boost::split(spl, val, [](const char symbol) { return symbol == ':'; });
-        if (spl.size() != 3)
-          return false;
-        if (spl[0] == "*" && (spl[1] != "*" || spl[2] != "*"))
-          return false;
-        if (spl[1] == "*" && spl[2] != "*")
-          return false;
-        for (const auto &element : spl) {
-          if (element.size() != 2 && element == "*")
-            return true;
-          try {
-            std::stoi(element, nullptr, 16);
-          } catch (const std::exception &ex) {
-            Log::Error() << "Can't parse interface " << val;
-            return false;
-          }
-        }
-        return true;
-      });
+  with_interface =
+      ParseTokenWithOperator(splitted, "with-interface", InterfaceValidator);
 
   conn_type = ParseToken(splitted, "with-connect-type", default_predicat);
   // Conditions may or may not exist in the string.
@@ -165,8 +121,6 @@ GuardRule::GuardRule(const std::string &raw_str) {
     }
     throw std::logic_error("Not all tokens were parsed");
   }
-
-  // ----------------------------------------
   // Determine the stricness level
   if (hash)
     level = StrictnessLevel::hash;
@@ -176,110 +130,6 @@ GuardRule::GuardRule(const std::string &raw_str) {
     level = StrictnessLevel::interface;
   else
     level = StrictnessLevel::non_strict;
-}
-
-/******************************************************************************/
-// This constructor doesn't have its own validation behavior.
-// It just parses a JSON objects and puts values into a string.
-// When finished, it will try to construct a GuardRule object from a string
-
-GuardRule::GuardRule(const boost::json::object *ptr_obj) {
-  namespace json = boost::json;
-  std::string target;
-  std::string vid;
-  std::string pid;
-  std::string hash;
-  std::string parent_hash;
-  std::string device_name;
-  std::string serial;
-  std::string port;
-  std::string interface;
-  std::string connection;
-  std::string condition;
-  std::string raw;
-
-  // target
-  if (!ptr_obj->contains("target")) {
-    throw std::logic_error("Rule target is mandatory");
-  }
-  target = ptr_obj->at("target").as_string();
-
-  // fields
-  if (!ptr_obj->contains("fields_arr") ||
-      !ptr_obj->at("fields_arr").is_array() ||
-      ptr_obj->at("fields_arr").if_array()->empty()) {
-    throw std::logic_error("Can't find any fields for a rule");
-  }
-  const json::array *ptr_fields = ptr_obj->at("fields_arr").if_array();
-
-  // for each field in array
-  for (const auto &field_value : *ptr_fields) {
-    if (!field_value.is_object()) {
-      throw std::logic_error("Error parsing rule fields");
-    }
-    const json::object *ptr_field = field_value.if_object();
-    for (const auto &field_obj : *ptr_field) {
-      std::string field = field_obj.key();
-      std::string value = field_obj.value().as_string().c_str();
-      if (value.empty()) {
-        throw std::logic_error("Empty value for field " + field);
-      }
-      // write fields
-      if (field == "vid") {
-        vid = std::move(value);
-      } else if (field == "pid") {
-        pid = std::move(value);
-      } else if (field == "hash") {
-        hash = std::move(value);
-      } else if (field == "parent_hash") {
-        parent_hash = std::move(value);
-      } else if (field == "device_name") {
-        device_name = std::move(value);
-      } else if (field == "serial") {
-        serial = std::move(value);
-      } else if (field == "via-port") {
-        port = std::move(value);
-      } else if (field == "with_interface") {
-        interface = std::move(value);
-      } else if (field == "with-connect-type") {
-        connection = std::move(value);
-      } else if (field == "cond") {
-        condition = std::move(value);
-      }
-      // for a raw rule
-      else if (field == "raw_rule") {
-        raw = std::move(value);
-      }
-    }
-  }
-
-  std::ostringstream string_builder;
-  if (!raw.empty()) {
-    string_builder << raw;
-  } else {
-    string_builder << target << " ";
-    if (!vid.empty())
-      string_builder << "id " << vid << ":" << pid << " ";
-    if (!serial.empty())
-      string_builder << "serial " << serial << " ";
-    if (!device_name.empty())
-      string_builder << "name " << device_name << " ";
-    if (!hash.empty())
-      string_builder << "hash " << hash << " ";
-    if (!parent_hash.empty())
-      string_builder << "parent-hash " << parent_hash << " ";
-    if (!port.empty())
-      string_builder << "via-port " << port << " ";
-    if (!interface.empty())
-      string_builder << "with-interface " << interface << " ";
-    if (!connection.empty())
-      string_builder << "with-connect-type " << connection << " ";
-    if (!condition.empty())
-      string_builder << condition;
-  }
-  // Log::Debug() << "BUILD FROM JSON " << ss.str();
-  *this = GuardRule(string_builder.str());
-  // Log::Debug() << "BUILD FROM OBJ " << BuildString();
 }
 
 /******************************************************************************/
@@ -379,7 +229,87 @@ std::optional<std::string> GuardRule::ParseToken(
   return res;
 }
 
-/******************************************************************************/
+std::vector<std::string>::const_iterator GuardRule::ParseCurlyBracesArray(
+    std::vector<std::string>::const_iterator it_range_begin,
+    std::vector<std::string>::const_iterator it_end,
+    const std::function<bool(const std::string &)> &predicat,
+    std::vector<std::string> &res_array) {
+  std::logic_error ex_common("Cant parse rule string");
+  ++it_range_begin;
+  // if no array found -> throw exception
+  if (it_range_begin == it_end || *it_range_begin != "{") {
+    // Log::Error() << "Error parsing values for " << name << " param.";
+    throw ex_common;
+  }
+  auto it_range_end = std::find(it_range_begin, it_end, "}");
+  if (it_range_end == it_end) {
+    Log::Error() << "A closing \"}\" expectend for sequence.";
+    throw ex_common;
+  }
+  if (std::distance(it_range_begin, it_range_end) == 1) {
+    throw std::logic_error("Empty array {} is not supported");
+  }
+  // fill result with values
+  auto it_val = it_range_begin;
+  ++it_val;
+  while (it_val != it_range_end) {
+    if (predicat(*it_val)) {
+      res_array.emplace_back(*it_val);
+    } else {
+      Log::Error() << "Parsing error, token " << *it_val;
+      throw ex_common;
+    }
+    ++it_val;
+  }
+  return it_range_end;
+}
+
+bool GuardRule::VidPidValidator(const std::string &val) {
+  if (val.find(':') == std::string::npos)
+    return false;
+  std::vector<std::string> spl;
+  boost::split(spl, val, [](const char symbol) { return symbol == ':'; });
+  if (spl.size() != 2)
+    return false;
+  if (spl[0] == "*" && spl[1] != "*")
+    return false;
+  for (const auto &element : spl) {
+    if (element.size() > 4)
+      return false;
+    if (element.size() < 4) {
+      return element == "*";
+    }
+    try {
+      std::stoi(element, nullptr, 16);
+    } catch (const std::exception &ex) {
+      Log::Error() << "Can't parse id " << element;
+      return false;
+    }
+  }
+  return true;
+}
+
+bool GuardRule::InterfaceValidator(const std::string &val) {
+  std::vector<std::string> spl;
+  boost::split(spl, val, [](const char symbol) { return symbol == ':'; });
+  if (spl.size() != 3)
+    return false;
+  if (spl[0] == "*" && (spl[1] != "*" || spl[2] != "*"))
+    return false;
+  if (spl[1] == "*" && spl[2] != "*")
+    return false;
+  for (const auto &element : spl) {
+    if (element.size() != 2 && element == "*")
+      return true;
+    try {
+      std::stoi(element, nullptr, 16);
+    } catch (const std::exception &ex) {
+      Log::Error() << "Can't parse interface " << val;
+      return false;
+    }
+  }
+  return true;
+}
 
 std::optional<std::pair<RuleOperator, std::vector<std::string>>>
 GuardRule::ParseTokenWithOperator(
@@ -389,7 +319,7 @@ GuardRule::ParseTokenWithOperator(
   std::logic_error ex_common("Cant parse rule string");
   std::optional<std::pair<RuleOperator, std::vector<std::string>>> res;
   bool have_operator{false};
-  // find token 
+  // find token
   auto it_name = std::find(splitted.cbegin(), splitted.cend(), name);
   if (it_name != splitted.cend()) {
     auto it_param = it_name;
@@ -419,33 +349,9 @@ GuardRule::ParseTokenWithOperator(
     // If an operator is found,an array of values is expected.
     else {
       res = {it_operator->first, {}}; // Create a pair with an empty vector.
-      auto it_range_begin = it_param;
-      ++it_range_begin;
-      // if no array found -> throw exception
-      if (it_range_begin == splitted.cend() || *it_range_begin != "{") {
-        Log::Error() << "Error parsing values for " << name << " param.";
-        throw ex_common;
-      }
-      auto it_range_end = std::find(it_range_begin, splitted.cend(), "}");
-      if (it_range_end == splitted.cend()) {
-        Log::Error() << "A closing \"}\" expectend for sequence.";
-        throw ex_common;
-      }
-      if (std::distance(it_range_begin, it_range_end) == 1) {
-        throw std::logic_error("Empty array {} is not supported");
-      }
-      // fill result with values
-      auto it_val = it_range_begin;
-      ++it_val;
-      while (it_val != it_range_end) {
-        if (predicat(*it_val)) {
-          res->second.emplace_back(*it_val);
-        } else {
-          Log::Error() << "Parsing error, token " << *it_val;
-          throw ex_common;
-        }
-        ++it_val;
-      }
+      auto it_range_end = ParseCurlyBracesArray(it_param, splitted.cend(),
+                                                predicat, res->second);
+
       splitted.erase(it_name, ++it_range_end);
     }
   }

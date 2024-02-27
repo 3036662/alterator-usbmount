@@ -104,28 +104,6 @@ public:
    */
   explicit GuardRule(const std::string &raw_str);
 
-  /**
-   * @brief Construct a new Guard Rule object from json object
-   *
-   * @param ptr_obj boost json object
-   * @throws std::logic_error
-   * @details Target field is mandatory.
-   * This constructor doesn't have its own validation behavior.
-   * It just parses a JSON objects and puts values into a string.
-   * When finished, it will try to construct a GuardRule object from a string
-   * @code
-   * {
-   *  "table_id":"list_vidpid_rules",
-   *  "target":"allow",
-   *  "fields_arr":[
-   *                  {"vid":"value_of_vid"},
-   *                  {"pid":"value_of_pid"}
-   *                ]
-   * }
-   * @endcode
-   */
-  explicit GuardRule(const boost::json::object *ptr_obj);
-
   GuardRule &operator=(const GuardRule &) noexcept = default;
   GuardRule &operator=(GuardRule &&) noexcept = default;
   GuardRule(GuardRule &&) noexcept = default;
@@ -153,6 +131,9 @@ public:
   static StrictnessLevel StrToStrictnessLevel(const std::string &str) noexcept;
 
 private:
+  static bool VidPidValidator(const std::string &val);
+  static bool InterfaceValidator(const std::string &val);
+
   /**
    * @brief Parse conditions
    *
@@ -251,6 +232,20 @@ private:
   ParseConditionParameter(std::vector<std::string>::const_iterator it_start,
                           std::vector<std::string>::const_iterator it_end,
                           bool must_have_params = false);
+  /**
+   * @brief Parses array {val1 val2 ...}
+   *
+   * @param it_range_begin Iterator to last token befor array
+   * @param it_end Iterator to end bound of sequence
+   * @param predicat Validator for a value
+   * @param res_array Array where values must be appended
+   * @return An iterator to the end of an array aka "}" token
+   */
+  static std::vector<std::string>::const_iterator ParseCurlyBracesArray(
+      std::vector<std::string>::const_iterator it_range_begin,
+      std::vector<std::string>::const_iterator it_end,
+      const std::function<bool(const std::string &)> &predicat,
+      std::vector<std::string> &res_array);
 
   /**
    * @brief Checks if a condition is allowed to have parameters.

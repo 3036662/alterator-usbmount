@@ -1,6 +1,7 @@
 #include "config_status.hpp"
 #include "guard.hpp"
 #include "guard_rule.hpp"
+#include "json_rule.hpp"
 #include "log.hpp"
 #include "systemd_dbus.hpp"
 #include <cassert>
@@ -863,7 +864,8 @@ void Test::Run14(){
                         "[{\"vid\":\"a000\"},{\"pid\":\"a5a5\"}]}]}";
     const boost::json::value jv= boost::json::parse(json);                    
     const boost::json::object* ptr_obj= jv.as_object().at("appended_rules").as_array().at(0).if_object();                   
-    guard::GuardRule rule(ptr_obj);
+    guard::utils::json::JsonRule json_rule(ptr_obj);
+    guard::GuardRule rule(json_rule.BuildString());
     
     assert(rule.target == guard::Target::allow);
     assert(rule.vid == "a000");
@@ -884,7 +886,8 @@ void Test::Run14(){
     const boost::json::value jv= boost::json::parse(json);                    
     const boost::json::object* ptr_obj= jv.as_object().at("appended_rules").as_array().at(0).if_object();  
     try{                 
-      guard::GuardRule rule(ptr_obj);
+    guard::utils::json::JsonRule json_rule(ptr_obj);
+    guard::GuardRule rule(json_rule.BuildString());
     }
     catch(const std::logic_error& ex){
       assert(std::string (ex.what()) == "Empty value for field vid" );
@@ -903,7 +906,8 @@ void Test::Run14(){
     const boost::json::value jv= boost::json::parse(json);                    
     const boost::json::object* ptr_obj= jv.as_object().at("appended_rules").as_array().at(0).if_object();  
     try{                 
-      guard::GuardRule rule(ptr_obj);
+          guard::utils::json::JsonRule json_rule(ptr_obj);
+    guard::GuardRule rule(json_rule.BuildString());
     }
     catch(const std::logic_error& ex){
       assert(std::string (ex.what()) == "Empty value for field pid" );
@@ -922,7 +926,8 @@ void Test::Run14(){
     const boost::json::value jv= boost::json::parse(json);                    
     const boost::json::object* ptr_obj= jv.as_object().at("appended_rules").as_array().at(0).if_object();  
     try{                 
-      guard::GuardRule rule(ptr_obj);
+          guard::utils::json::JsonRule json_rule(ptr_obj);
+    guard::GuardRule rule(json_rule.BuildString());
     }
     catch(const std::logic_error& ex){
       assert(std::string (ex.what()) == "Can't find any fields for a rule" );
@@ -940,7 +945,8 @@ void Test::Run14(){
     const boost::json::value jv= boost::json::parse(json);                    
     const boost::json::object* ptr_obj= jv.as_object().at("appended_rules").as_array().at(0).if_object();  
     try{                 
-      guard::GuardRule rule(ptr_obj);
+        guard::utils::json::JsonRule json_rule(ptr_obj);
+    guard::GuardRule rule(json_rule.BuildString());
     }
     catch(const std::logic_error& ex){
       assert(std::string (ex.what()) == "Rule target is mandatory" );
@@ -962,7 +968,8 @@ void Test::Run14(){
                         "]}]}";
     const boost::json::value jv= boost::json::parse(json);                    
     const boost::json::object* ptr_obj= jv.as_object().at("appended_rules").as_array().at(0).if_object();                   
-    guard::GuardRule rule(ptr_obj);
+       guard::utils::json::JsonRule json_rule(ptr_obj);
+    guard::GuardRule rule(json_rule.BuildString());
     
     assert(rule.target == guard::Target::allow);
     assert(rule.vid == "a000");
@@ -988,7 +995,8 @@ void Test::Run14(){
                         "]}]}";         
     const boost::json::value jv= boost::json::parse(json);                    
     const boost::json::object* ptr_obj= jv.as_object().at("appended_rules").as_array().at(0).if_object();                   
-    guard::GuardRule rule(ptr_obj);
+        guard::utils::json::JsonRule json_rule(ptr_obj);
+    guard::GuardRule rule(json_rule.BuildString());
     
     assert(rule.target == guard::Target::allow);
     assert(rule.vid == "a000");
@@ -1021,7 +1029,8 @@ void Test::Run14(){
     const boost::json::value jv= boost::json::parse(json);                    
     const boost::json::object* ptr_obj= jv.as_object().at("appended_rules").as_array().at(0).if_object();  
     try{                 
-      guard::GuardRule rule(ptr_obj);
+          guard::utils::json::JsonRule json_rule(ptr_obj);
+    guard::GuardRule rule(json_rule.BuildString());
     }
     catch(const std::logic_error& ex){
          assert(std::string(ex.what()) == "Cant parse rule string");
@@ -1043,8 +1052,8 @@ void Test::Run14(){
                         "]}]}";       
     const boost::json::value jv= boost::json::parse(json);                    
     const boost::json::object* ptr_obj= jv.as_object().at("appended_rules").as_array().at(0).if_object();                   
-    guard::GuardRule rule(ptr_obj);
-    
+       guard::utils::json::JsonRule json_rule(ptr_obj);
+    guard::GuardRule rule(json_rule.BuildString());
     assert(rule.target == guard::Target::allow);
     assert(rule.vid == "a000");
     assert(rule.pid == "a5a5");
@@ -1071,7 +1080,8 @@ void Test::Run14(){
                         "]}]}";          
     const boost::json::value jv= boost::json::parse(json);                    
     const boost::json::object* ptr_obj= jv.as_object().at("appended_rules").as_array().at(0).if_object();                   
-    guard::GuardRule rule(ptr_obj);
+        guard::utils::json::JsonRule json_rule(ptr_obj);
+    guard::GuardRule rule(json_rule.BuildString());
     
     assert(rule.target == guard::Target::block);
 
@@ -1092,7 +1102,8 @@ void Test::Run14(){
                         "]}]}";           
     const boost::json::value jv= boost::json::parse(json);                    
     const boost::json::object* ptr_obj= jv.as_object().at("appended_rules").as_array().at(0).if_object();                   
-    guard::GuardRule rule(ptr_obj);
+       guard::utils::json::JsonRule json_rule(ptr_obj);
+    guard::GuardRule rule(json_rule.BuildString());
     
     assert(rule.target == guard::Target::block);
     assert(rule.with_interface.has_value());
@@ -1114,7 +1125,8 @@ void Test::Run14(){
                         "]}]}";   
     const boost::json::value jv= boost::json::parse(json);                    
     const boost::json::object* ptr_obj= jv.as_object().at("appended_rules").as_array().at(0).if_object();                   
-    guard::GuardRule rule(ptr_obj);
+        guard::utils::json::JsonRule json_rule(ptr_obj);
+    guard::GuardRule rule(json_rule.BuildString());
     
     assert(rule.target == guard::Target::allow);
     assert(rule.vid == "a000");
@@ -1152,7 +1164,8 @@ void Test::Run14(){
                         "]}]}";
     const boost::json::value jv= boost::json::parse(json);                    
     const boost::json::object* ptr_obj= jv.as_object().at("appended_rules").as_array().at(0).if_object();                   
-    guard::GuardRule rule(ptr_obj);
+       guard::utils::json::JsonRule json_rule(ptr_obj);
+    guard::GuardRule rule(json_rule.BuildString());
     
     assert(rule.target == guard::Target::allow);
     assert(rule.vid == "a000");
@@ -1192,7 +1205,8 @@ void Test::Run14(){
                         "]}]}";
     const boost::json::value jv= boost::json::parse(json);                    
     const boost::json::object* ptr_obj= jv.as_object().at("appended_rules").as_array().at(0).if_object();                   
-    guard::GuardRule rule(ptr_obj);
+        guard::utils::json::JsonRule json_rule(ptr_obj);
+    guard::GuardRule rule(json_rule.BuildString());
     
     assert(rule.target == guard::Target::allow);
     assert(rule.vid == "a000");

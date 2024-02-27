@@ -1,6 +1,7 @@
 #include "guard.hpp"
 #include "config_status.hpp"
 #include "guard_rule.hpp"
+#include "json_rule.hpp"
 #include "log.hpp"
 #include "utils.hpp"
 #include <boost/algorithm/string.hpp>
@@ -266,6 +267,7 @@ Guard::ProcessJsonManualMode(const boost::json::object *ptr_jobj,
 boost::json::object
 Guard::ProcessJsonAppended(const boost::json::array *ptr_json_array_rules,
                            std::vector<GuardRule> &rules_to_add) noexcept {
+  using guard::utils::json::JsonRule;
   boost::json::array json_arr_OK;
   boost::json::array json_arr_BAD;
   for (const auto &rule : *ptr_json_array_rules) {
@@ -274,7 +276,8 @@ Guard::ProcessJsonAppended(const boost::json::array *ptr_json_array_rules,
       const boost::json::string *tr_id = ptr_json_rule->at("tr_id").if_string();
       // try to build a rule
       try {
-        GuardRule rule{ptr_json_rule};
+        JsonRule json_rule(ptr_json_rule);
+        GuardRule rule{json_rule.BuildString()};
         rules_to_add.push_back(std::move(rule));
         if (tr_id != nullptr && !tr_id->empty()) {
           json_arr_OK.emplace_back(*tr_id);

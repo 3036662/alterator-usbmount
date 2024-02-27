@@ -9,6 +9,7 @@ add_executable(test
                ../backend/systemd_dbus.cpp
                ../backend/guard_rule.cpp
                ../backend/systemd_dbus.cpp
+               ../backend/json_rule.cpp
                )
 target_include_directories(test PRIVATE ../backend)
 target_include_directories(test PRIVATE .)
