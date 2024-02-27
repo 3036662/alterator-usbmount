@@ -15,10 +15,10 @@ class MessageReader {
 public:
   /// @brief  Constructor
   /// @param guard Guard object
-  MessageReader(guard::Guard &guard);
+  MessageReader(guard::Guard &guard) noexcept;
 
   /// @brief Main loop - reades messages and sens them to dispatcher
-  void Loop();
+  void Loop() const noexcept;
 
 private:
   MessageDispatcher dispatcher_;

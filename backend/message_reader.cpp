@@ -5,9 +5,10 @@
 #include <iostream>
 #include <unordered_map>
 
-MessageReader::MessageReader(guard::Guard &guard) : dispatcher_(guard) {}
+MessageReader::MessageReader(guard::Guard &guard) noexcept
+    : dispatcher_(guard) {}
 
-void MessageReader::Loop() {
+void MessageReader::Loop() const noexcept {
   std::string line;
   bool msg_in_progress = false;
   LispMessage::MsgAction action;

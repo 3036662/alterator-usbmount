@@ -20,7 +20,7 @@ public:
    * @brief Perfom an appropriate action for msg
    * @param msg LispMessage from MessageReader
    */
-  bool Dispatch(const LispMessage &msg) noexcept;
+  bool Dispatch(const LispMessage &msg) const noexcept;
 
 private:
   bool SaveChangeRules(const LispMessage &msg) const noexcept;
