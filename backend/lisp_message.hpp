@@ -13,10 +13,12 @@ struct LispMessage {
   struct MsgAction {
     std::string val;
   };
-
   struct MsgObject {
     std::string val;
   };
+  std::string action;
+  std::string objects;
+  std::unordered_map<std::string, std::string> params;
   /// @brief Constructor for an empty message
   LispMessage();
   /// @brief Constructor for full-fledged message
@@ -26,10 +28,6 @@ struct LispMessage {
   LispMessage(
       const MsgAction &act, const MsgObject &obj,
       const std::unordered_map<std::string, std::string> &prms) noexcept;
-
-  std::string action;
-  std::string objects;
-  std::unordered_map<std::string, std::string> params;
 };
 
 /// @brief  The output operator for the stream
