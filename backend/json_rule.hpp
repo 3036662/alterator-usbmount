@@ -7,7 +7,7 @@ namespace guard::utils::json {
 class JsonRule {
 public:
   explicit JsonRule(const boost::json::object *ptr_obj);
-  std::string BuildString() const;
+  std::string BuildString() const noexcept;
 
 private:
   std::string target_;

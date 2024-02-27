@@ -622,7 +622,7 @@ GuardRule::BuildString(bool build_parent_hash,
   }
   std::string result = res.str();
   boost::trim(result);
-  Log::Debug() << result;
+  // Log::Debug() << result;
   return result;
 }
 

@@ -31,7 +31,7 @@ JsonRule::JsonRule(const boost::json::object *ptr_obj) {
   }
 }
 
-std::string JsonRule::BuildString() const {
+std::string JsonRule::BuildString() const noexcept {
   std::ostringstream string_builder;
   if (!raw_.empty()) {
     string_builder << raw_;

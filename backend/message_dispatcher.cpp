@@ -61,7 +61,7 @@ bool MessageDispatcher::SaveChangeRules(const LispMessage &msg) const noexcept {
   }
   std::string json_string = msg.params.at("changes_json");
   boost::replace_all(json_string, "\\\\\"", "\\\"");
-  std::optional<std::string> result = guard_.ParseJsonRulesChanges(json_string);
+  std::optional<std::string> result = guard_.ApplyJsonRulesChanges(json_string);
   if (result)
     *result = EscapeQuotes(*result);
   vecPairs vec_result;

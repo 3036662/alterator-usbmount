@@ -17,13 +17,12 @@ namespace guard {
 class Guard {
 public:
   /// @brief Constructor
-  Guard();
+  Guard() noexcept;
 
-  /**
-   * @brief List current usb devices
-   * @return vector<UsbDevices>
-   */
+  /// @brief List current usb devices
+  /// @return vector<UsbDevices>
   std::vector<UsbDevice> ListCurrentUsbDevices() noexcept;
+
   /**
    * @brief Allow or block device
    * @param[in] id  string, containing numerical id of usb device
@@ -80,11 +79,9 @@ public:
    * @endcode
    */
   std::optional<std::string>
-  ParseJsonRulesChanges(const std::string &msg) noexcept;
+  ApplyJsonRulesChanges(const std::string &msg) noexcept;
 
 private:
-  const std::string default_query = "match";
-  std::unique_ptr<usbguard::IPCClient> ptr_ipc;
   /// True if daemon is active
   bool HealthStatus() const noexcept;
   /// try to connect the UsbGuardDaemon
@@ -93,7 +90,6 @@ private:
   /**
    * @brief Reads rules from USB Guard config,
    * deletes by index, and skips rules, conflicting with a new policy
-   *
    * @param rule_indexes Order numbers of rules to delete
    * @param new_policy New implicit policy (allow || block)
    * @param[out] new_rules Vector, where the result will be appended
@@ -105,66 +101,16 @@ private:
                    std::vector<GuardRule> &new_rules,
                    bool &deleted_by_policy_change) noexcept;
 
+  /**
+   * @brief Utility method to add all connected devices to allow (white) list
+   * @param[out] rules_to_add vector,  where new rules will be appended
+   * @return boost::json::object ["STATUS":"OK"]
+   */
   boost::json::object
   ProcessJsonAllowConnected(std::vector<GuardRule> &rules_to_add) noexcept;
-  static std::optional<bool>
-  ExtractDaemonTargetState(boost::json::object *p_obj) noexcept;
 
-  static std::optional<Target>
-  ExtractTargetPolicy(boost::json::object *p_obj) noexcept;
-
-  static std::optional<std::string>
-  ExtractPresetMode(boost::json::object *p_obj) noexcept;
-
-  /**
-   * @brief Process rules for "manual" mode
-   *
-   * @param ptr_jobj Json object, containig "appended_rules" and "deleted_rules"
-   * arrays
-   *
-   * @param[out] rules_to_delete array,where to put order numbers of rules to
-   * delete
-   *
-   * @param[out] rules_to_add array, where to put rules to append
-   * @return boost::json::object, containig "rules_OK" and "rules_BAD" arrays
-   * @details rules_OK and rules_BAD contains html <tr> ids for validation
-   */
-  static boost::json::object
-  ProcessJsonManualMode(const boost::json::object *ptr_jobj,
-                        std::vector<uint> &rules_to_delete,
-                        std::vector<GuardRule> &rules_to_add) noexcept;
-
-  /**
-   * @brief Parses "appended" rules from json
-   * @param[in] ptr_json_array_rules A pointer to json array with rules
-   * @param rules_to_add Vector, where new rulles will be appended
-   * @return JSON object, containig arrays of html ids - "rules_OK" and
-   * "rules_BAD"
-   * @details This function is called from ProcessJsonManualMode
-   */
-  static boost::json::object
-  ProcessJsonAppended(const boost::json::array *ptr_json_array_rules,
-                      std::vector<GuardRule> &rules_to_add) noexcept;
-  /**
-   * @brief Add a rule to allow all HID devices.
-   *
-   * @param rules_to_add Vector,where a new rule will be appended.
-   */
-  static void AddAllowHid(std::vector<GuardRule> &rules_to_add) noexcept;
-  /**
-   * @brief Add a rule to block 08 and 06 - usb and mtp.
-   *
-   * @param rules_to_add Vector,where a new rule will be appended.
-   */
-  static void
-  AddBlockUsbStorages(std::vector<GuardRule> &rules_to_add) noexcept;
-
-  /**
-   * @brief Add rules to reject known android devices
-   *
-   * @param rules_to_add Vector,where a new rule will be appended.
-   */
-  static bool AddRejectAndroid(std::vector<GuardRule> &rules_to_add) noexcept;
+  const std::string kDefaultQuery = "match";
+  std::unique_ptr<usbguard::IPCClient> ptr_ipc_;
 
 #ifdef UNIT_TEST
   friend class ::Test;
