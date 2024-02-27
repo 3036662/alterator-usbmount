@@ -83,11 +83,11 @@ public:
   /// @brief Constructor from string
   /// @param string Fotmatted string 00:00:00
   /// @throws std::invalid_argument  std::out_of_range std::logical_error
-  UsbType(const std::string &string);
+  explicit UsbType(const std::string &string);
   UsbType(UsbType &&) noexcept = default;
   UsbType &operator=(UsbType &&) noexcept = default;
 
-  inline const char &base() const noexcept { return base_; };
+  inline const unsigned char &base() const noexcept { return base_; };
   inline const std::string &base_str() const noexcept { return base_str_; };
   inline const std::string &sub_str() const noexcept { return sub_str_; };
   inline const std::string &protocol_str() const noexcept {
@@ -95,9 +95,9 @@ public:
   };
 
 private:
-  char base_ = 0;
-  char sub_ = 0;
-  char protocol_ = 0;
+  unsigned char base_ = 0;
+  unsigned char sub_ = 0;
+  unsigned char protocol_ = 0;
   std::string base_str_;
   std::string sub_str_;
   std::string protocol_str_;

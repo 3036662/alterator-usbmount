@@ -206,6 +206,15 @@ void Test::Run7() {
   exp = {""};
   assert(res == exp);
 
+  res = guard::FoldUsbInterfacesList("with-interface ff:ff:ff");
+  exp = {"ff:ff:ff"};
+  assert(res == exp);
+
+  res = guard::FoldUsbInterfacesList("with-interface ffg:gf:g0");
+  Log::Debug() <<res[0];
+  exp = {"ffg:gf:g0"};
+  assert(res == exp);
+
   res = guard::FoldUsbInterfacesList("with-interface { 03=01=:02 04:/1:01 }");
   exp = {};
   assert(res == exp);

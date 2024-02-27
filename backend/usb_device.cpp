@@ -1,6 +1,7 @@
 #include "usb_device.hpp"
 #include "log.hpp"
 #include <boost/algorithm/string.hpp>
+#include <exception>
 #include <filesystem>
 #include <fstream>
 #include <limits>
@@ -38,27 +39,31 @@ UsbType::UsbType(const std::string &str) {
   if (splitted.size() != 3) {
     throw ex_common;
   }
+
   for (std::string &element : splitted) {
     boost::trim(element);
     if (element.size() > 2) {
       throw ex_common;
     }
   }
-  int limit = std::numeric_limits<char>::max();
-  if (stoi(splitted[0], nullptr, 16) <= limit) {
-    base_ = static_cast<char>(stoi(splitted[0], nullptr, 16));
+  int limit = std::numeric_limits<unsigned char>::max();
+  int val = stoi(splitted[0], nullptr, 16);
+  if (val >= 0 && val <= limit) {
+    base_ = static_cast<unsigned char>(val);
     base_str_ = std::move(splitted[0]);
   } else {
     throw ex_common;
   }
-  if (stoi(splitted[1], nullptr, 16) <= limit) {
-    sub_ = static_cast<char>(stoi(splitted[1], nullptr, 16));
+  val = stoi(splitted[1], nullptr, 16);
+  if (val >= 0 && val <= limit) {
+    sub_ = static_cast<unsigned char>(val);
     sub_str_ = std::move(splitted[1]);
   } else {
     throw ex_common;
   }
-  if (stoi(splitted[2], nullptr, 16) <= limit) {
-    protocol_ = static_cast<char>(stoi(splitted[2], nullptr, 16));
+  val = stoi(splitted[2], nullptr, 16);
+  if (val >= 0 && val <= limit) {
+    protocol_ = static_cast<unsigned char>(val);
     protocol_str_ = std::move(splitted[2]);
   } else {
     throw ex_common;
@@ -91,7 +96,7 @@ std::vector<std::string> FoldUsbInterfacesList(std::string i_type) {
     }
     // fold if possible
     // put to multiset bases
-    std::multiset<char> set;
+    std::multiset<unsigned char> set;
     for (const UsbType &usb_type : vec_usb_types) {
       set.emplace(usb_type.base());
     }
@@ -115,6 +120,13 @@ std::vector<std::string> FoldUsbInterfacesList(std::string i_type) {
       vec_i_types.emplace_back(std::move(tmp));
     }
   } else {
+    try {
+      UsbType tmp(i_type);
+    } catch (const std::exception &ex) {
+      Log::Error() << "Can't parse a usb type " << i_type;
+      Log::Error() << ex.what();
+    }
+    // push even if parsing failed
     vec_i_types.push_back(std::move(i_type));
   }
   return vec_i_types;
