@@ -21,10 +21,9 @@ public:
   void Loop();
 
 private:
-  MessageDispatcher dispatcher;
-
-  const std::string str_action = "action:";
-  const std::string str_objects = "_objects:";
+  MessageDispatcher dispatcher_;
+  const std::string kStrAction = "action:";
+  const std::string kStrObjects = "_objects:";
 };
 
 #endif // MESSAGE_READER_HPP

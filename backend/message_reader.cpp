@@ -5,7 +5,7 @@
 #include <iostream>
 #include <unordered_map>
 
-MessageReader::MessageReader(guard::Guard &guard) : dispatcher(guard) {}
+MessageReader::MessageReader(guard::Guard &guard) : dispatcher_(guard) {}
 
 void MessageReader::Loop() {
   std::string line;
@@ -13,7 +13,6 @@ void MessageReader::Loop() {
   LispMessage::MsgAction action;
   LispMessage::MsgObject objects;
   std::unordered_map<std::string, std::string> params;
-
   // read stdin loop
   while (std::getline(std::cin, line)) {
     boost::trim(line);
@@ -32,7 +31,7 @@ void MessageReader::Loop() {
       msg_in_progress = false;
       if (!action.val.empty() && !objects.val.empty()) {
         LispMessage request_message(action, objects, params);
-        dispatcher.Dispatch(request_message);
+        dispatcher_.Dispatch(request_message);
       }
       params.clear();
       action.val.clear();
@@ -41,16 +40,16 @@ void MessageReader::Loop() {
       continue;
     }
     // find action
-    if (boost::starts_with(line, str_action)) {
-      boost::erase_first(line, str_action);
+    if (boost::starts_with(line, kStrAction)) {
+      boost::erase_first(line, kStrAction);
       boost::trim(line);
       action.val = line;
       line.clear();
       continue;
     }
     // find object
-    if (boost::starts_with(line, str_objects)) {
-      boost::erase_first(line, str_objects);
+    if (boost::starts_with(line, kStrObjects)) {
+      boost::erase_first(line, kStrObjects);
       boost::trim(line);
       objects.val = line;
       line.clear();
