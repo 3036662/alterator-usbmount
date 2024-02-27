@@ -1,9 +1,11 @@
 #include "message_dispatcher.hpp"
 #include "guard_rule.hpp"
+#include "guard_utils.hpp"
 #include "log.hpp"
 #include "utils.hpp"
 #include <boost/algorithm/algorithm.hpp>
 #include <boost/algorithm/string.hpp>
+#include <unordered_set>
 
 using guard::utils::Log;
 using namespace utils;
@@ -93,7 +95,7 @@ bool MessageDispatcher::ListUsbGuardRules(
       if (rule.vid)
         vendors.insert(rule.vid.value());
     }
-    auto vendors_names = guard::MapVendorCodesToNames(vendors);
+    auto vendors_names = guard::utils::MapVendorCodesToNames(vendors);
     for (auto &rule : vec_rules) {
       if (rule.vid.has_value() && vendors_names.count(rule.vid.value()) > 0) {
         rule.vendor_name = vendors_names.at(rule.vid.value());

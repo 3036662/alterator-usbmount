@@ -12,6 +12,7 @@ add_executable(simple main.cpp
     systemd_dbus.cpp systemd_dbus.hpp
     guard_rule.cpp guard_rule.cpp
     json_rule.cpp
+    guard_utils.cpp
 )
 
 include(Format)

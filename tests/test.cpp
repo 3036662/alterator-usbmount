@@ -13,9 +13,11 @@
 #include <unordered_map>
 #include <unordered_set>
 #include "utils.hpp"
+#include "guard_utils.hpp"
 
 using guard::utils::Log;
 using utils::WrapWithQuotes;
+using namespace guard::utils;
 
 
 void Test::Run1() {
@@ -188,34 +190,34 @@ void Test::Run6() {
 
 void Test::Run7() {
   guard::Guard guard;
-  std::vector<std::string> res = guard::FoldUsbInterfacesList(
+  std::vector<std::string> res = FoldUsbInterfacesList(
       "with-interface { 0e:01:00 0e:02:00 0e:02:00 0e:02:00 0e:02:00 0e:02:00 "
       "0e:02:00 0e:02:00 0e:02:00 }");
   std::vector<std::string> exp = {"0e:*:*"};
   assert(res == exp);
-  res = guard::FoldUsbInterfacesList("with-interface { 03:01:02 04:01:01 }");
+  res =FoldUsbInterfacesList("with-interface { 03:01:02 04:01:01 }");
   exp = {"03:01:02", "04:01:01"};
   assert(res == exp);
-  res = guard::FoldUsbInterfacesList("with-interface 09:00:00");
+  res = FoldUsbInterfacesList("with-interface 09:00:00");
   exp = {"09:00:00"};
   assert(res == exp);
-  res = guard::FoldUsbInterfacesList("wsdsafsdga");
+  res = FoldUsbInterfacesList("wsdsafsdga");
   exp = {"wsdsafsdga"};
   assert(res == exp);
-  res = guard::FoldUsbInterfacesList("");
+  res = FoldUsbInterfacesList("");
   exp = {""};
   assert(res == exp);
 
-  res = guard::FoldUsbInterfacesList("with-interface ff:ff:ff");
+  res = FoldUsbInterfacesList("with-interface ff:ff:ff");
   exp = {"ff:ff:ff"};
   assert(res == exp);
 
-  res = guard::FoldUsbInterfacesList("with-interface ffg:gf:g0");
+  res = FoldUsbInterfacesList("with-interface ffg:gf:g0");
   Log::Debug() <<res[0];
   exp = {"ffg:gf:g0"};
   assert(res == exp);
 
-  res = guard::FoldUsbInterfacesList("with-interface { 03=01=:02 04:/1:01 }");
+  res = FoldUsbInterfacesList("with-interface { 03=01=:02 04:/1:01 }");
   exp = {};
   assert(res == exp);
   Log::Test() << "TEST7 .... OK";
@@ -231,14 +233,14 @@ void Test::Run8() {
       {"03ea", "Data Broadcasting Corp."},
       {"04c5", "Fujitsu, Ltd"},
       {"06cd", "Keyspan"}};
-  assert(guard::MapVendorCodesToNames(vendors) == expected);
+  assert(MapVendorCodesToNames(vendors) == expected);
 
   vendors.insert("06cf");
   expected.emplace("06cf", "SpheronVR AG");
-  assert(guard::MapVendorCodesToNames(vendors) == expected);
+  assert(MapVendorCodesToNames(vendors) == expected);
   vendors.insert("blablalbla");
-  assert(guard::MapVendorCodesToNames(vendors) == expected);
-  assert(guard::MapVendorCodesToNames(vendors).size() < vendors.size());
+  assert(MapVendorCodesToNames(vendors) == expected);
+  assert(MapVendorCodesToNames(vendors).size() < vendors.size());
   Log::Test() << "TEST8  ... OK";
 }
 

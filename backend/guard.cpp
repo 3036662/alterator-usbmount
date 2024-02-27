@@ -1,6 +1,7 @@
 #include "guard.hpp"
 #include "config_status.hpp"
 #include "guard_rule.hpp"
+#include "guard_utils.hpp"
 #include "json_rule.hpp"
 #include "log.hpp"
 #include "usb_device.hpp"
@@ -13,9 +14,10 @@
 #include <memory>
 #include <optional>
 #include <unordered_set>
+
 namespace guard {
 
-using guard::utils::Log;
+using namespace guard::utils;
 using ::utils::QuoteIfNotQuoted;
 using ::utils::StrToUint;
 using ::utils::UnQuote;
