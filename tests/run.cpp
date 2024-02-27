@@ -34,7 +34,7 @@ int main(int argc, char *argv[]) {
   test.Run11();
 
   // // Test parsing of json array of uints
-  test.Run12();
+  //test.Run12(); DEPRECATED
 
   // // Test systemd restart and stop
   // test.Run13();

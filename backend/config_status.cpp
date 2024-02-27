@@ -6,6 +6,7 @@
 #include <boost/algorithm/string.hpp>
 #include <boost/algorithm/string/trim.hpp>
 #include <exception>
+#include <filesystem>
 #include <fstream>
 #include <iostream>
 #include <optional>
@@ -16,6 +17,7 @@
 
 namespace guard {
 using guard::utils::Log;
+using ::utils::FindAllFilesInDirRecursive;
 
 ConfigStatus::ConfigStatus() noexcept
     : udev_warnings{InspectUdevRules()}, udev_rules_OK{udev_warnings.empty()},
@@ -187,7 +189,7 @@ bool ConfigStatus::CheckUserFiles(const std::string &line) noexcept {
       try {
         std::filesystem::path fs_path_to_folder(path_to_folder);
         std::vector<std::string> files =
-            FindAllFilesInDirRecursive(path_to_folder);
+            FindAllFilesInDirRecursive({path_to_folder, ""});
         for (std::string &str : files) {
           boost::trim(str);
           if (!str.empty()) {
@@ -566,7 +568,8 @@ std::unordered_map<std::string, std::string> ConfigStatus::InspectUdevRules(
   for (const std::string &path : udev_paths) {
     // Log::Info() << "Inspecting udev folder " << path;
     // find all files in folder
-    std::vector<std::string> files = FindAllFilesInDirRecursive(path, ".rules");
+    std::vector<std::string> files =
+        FindAllFilesInDirRecursive({path, ".rules"});
     // for each file - check if it contains suspicious strings
     for (const std::string &str_path : files) {
       try {

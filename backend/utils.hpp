@@ -2,22 +2,29 @@
 #include "types.hpp"
 #include "usb_device.hpp"
 #include <boost/algorithm/string.hpp>
+#include <chrono>
 #include <cstdint>
-#include <filesystem>
 #include <optional>
 #include <string>
+#include <utility>
 #include <vector>
+
+namespace utils {
 
 /// @brief Wrap string with esape coutes
 /// @param str String to wrap
 /// @return New wrapped string
-std::string WrapWithQuotes(const std::string &str);
+std::string WrapWithQuotes(const std::string &str) noexcept;
 
-std::string QuoteIfNotQuoted(const std::string &str);
+/**
+ * @brief Unwrap a quoted string (remove quotes)
+ */
+std::string UnQuote(const std::string &str) noexcept;
 
-/// @brief Mock usb list just for develop and testing purposes
-/// @return Mocked vector of Usbdevice
-std::vector<guard::UsbDevice> fakeLibGetUsbList();
+/**
+ * @brief Wrap a string with quotes if it is not quotted
+ */
+std::string QuoteIfNotQuoted(const std::string &str) noexcept;
 
 /// @brief Exception-safe string to uint32_t conversion
 /// @param id String, containing number
@@ -29,9 +36,8 @@ std::optional<uint32_t> StrToUint(const std::string &str) noexcept;
 /// @param ext Extension - which files to search
 /// @return Vector of string pathes for all files in directory (recursive)
 /// @warning may throw exceptions
-std::vector<std::string>
-FindAllFilesInDirRecursive(const std::string &dir,
-                           const std::string &ext = std::string()) noexcept;
+std::vector<std::string> FindAllFilesInDirRecursive(
+    const std::pair<std::string, std::string> &path_ext) noexcept;
 
 /**
  * @brief Converts vec of string pairs to a LispSring
@@ -40,7 +46,8 @@ FindAllFilesInDirRecursive(const std::string &dir,
  * @details  Can be used map html table labels to data values.
  * Returns a lisp strig ("value1" "label2" "value2" ...)
  */
-template <typename T> std::string ToLisp(const SerializableForLisp<T> &obj) {
+template <typename T>
+std::string ToLisp(const SerializableForLisp<T> &obj) noexcept {
   std::string res;
   vecPairs vec{obj.SerializeForLisp()};
   res += "(";
@@ -65,12 +72,12 @@ template <typename T> std::string ToLisp(const SerializableForLisp<T> &obj) {
 }
 
 /**
- * @brief Constructs a lisp associative list from vector ov sring pairs
+ * @brief Constructs a lisp associative list from vector ov string pairs
  * @param obj Any SerializableForLisp object
  * @return Lisp string - ((name "value")(name2 "value2"))
  */
 template <typename T>
-std::string ToLispAssoc(const SerializableForLisp<T> &obj) {
+std::string ToLispAssoc(const SerializableForLisp<T> &obj) noexcept {
   std::string res;
   vecPairs vec{obj.SerializeForLisp()};
   res += '(';
@@ -92,27 +99,25 @@ std::string ToLispAssoc(const SerializableForLisp<T> &obj) {
  * @details Name parameter will be ignored - table with one column
  * needs only value. Returns a lisp string ("value")
  */
-std::string ToLisp([[maybe_unused]] const std::string &name,
-                   const std::string &value);
+std::string ToLisp(const std::pair<std::string, std::string> &data) noexcept;
 
 /// @brief  Escapes double-quotes with slashes
 /// @param str Source string
 /// @return Escaped string
-std::string EscapeQuotes(const std::string &str);
-
-std::string UnQuote(const std::string &str);
+std::string EscapeQuotes(const std::string &str) noexcept;
 
 /**
- * @brief Parse json string ["1","2","n"] to vector of int
- *
- * @param json string ["1","2","n"]
- * @return std::vector<uint>
+ * @brief Utility function for timing
  */
-std::vector<uint> ParseJsonIntArray(std::string json) noexcept;
-
 template <class result_t = std::chrono::milliseconds,
           class clock_t = std::chrono::steady_clock,
           class duration_t = std::chrono::milliseconds>
 auto since(std::chrono::time_point<clock_t, duration_t> const &start) {
   return std::chrono::duration_cast<result_t>(clock_t::now() - start);
 }
+
+/// @brief Mock usb list just for develop and testing purposes
+/// @return Mocked vector of Usbdevice
+std::vector<guard::UsbDevice> fakeLibGetUsbList() noexcept;
+
+} // namespace utils

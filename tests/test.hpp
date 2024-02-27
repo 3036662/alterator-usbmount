@@ -67,11 +67,6 @@ public:
    */
   void Run11();
 
-  /**
-   * @brief Parse json array of uints
-   *
-   */
-  void Run12();
 
   /**
    * @brief Test systemd restart and stop

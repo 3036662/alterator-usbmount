@@ -15,6 +15,8 @@
 #include "utils.hpp"
 
 using guard::utils::Log;
+using utils::WrapWithQuotes;
+
 
 void Test::Run1() {
   Log::Test() << "Test udev rules files search";
@@ -755,42 +757,6 @@ void Test::Run11(){
 
   Log::Test() << "TEST11 ... OK";
 
-}
-
-void Test::Run12(){
-  Log::Test() << "[TEST Test 12. Parsing json uint array";
-  {
-    std::vector<uint> excpeted{12};
-    std::string json ="[\"12\"]";
-    assert (ParseJsonIntArray(json)== excpeted);
-  }
-
-  {
-    std::vector<uint> excpeted{12,0,0,122};
-    std::string json ="[" +WrapWithQuotes("12")+","+
-                          WrapWithQuotes("0")+","+
-                          WrapWithQuotes("0")+","+
-                          WrapWithQuotes("122")+"]";
-    assert (ParseJsonIntArray(json)== excpeted);
-  }
-
-  {
-    std::vector<uint> excpeted{};
-    std::string json ="";
-    assert (ParseJsonIntArray(json)== excpeted);
-  }
-
-  {
-    std::vector<uint> excpeted{};
-    std::string json ="[]";
-    assert (ParseJsonIntArray(json)== excpeted);
-  }
-  {
-    std::vector<uint> excpeted{};
-    std::string json ="[\"ы\"]";
-    assert (ParseJsonIntArray(json)== excpeted);
-  }
-  Log::Test() << "[TEST] TEST12 ... OK";
 }
 
 
