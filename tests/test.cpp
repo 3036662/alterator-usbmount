@@ -293,46 +293,46 @@ void Test::Run10() {
   std::string str = "allow";
   {
     guard::GuardRule parser(str);
-    assert((parser.target == guard::Target::allow) && !parser.vid &&
-           !parser.pid && !parser.hash && !parser.device_name &&
-           !parser.serial && !parser.port && !parser.with_interface &&
-           !parser.cond);
+    assert((parser.target() == guard::Target::allow) && !parser.vid_ &&
+           !parser.pid_ && !parser.hash_ && !parser.device_name_ &&
+           !parser.serial_ && !parser.port_ && !parser.with_interface_ &&
+           !parser.cond_);
   }
   str = "block id 8564:1000";
   {
     guard::GuardRule parser(str);
-    assert((parser.target == guard::Target::block) && *parser.vid == "8564" &&
-           *parser.pid == "1000" && !parser.hash && !parser.device_name &&
-           !parser.serial && !parser.port && !parser.with_interface &&
-           !parser.cond);
+    assert((parser.target() == guard::Target::block) && *parser.vid_ == "8564" &&
+           *parser.pid_ == "1000" && !parser.hash_ && !parser.device_name_ &&
+           !parser.serial_ && !parser.port_ && !parser.with_interface_ &&
+           !parser.cond_);
   }
   str = "block id 8564:*";
   {
     guard::GuardRule parser(str);
-    assert((parser.target == guard::Target::block) && *parser.vid == "8564" &&
-           *parser.pid == "*" && !parser.hash && !parser.device_name &&
-           !parser.serial && !parser.port && !parser.with_interface &&
-           !parser.cond);
+    assert((parser.target() == guard::Target::block) && *parser.vid_ == "8564" &&
+           *parser.pid_ == "*" && !parser.hash_ && !parser.device_name_ &&
+           !parser.serial_ && !parser.port_ && !parser.with_interface_ &&
+           !parser.cond_);
   }
 
   str = "block id 8564:* hash 4Q3Ski/Lqi8RbTFr10zFlIpagY9AKVMszyzBQJVKE+c=";
   {
     guard::GuardRule parser(str);
-    assert((parser.target == guard::Target::block) && *parser.vid == "8564" &&
-           *parser.pid == "*" &&
-           *parser.hash == "4Q3Ski/Lqi8RbTFr10zFlIpagY9AKVMszyzBQJVKE+c=" &&
-           !parser.device_name && !parser.serial && !parser.port &&
-           !parser.with_interface && !parser.cond);
+    assert((parser.target() == guard::Target::block) && *parser.vid_ == "8564" &&
+           *parser.pid_ == "*" &&
+           *parser.hash_ == "4Q3Ski/Lqi8RbTFr10zFlIpagY9AKVMszyzBQJVKE+c=" &&
+           !parser.device_name_ && !parser.serial_ && !parser.port_ &&
+           !parser.with_interface_ && !parser.cond_);
   }
 
   str = "block hash 4Q3Ski/Lqi8RbTFr10zFlIpagY9AKVMszyzBQJVKE+c=";
   {
     guard::GuardRule parser(str);
-    assert((parser.target == guard::Target::block) && !parser.vid &&
-           !parser.pid &&
-           *parser.hash == "4Q3Ski/Lqi8RbTFr10zFlIpagY9AKVMszyzBQJVKE+c=" &&
-           !parser.device_name && !parser.serial && !parser.port &&
-           !parser.with_interface && !parser.cond);
+    assert((parser.target() == guard::Target::block) && !parser.vid_ &&
+           !parser.pid_ &&
+           *parser.hash_ == "4Q3Ski/Lqi8RbTFr10zFlIpagY9AKVMszyzBQJVKE+c=" &&
+           !parser.device_name_ && !parser.serial_ && !parser.port_ &&
+           !parser.with_interface_ && !parser.cond_);
   }
 
   // name
@@ -340,24 +340,24 @@ void Test::Run10() {
         "name   _      Lastname\" ";
   {
     guard::GuardRule parser(str);
-    assert((parser.target == guard::Target::block) && !parser.vid &&
-           !parser.pid &&
-           *parser.hash == "4Q3Ski/Lqi8RbTFr10zFlIpagY9AKVMszyzBQJVKE+c=" &&
-           *parser.device_name == "\"USB name   _      Lastname\"" &&
-           !parser.serial && !parser.port && !parser.with_interface &&
-           !parser.cond);
+    assert((parser.target() == guard::Target::block) && !parser.vid_ &&
+           !parser.pid_ &&
+           *parser.hash_ == "4Q3Ski/Lqi8RbTFr10zFlIpagY9AKVMszyzBQJVKE+c=" &&
+           *parser.device_name_ == "\"USB name   _      Lastname\"" &&
+           !parser.serial_ && !parser.port_ && !parser.with_interface_ &&
+           !parser.cond_);
   }
 
   str = "block hash 4Q3Ski/Lqi8RbTFr10zFlIpagY9AKVMszyzBQJVKE+c= name \"USB "
         "name   _      Lastname\"  serial \"4098lkjmd\"  ";
   {
     guard::GuardRule parser(str);
-    assert((parser.target == guard::Target::block) && !parser.vid &&
-           !parser.pid &&
-           *parser.hash == "4Q3Ski/Lqi8RbTFr10zFlIpagY9AKVMszyzBQJVKE+c=" &&
-           *parser.device_name == "\"USB name   _      Lastname\"" &&
-           *parser.serial == "\"4098lkjmd\"" && !parser.port &&
-           !parser.with_interface && !parser.cond);
+    assert((parser.target() == guard::Target::block) && !parser.vid_ &&
+           !parser.pid_ &&
+           *parser.hash_ == "4Q3Ski/Lqi8RbTFr10zFlIpagY9AKVMszyzBQJVKE+c=" &&
+           *parser.device_name_ == "\"USB name   _      Lastname\"" &&
+           *parser.serial_ == "\"4098lkjmd\"" && !parser.port_ &&
+           !parser.with_interface_ && !parser.cond_);
   }
 
   // exceptions
@@ -400,10 +400,10 @@ void Test::Run10() {
     std::pair<guard::RuleOperator, std::vector<std::string>> expected_port{
         guard::RuleOperator::no_operator, ports_expected};
 
-    assert(parser.target == guard::Target::allow && !parser.vid &&
-           !parser.pid && !parser.hash && !parser.device_name &&
-           !parser.serial && *parser.port == expected_port &&
-           !parser.with_interface && !parser.cond);
+    assert(parser.target() == guard::Target::allow && !parser.vid_ &&
+           !parser.pid_ && !parser.hash_ && !parser.device_name_ &&
+           !parser.serial_ && *parser.port_ == expected_port &&
+           !parser.with_interface_ && !parser.cond_);
   }
 
   // two ports
@@ -415,10 +415,10 @@ void Test::Run10() {
     std::pair<guard::RuleOperator, std::vector<std::string>> expected_port{
         guard::RuleOperator::all_of, ports_expected};
 
-    assert(parser.target == guard::Target::allow && !parser.vid &&
-           !parser.pid && !parser.hash && !parser.device_name &&
-           !parser.serial && *parser.port == expected_port &&
-           !parser.with_interface && !parser.cond);
+    assert(parser.target() == guard::Target::allow && !parser.vid_ &&
+           !parser.pid_ && !parser.hash_ && !parser.device_name_ &&
+           !parser.serial_ && *parser.port_ == expected_port &&
+           !parser.with_interface_ && !parser.cond_);
   }
 
   str = "allow via-port all-of {" + WrapWithQuotes("1-2") + " " +
@@ -445,10 +445,10 @@ void Test::Run10() {
     std::pair<guard::RuleOperator, std::vector<std::string>> expected_interface{
         guard::RuleOperator::no_operator, interface_expected};
 
-    assert(parser.target == guard::Target::allow && !parser.vid &&
-           !parser.pid && !parser.hash && !parser.device_name &&
-           !parser.serial && *parser.port == expected_port &&
-           *parser.with_interface == expected_interface && !parser.cond);
+    assert(parser.target() == guard::Target::allow && !parser.vid_ &&
+           !parser.pid_ && !parser.hash_ && !parser.device_name_ &&
+           !parser.serial_ && *parser.port_ == expected_port &&
+           *parser.with_interface_ == expected_interface && !parser.cond_);
   }
 
   // two ports three interfaces
@@ -464,10 +464,10 @@ void Test::Run10() {
     std::pair<guard::RuleOperator, std::vector<std::string>> expected_interface{
         guard::RuleOperator::none_of, interface_expected};
 
-    assert(parser.target == guard::Target::allow && !parser.vid &&
-           !parser.pid && !parser.hash && !parser.device_name &&
-           !parser.serial && *parser.port == expected_port &&
-           *parser.with_interface == expected_interface && !parser.cond);
+    assert(parser.target() == guard::Target::allow && !parser.vid_ &&
+           !parser.pid_ && !parser.hash_ && !parser.device_name_ &&
+           !parser.serial_ && *parser.port_ == expected_port &&
+           *parser.with_interface_ == expected_interface && !parser.cond_);
   }
 
   // conditioins
@@ -487,14 +487,14 @@ Log::Test() << "Localtime time with parameter";
     std::pair<RuleOperator,std::vector<RuleWithBool>> pair {RuleOperator::no_operator,vec};
 
 
-    assert(parser.target ==guard::Target::allow &&
-          !parser.pid &&
-          !parser.hash &&
-          !parser.device_name &&
-          !parser.serial &&
-          !parser.port &&
-          !parser.with_interface &&
-          parser.cond == pair
+    assert(parser.target() ==guard::Target::allow &&
+          !parser.pid_ &&
+          !parser.hash_ &&
+          !parser.device_name_ &&
+          !parser.serial_ &&
+          !parser.port_ &&
+          !parser.with_interface_ &&
+          parser.cond_ == pair
     );
 
   }
@@ -543,14 +543,14 @@ Log::Test() << "Rule-applied time without parameter";
 
     Log::Test() << parser.ConditionsToString();
 
-    assert(parser.target ==guard::Target::allow &&
-          !parser.pid &&
-          !parser.hash &&
-          !parser.device_name &&
-          !parser.serial &&
-          !parser.port &&
-          !parser.with_interface &&
-          parser.cond == pair
+    assert(parser.target() ==guard::Target::allow &&
+          !parser.pid_ &&
+          !parser.hash_ &&
+          !parser.device_name_ &&
+          !parser.serial_ &&
+          !parser.port_ &&
+          !parser.with_interface_ &&
+          parser.cond_ == pair
     );
   }
 
@@ -603,25 +603,25 @@ Log::Test() << "rule-evaluated time with no parameter";
     std::string expected="one-of{!rule-evaluated(HH:MM:SS) true}";
     Log::Test() <<cond_result <<"==" << expected;
     assert(cond_result == expected);
-    assert(parser.target == Target::allow);
-    assert(*parser.vid=="8564");
-    assert(*parser.pid=="1000");
+    assert(parser.target() == Target::allow);
+    assert(*parser.vid_=="8564");
+    assert(*parser.pid_=="1000");
   }
 
 // real rule
  str="allow id 1d6b:0002 serial \"0000:00:0d.0\" name \"xHCI Host Controller\" hash \"d3YN7OD60Ggqc9hClW0/al6tlFEshidDnQKzZRRk410=\" parent-hash \"Y1kBdG1uWQr5CjULQs7uh2F6pHgFb6VDHcWLk83v+tE=\" with-interface 09:00:00 with-connect-type \"\""; 
   {
     GuardRule parser(str);
-    assert(parser.target == Target::allow);
-    assert(*parser.vid=="1d6b");
-    assert(*parser.pid=="0002");
-    assert(!parser.cond.has_value());
-    assert(*parser.device_name=="\"xHCI Host Controller\"");
-    assert(*parser.hash=="\"d3YN7OD60Ggqc9hClW0/al6tlFEshidDnQKzZRRk410=\"");
-    assert(!parser.port.has_value());
-    assert(*parser.serial=="\"0000:00:0d.0\"");
-    assert(parser.with_interface->first == guard::RuleOperator::no_operator);
-    assert(parser.with_interface->second.at(0) == "09:00:00");
+    assert(parser.target() == Target::allow);
+    assert(*parser.vid_=="1d6b");
+    assert(*parser.pid_=="0002");
+    assert(!parser.cond_.has_value());
+    assert(*parser.device_name_=="\"xHCI Host Controller\"");
+    assert(*parser.hash_=="\"d3YN7OD60Ggqc9hClW0/al6tlFEshidDnQKzZRRk410=\"");
+    assert(!parser.port_.has_value());
+    assert(*parser.serial_=="\"0000:00:0d.0\"");
+    assert(parser.with_interface_->first == guard::RuleOperator::no_operator);
+    assert(parser.with_interface_->second.at(0) == "09:00:00");
   }
 
   Log::Test() << "id, none-of  with sequense of coditions +localtime";
@@ -632,9 +632,9 @@ Log::Test() << "rule-evaluated time with no parameter";
     std::string expected="one-of{localtime(HH:MM:SS) true}";
     Log::Test() <<cond_result <<"==" << expected;
     assert(cond_result == expected);
-    assert(parser.target == Target::allow);
-    assert(*parser.vid=="8564");
-    assert(*parser.pid=="1000");
+    assert(parser.target() == Target::allow);
+    assert(*parser.vid_=="8564");
+    assert(*parser.pid_=="1000");
   }
 
 
@@ -646,9 +646,9 @@ Log::Test() << "rule-evaluated time with no parameter";
     std::string expected="one-of{allowed-matches(query) localtime(HH:MM:SS)}";
     Log::Test() <<cond_result <<"==" << expected;
     assert(cond_result == expected);
-    assert(parser.target == Target::allow);
-    assert(*parser.vid=="8564");
-    assert(*parser.pid=="1000");
+    assert(parser.target() == Target::allow);
+    assert(*parser.vid_=="8564");
+    assert(*parser.pid_=="1000");
   }
 
    Log::Test() << "[TEST] id, one-of  with sequense of coditions +allow-matches ++ rule-applied(past_duration)";
@@ -659,9 +659,9 @@ Log::Test() << "rule-evaluated time with no parameter";
     std::string expected="one-of{allowed-matches(query) localtime(HH:MM:SS) rule-applied(past_duration)}";
     Log::Test() <<cond_result <<"==" << expected;
     assert(cond_result == expected);
-    assert(parser.target == Target::allow);
-    assert(*parser.vid=="8564");
-    assert(*parser.pid=="1000");
+    assert(parser.target() == Target::allow);
+    assert(*parser.vid_=="8564");
+    assert(*parser.pid_=="1000");
   }
 
     Log::Test() << "id, one-of  with sequense of coditions +allow-matches ++ rule-applied(past_duration)  rule-applied  + random(p_true) +random";
@@ -672,9 +672,9 @@ Log::Test() << "rule-evaluated time with no parameter";
     std::string expected="one-of{allowed-matches(query) localtime(HH:MM:SS) rule-applied(past_duration) rule-applied random(p_true)}";
     Log::Test() <<cond_result <<"==" << expected;
     assert(cond_result == expected);
-    assert(parser.target == Target::allow);
-    assert(*parser.vid=="8564");
-    assert(*parser.pid=="1000");
+    assert(parser.target() == Target::allow);
+    assert(*parser.vid_=="8564");
+    assert(*parser.pid_=="1000");
   }
 
   Log::Test() << "id, one-of  with sequense of coditions  true +allow-matches ++ rule-applied(past_duration)  rule-applied  + random(p_true) +random";
@@ -685,9 +685,9 @@ Log::Test() << "rule-evaluated time with no parameter";
     std::string expected="one-of{true allowed-matches(query) localtime(HH:MM:SS) rule-applied(past_duration) rule-applied random(p_true)}";
     Log::Test() <<cond_result <<"==" << expected;
     assert(cond_result == expected);
-    assert(parser.target == Target::allow);
-    assert(*parser.vid=="8564");
-    assert(*parser.pid=="1000");
+    assert(parser.target() == Target::allow);
+    assert(*parser.vid_=="8564");
+    assert(*parser.pid_=="1000");
   }
 
   Log::Test() << "allowed-matches without params fails";
@@ -844,10 +844,10 @@ void Test::Run14(){
     guard::utils::json::JsonRule json_rule(ptr_obj);
     guard::GuardRule rule(json_rule.BuildString());
     
-    assert(rule.target == guard::Target::allow);
-    assert(rule.vid == "a000");
-    assert(rule.pid == "a5a5");
-    assert(rule.level == guard::StrictnessLevel::vid_pid);
+    assert(rule.target() == guard::Target::allow);
+    assert(rule.vid_ == "a000");
+    assert(rule.pid_ == "a5a5");
+    assert(rule.level() == guard::StrictnessLevel::vid_pid);
 
   }
 
@@ -948,11 +948,11 @@ void Test::Run14(){
        guard::utils::json::JsonRule json_rule(ptr_obj);
     guard::GuardRule rule(json_rule.BuildString());
     
-    assert(rule.target == guard::Target::allow);
-    assert(rule.vid == "a000");
-    assert(rule.pid == "a5a5");
-    assert(rule.hash == "salkdjlskjf");
-    assert(rule.level == guard::StrictnessLevel::hash);
+    assert(rule.target() == guard::Target::allow);
+    assert(rule.vid_ == "a000");
+    assert(rule.pid_ == "a5a5");
+    assert(rule.hash_ == "salkdjlskjf");
+    assert(rule.level() == guard::StrictnessLevel::hash);
 
   }
 
@@ -975,18 +975,18 @@ void Test::Run14(){
         guard::utils::json::JsonRule json_rule(ptr_obj);
     guard::GuardRule rule(json_rule.BuildString());
     
-    assert(rule.target == guard::Target::allow);
-    assert(rule.vid == "a000");
-    assert(rule.pid == "a5a5");
-    assert(rule.hash == "salkdjlskjf");
-    assert(rule.level == guard::StrictnessLevel::hash);
+    assert(rule.target() == guard::Target::allow);
+    assert(rule.vid_ == "a000");
+    assert(rule.pid_ == "a5a5");
+    assert(rule.hash_ == "salkdjlskjf");
+    assert(rule.level() == guard::StrictnessLevel::hash);
 
     std::pair<guard::RuleOperator,std::vector<std::string>> pair=std::make_pair(guard::RuleOperator::equals,std::vector<std::string>());
     pair.second.push_back("04:00:*");
     pair.second.push_back("01:11:00");
 
-    assert(rule.with_interface.has_value());
-    assert(rule.with_interface.value() == pair);
+    assert(rule.with_interface_.has_value());
+    assert(rule.with_interface_.value() == pair);
   }
 
 
@@ -1031,17 +1031,17 @@ void Test::Run14(){
     const boost::json::object* ptr_obj= jv.as_object().at("appended_rules").as_array().at(0).if_object();                   
        guard::utils::json::JsonRule json_rule(ptr_obj);
     guard::GuardRule rule(json_rule.BuildString());
-    assert(rule.target == guard::Target::allow);
-    assert(rule.vid == "a000");
-    assert(rule.pid == "a5a5");
+    assert(rule.target() == guard::Target::allow);
+    assert(rule.vid_ == "a000");
+    assert(rule.pid_ == "a5a5");
 
     std::pair<guard::RuleOperator,std::vector<std::string>> pair=std::make_pair(guard::RuleOperator::equals,std::vector<std::string>());
     pair.second.push_back("04:00:*");
     pair.second.push_back("01:11:00");
 
-    assert(rule.with_interface.has_value());
-    assert(rule.with_interface.value() == pair);
-    assert(rule.level == guard::StrictnessLevel::vid_pid);
+    assert(rule.with_interface_.has_value());
+    assert(rule.with_interface_.value() == pair);
+    assert(rule.level() == guard::StrictnessLevel::vid_pid);
   }
 
   
@@ -1060,11 +1060,11 @@ void Test::Run14(){
         guard::utils::json::JsonRule json_rule(ptr_obj);
     guard::GuardRule rule(json_rule.BuildString());
     
-    assert(rule.target == guard::Target::block);
+    assert(rule.target() == guard::Target::block);
 
 
-    assert(rule.with_interface.has_value());
-    assert(rule.level == guard::StrictnessLevel::interface);
+    assert(rule.with_interface_.has_value());
+    assert(rule.level() == guard::StrictnessLevel::interface);
   }
 
    {
@@ -1082,9 +1082,9 @@ void Test::Run14(){
        guard::utils::json::JsonRule json_rule(ptr_obj);
     guard::GuardRule rule(json_rule.BuildString());
     
-    assert(rule.target == guard::Target::block);
-    assert(rule.with_interface.has_value());
-    assert(rule.level == guard::StrictnessLevel::interface);
+    assert(rule.target() == guard::Target::block);
+    assert(rule.with_interface_.has_value());
+    assert(rule.level() == guard::StrictnessLevel::interface);
   }
 
   {
@@ -1105,9 +1105,9 @@ void Test::Run14(){
         guard::utils::json::JsonRule json_rule(ptr_obj);
     guard::GuardRule rule(json_rule.BuildString());
     
-    assert(rule.target == guard::Target::allow);
-    assert(rule.vid == "a000");
-    assert(rule.pid == "a5a5");
+    assert(rule.target() == guard::Target::allow);
+    assert(rule.vid_ == "a000");
+    assert(rule.pid_ == "a5a5");
 
     std::pair<guard::RuleOperator,std::vector<std::string>> pair=std::make_pair(guard::RuleOperator::equals,std::vector<std::string>());
     pair.second.push_back("04:00:*");
@@ -1118,11 +1118,11 @@ void Test::Run14(){
     ports.second.push_back("usb2");
     ports.second.push_back("usb3");
 
-    assert(rule.with_interface.has_value());
-    assert(rule.with_interface.value() == pair);
-    assert(rule.port.has_value());
-    assert(rule.port == ports);
-    assert(rule.level == guard::StrictnessLevel::vid_pid);
+    assert(rule.with_interface_.has_value());
+    assert(rule.with_interface_.value() == pair);
+    assert(rule.port_.has_value());
+    assert(rule.port_ == ports);
+    assert(rule.level() == guard::StrictnessLevel::vid_pid);
   }
 
   {
@@ -1144,9 +1144,9 @@ void Test::Run14(){
        guard::utils::json::JsonRule json_rule(ptr_obj);
     guard::GuardRule rule(json_rule.BuildString());
     
-    assert(rule.target == guard::Target::allow);
-    assert(rule.vid == "a000");
-    assert(rule.pid == "a5a5");
+    assert(rule.target() == guard::Target::allow);
+    assert(rule.vid_ == "a000");
+    assert(rule.pid_ == "a5a5");
 
     std::pair<guard::RuleOperator,std::vector<std::string>> pair=std::make_pair(guard::RuleOperator::equals,std::vector<std::string>());
     pair.second.push_back("04:00:*");
@@ -1157,12 +1157,12 @@ void Test::Run14(){
     ports.second.push_back("usb2");
     ports.second.push_back("usb3");
 
-    assert(rule.with_interface.has_value());
-    assert(rule.with_interface.value() == pair);
-    assert(rule.port.has_value());
-    assert(rule.port == ports);
-    assert(rule.level == guard::StrictnessLevel::vid_pid);
-    assert(rule.conn_type == "hotplug");
+    assert(rule.with_interface_.has_value());
+    assert(rule.with_interface_.value() == pair);
+    assert(rule.port_.has_value());
+    assert(rule.port_ == ports);
+    assert(rule.level() == guard::StrictnessLevel::vid_pid);
+    assert(rule.conn_type_ == "hotplug");
   }
 
   {
@@ -1185,9 +1185,9 @@ void Test::Run14(){
         guard::utils::json::JsonRule json_rule(ptr_obj);
     guard::GuardRule rule(json_rule.BuildString());
     
-    assert(rule.target == guard::Target::allow);
-    assert(rule.vid == "a000");
-    assert(rule.pid == "a5a5");
+    assert(rule.target() == guard::Target::allow);
+    assert(rule.vid_ == "a000");
+    assert(rule.pid_ == "a5a5");
 
     std::pair<guard::RuleOperator,std::vector<std::string>> pair=std::make_pair(guard::RuleOperator::equals,std::vector<std::string>());
     pair.second.push_back("04:00:*");
@@ -1198,12 +1198,12 @@ void Test::Run14(){
     ports.second.push_back("usb2");
     ports.second.push_back("usb3");
 
-    assert(rule.with_interface.has_value());
-    assert(rule.with_interface.value() == pair);
-    assert(rule.port.has_value());
-    assert(rule.port == ports);
-    assert(rule.level == guard::StrictnessLevel::vid_pid);
-    assert(rule.conn_type == "hotplug");
+    assert(rule.with_interface_.has_value());
+    assert(rule.with_interface_.value() == pair);
+    assert(rule.port_.has_value());
+    assert(rule.port_ == ports);
+    assert(rule.level() == guard::StrictnessLevel::vid_pid);
+    assert(rule.conn_type_ == "hotplug");
 
     std::pair<guard::RuleOperator, std::vector<guard::RuleWithBool>> conds=std::make_pair(guard::RuleOperator::one_of,std::vector<guard::RuleWithBool>());
     guard::RuleWithOptionalParam rule_with_param1 (guard::RuleConditions::localtime,"00:00:00");
@@ -1211,9 +1211,9 @@ void Test::Run14(){
 
     conds.second.emplace_back(false,rule_with_param1); 
     conds.second.emplace_back(true,rule_with_param2);
-    assert(rule.cond.has_value());
-    assert(rule.cond->first == guard::RuleOperator::one_of);
-    assert(rule.cond == conds );
+    assert(rule.cond_.has_value());
+    assert(rule.cond_->first == guard::RuleOperator::one_of);
+    assert(rule.cond_ == conds );
   }
   
   Log::Test() << "[TEST] TEST 14 ... OK";

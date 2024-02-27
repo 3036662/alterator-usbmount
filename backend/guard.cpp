@@ -116,12 +116,12 @@ bool Guard::DeleteRules(const std::vector<uint> &rule_indexes,
   // copy old rules,except listed in rule_indexes
   std::set<uint> unique_indexes(rule_indexes.cbegin(), rule_indexes.cend());
   for (const auto &rule : parsed_rules.first) {
-    if (unique_indexes.count(rule.number) == 0) {
+    if (unique_indexes.count(rule.number()) == 0) {
       // skip rules with conflicting policy,place rest to new_rules
       // if implicit policy="allow" rules must be block or reject
-      if ((new_policy == Target::allow &&
-           (rule.target == Target::block || rule.target == Target::reject)) ||
-          (new_policy == Target::block && rule.target == Target::allow)) {
+      if ((new_policy == Target::allow && (rule.target() == Target::block ||
+                                           rule.target() == Target::reject)) ||
+          (new_policy == Target::block && rule.target() == Target::allow)) {
         new_rules.push_back(rule);
       } else {
         deleted_by_policy_change = true;

@@ -18,10 +18,8 @@ namespace guard {
 /// @brief Target ::= allow | block | reject
 enum class Target { allow, block, reject };
 
-/**
- * @brief Operators used in usbguard rules
- *
- */
+
+/// @brief Operators used in usbguard rules
 enum class RuleOperator {
   all_of,  // Evaluate to true if all of the specified conditions evaluated to true.
   one_of,  // Evaluate to true if one of the specified conditions evaluated to true.
@@ -31,10 +29,8 @@ enum class RuleOperator {
   no_operator     // if no operators are used
 };
 
-/**
- * @brief Conditions used in usbguard rules
- *
- */
+
+/// @brief Conditions used in usbguard rules
 enum class RuleConditions {
   localtime,    //  Evaluates to true if the local time is in the specified time range.
   allowed_matches, // Evaluates to true if an allowed device matches the specified query.
@@ -49,10 +45,8 @@ enum class RuleConditions {
   no_condition
 };
 
-/**
- * @brief Strictness levels 
- * 
- */
+
+/// @brief Strictness levels 
 enum class StrictnessLevel{
   hash, // the most strict
   vid_pid, 
@@ -72,31 +66,7 @@ using RuleWithBool = std::pair<bool, RuleWithOptionalParam>;
  * @throws Constructor - std::logical_error
  */
 class GuardRule : public SerializableForLisp<GuardRule> {
-
-  /// @brief Maps Target enum to a string.
-  static const std::map<Target, std::string> map_target;
-  /// @brief Maps RuleConditions enum to a string.
-  static const std::map<RuleConditions, std::string> map_conditions;
-  /// @brief Maps RuleOperator enum to a string.
-  static const std::map<RuleOperator, std::string> map_operator;
-
 public:
-  uint number = 0; ///@brief number of line (from the beginnig of file)
-  Target target;
-  std::optional<std::string> vid;
-  std::optional<std::string> pid;
-  std::optional<std::string> hash;
-  std::optional<std::string> parent_hash;
-  std::optional<std::string> device_name;
-  std::optional<std::string> serial;
-  std::optional<std::pair<RuleOperator, std::vector<std::string>>> port;
-  std::optional<std::pair<RuleOperator, std::vector<std::string>>>
-      with_interface;
-  std::optional<std::string> conn_type;
-  std::optional<std::pair<RuleOperator, std::vector<RuleWithBool>>> cond;
-  StrictnessLevel level = StrictnessLevel::hash;
-  std::optional<std::string> vendor_name;
-
   /**
    * @brief Construct a new Guard Rule object
    * @param str String rule from usbguard rules file
@@ -129,6 +99,21 @@ public:
   /// @param str Stricness level ("hash","vid_pid","interface");
   /// @return StrictnessLevel - non_strict if no corresondent level is found.
   static StrictnessLevel StrToStrictnessLevel(const std::string &str) noexcept;
+
+  inline const std::optional<std::string> &vid() const noexcept {
+    return vid_;
+  };
+  inline const std::optional<std::string> &vendor_name() const noexcept {
+    return vendor_name_;
+  };
+  inline void vendor_name(const std::string &v_name) noexcept {
+    vendor_name_ = v_name;
+  };
+  inline StrictnessLevel level() const noexcept { return level_; };
+  inline void level(StrictnessLevel new_level) noexcept { level_ = new_level; };
+  inline uint number() const noexcept { return number_; };
+  inline void number(uint numb) noexcept { number_ = numb; };
+  inline Target target() const noexcept { return target_; };
 
 private:
   static bool VidPidValidator(const std::string &val);
@@ -264,6 +249,29 @@ private:
    * @return RuleConditions
    */
   static RuleConditions ConvertToConditionWithParam(RuleConditions cond);
+
+  /// @brief Maps Target enum to a string.
+  static const std::map<Target, std::string> map_target;
+  /// @brief Maps RuleConditions enum to a string.
+  static const std::map<RuleConditions, std::string> map_conditions;
+  /// @brief Maps RuleOperator enum to a string.
+  static const std::map<RuleOperator, std::string> map_operator;
+
+  uint number_ = 0; ///@brief number of line (from the beginnig of file)
+  Target target_;
+  std::optional<std::string> vid_;
+  std::optional<std::string> pid_;
+  std::optional<std::string> hash_;
+  std::optional<std::string> parent_hash_;
+  std::optional<std::string> device_name_;
+  std::optional<std::string> serial_;
+  std::optional<std::pair<RuleOperator, std::vector<std::string>>> port_;
+  std::optional<std::pair<RuleOperator, std::vector<std::string>>>
+      with_interface_;
+  std::optional<std::string> conn_type_;
+  std::optional<std::pair<RuleOperator, std::vector<RuleWithBool>>> cond_;
+  StrictnessLevel level_ = StrictnessLevel::hash;
+  std::optional<std::string> vendor_name_;
 
 #ifdef UNIT_TEST
   friend class ::Test;

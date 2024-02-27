@@ -308,7 +308,7 @@ ConfigStatus::ParseGuardRulesFile() const noexcept {
   while (std::getline(file, line)) {
     try {
       res.first.emplace_back(GuardRule(line));
-      res.first.back().number = counter;
+      res.first.back().number(counter);
       ++counter;
     } catch (const std::logic_error &ex) {
       Log::Error() << "Can't parse the rule " << line;

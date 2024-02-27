@@ -57,7 +57,7 @@ GuardRule::GuardRule(const std::string &raw_str) {
   if (it_target == map_target.cend()) {
     throw ex_common;
   }
-  target = it_target->first;
+  target_ = it_target->first;
   splitted.erase(splitted.begin());
   if (splitted.size() == 1)
     return;
@@ -68,9 +68,9 @@ GuardRule::GuardRule(const std::string &raw_str) {
 
   if (str_id) {
     size_t separator = str_id->find(':');
-    vid = str_id->substr(0, separator);
-    pid = str_id->substr(separator + 1);
-    if (vid->empty() || pid->empty())
+    vid_ = str_id->substr(0, separator);
+    pid_ = str_id->substr(separator + 1);
+    if (vid_->empty() || pid_->empty())
       throw ex_common;
   }
 
@@ -82,14 +82,14 @@ GuardRule::GuardRule(const std::string &raw_str) {
   std::function<bool(const std::string &)> default_predicat =
       [](const std::string &val) { return !IsReservedWord(val); };
   // hash length MUST be > 10 symbols
-  hash = ParseToken(splitted, "hash",
-                    [](const std::string &val) { return val.size() > 10; });
-  parent_hash = ParseToken(splitted, "parent-hash", [](const std::string &val) {
-    return val.size() > 10;
-  });
-  device_name = ParseToken(splitted, "name", default_predicat);
-  serial = ParseToken(splitted, "serial", default_predicat);
-  port = ParseTokenWithOperator(splitted, "via-port", default_predicat);
+  hash_ = ParseToken(splitted, "hash",
+                     [](const std::string &val) { return val.size() > 10; });
+  parent_hash_ =
+      ParseToken(splitted, "parent-hash",
+                 [](const std::string &val) { return val.size() > 10; });
+  device_name_ = ParseToken(splitted, "name", default_predicat);
+  serial_ = ParseToken(splitted, "serial", default_predicat);
+  port_ = ParseTokenWithOperator(splitted, "via-port", default_predicat);
 
   // if a rules contains  with-interface { i1, i2 } array - insert the "equals"
   // operator
@@ -101,12 +101,12 @@ GuardRule::GuardRule(const std::string &raw_str) {
       splitted.insert(it_with_interface, "equals");
     }
   }
-  with_interface =
+  with_interface_ =
       ParseTokenWithOperator(splitted, "with-interface", InterfaceValidator);
 
-  conn_type = ParseToken(splitted, "with-connect-type", default_predicat);
+  conn_type_ = ParseToken(splitted, "with-connect-type", default_predicat);
   // Conditions may or may not exist in the string.
-  cond = ParseConditions(splitted);
+  cond_ = ParseConditions(splitted);
 
   // check
   for (std::string &str : splitted)
@@ -124,14 +124,14 @@ GuardRule::GuardRule(const std::string &raw_str) {
     throw std::logic_error("Not all tokens were parsed");
   }
   // Determine the stricness level
-  if (hash)
-    level = StrictnessLevel::hash;
-  else if (vid && pid)
-    level = StrictnessLevel::vid_pid;
-  else if (with_interface)
-    level = StrictnessLevel::interface;
+  if (hash_)
+    level_ = StrictnessLevel::hash;
+  else if (vid_ && pid_)
+    level_ = StrictnessLevel::vid_pid;
+  else if (with_interface_)
+    level_ = StrictnessLevel::interface;
   else
-    level = StrictnessLevel::non_strict;
+    level_ = StrictnessLevel::non_strict;
 }
 
 /******************************************************************************/
@@ -554,16 +554,16 @@ RuleConditions GuardRule::ConvertToConditionWithParam(RuleConditions cond) {
 
 std::string GuardRule::ConditionsToString() const {
   std::string res;
-  if (!cond)
+  if (!cond_)
     return "";
   // check if any operator
-  if (map_operator.count(cond->first) != 0) {
-    res += map_operator.at(cond->first);
-    if (cond->first != RuleOperator::no_operator)
+  if (map_operator.count(cond_->first) != 0) {
+    res += map_operator.at(cond_->first);
+    if (cond_->first != RuleOperator::no_operator)
       res += "{";
   }
   int counter = 0;
-  for (const auto &rule_with_bool : cond->second) {
+  for (const auto &rule_with_bool : cond_->second) {
     // look in conditions map
     if (map_conditions.count(rule_with_bool.second.first) == 0)
       continue;
@@ -584,7 +584,7 @@ std::string GuardRule::ConditionsToString() const {
     }
     ++counter;
   }
-  if (cond->first != RuleOperator::no_operator)
+  if (cond_->first != RuleOperator::no_operator)
     res += "}";
   return res;
 }
@@ -595,29 +595,29 @@ std::string
 GuardRule::BuildString(bool build_parent_hash,
                        bool with_interface_array_no_operator) const noexcept {
   std::ostringstream res;
-  res << map_target.at(target);
-  if (vid && pid)
-    res << " id " << *vid << ":" << *pid;
-  if (serial)
-    res << " serial " << QuoteIfNotQuoted(*serial);
-  if (device_name)
-    res << " name " << QuoteIfNotQuoted(*device_name);
-  if (hash)
-    res << " hash " << QuoteIfNotQuoted(*hash);
-  if (build_parent_hash && parent_hash)
-    res << " parent-hash " << QuoteIfNotQuoted(*parent_hash);
-  if (port) {
+  res << map_target.at(target_);
+  if (vid_ && pid_)
+    res << " id " << *vid_ << ":" << *pid_;
+  if (serial_)
+    res << " serial " << QuoteIfNotQuoted(*serial_);
+  if (device_name_)
+    res << " name " << QuoteIfNotQuoted(*device_name_);
+  if (hash_)
+    res << " hash " << QuoteIfNotQuoted(*hash_);
+  if (build_parent_hash && parent_hash_)
+    res << " parent-hash " << QuoteIfNotQuoted(*parent_hash_);
+  if (port_) {
     res << " via-port ";
     res << PortsToString();
   }
-  if (with_interface) {
+  if (with_interface_) {
     res << " with-interface ";
     res << InterfacesToString(with_interface_array_no_operator);
   }
-  if (conn_type)
-    res << " with-connect-type " << QuoteIfNotQuoted(*conn_type);
+  if (conn_type_)
+    res << " with-connect-type " << QuoteIfNotQuoted(*conn_type_);
 
-  if (cond) {
+  if (cond_) {
     res << " if " << ConditionsToString();
   }
   std::string result = res.str();
@@ -630,16 +630,16 @@ GuardRule::BuildString(bool build_parent_hash,
 
 std::string GuardRule::PortsToString() const {
   std::stringstream string_builder;
-  if (port) {
-    string_builder << map_operator.at(port->first);
-    if (port->first != RuleOperator::no_operator) {
+  if (port_) {
+    string_builder << map_operator.at(port_->first);
+    if (port_->first != RuleOperator::no_operator) {
       string_builder << " { ";
-      for (const auto &port_val : port->second) {
+      for (const auto &port_val : port_->second) {
         string_builder << QuoteIfNotQuoted(port_val) << " ";
       }
       string_builder << "} ";
     } else {
-      string_builder << QuoteIfNotQuoted(port->second[0]);
+      string_builder << QuoteIfNotQuoted(port_->second[0]);
     }
   }
   return string_builder.str();
@@ -649,20 +649,20 @@ std::string GuardRule::PortsToString() const {
 std::string
 GuardRule::InterfacesToString(bool with_interface_array_no_operator) const {
   std::stringstream res;
-  if (!with_interface.has_value())
+  if (!with_interface_.has_value())
     return res.str();
-  if (with_interface->second.size() > 1) {
+  if (with_interface_->second.size() > 1) {
     if (!with_interface_array_no_operator ||
-        with_interface->first != RuleOperator::equals) {
-      res << map_operator.at(with_interface->first);
+        with_interface_->first != RuleOperator::equals) {
+      res << map_operator.at(with_interface_->first);
     }
     res << "{";
-    for (const auto &interf : with_interface->second) {
+    for (const auto &interf : with_interface_->second) {
       res << " " << interf;
     }
     res << " }";
-  } else if (with_interface->second.size() == 1) {
-    res << with_interface->second[0];
+  } else if (with_interface_->second.size() == 1) {
+    res << with_interface_->second[0];
   }
   return res.str();
 }
@@ -670,46 +670,51 @@ GuardRule::InterfacesToString(bool with_interface_array_no_operator) const {
 /**********************************************************************************/
 vecPairs GuardRule::SerializeForLisp() const {
   vecPairs res;
-  res.emplace_back("name", std::to_string(number));
+  res.emplace_back("name", std::to_string(number_));
   // The most string rules
-  if (level == StrictnessLevel::hash) {
+  if (level_ == StrictnessLevel::hash) {
     res.emplace_back("lbl_rule_hash",
-                     hash.has_value() ? EscapeQuotes(hash.value()) : "");
-    res.emplace_back("lbl_rule_desc", device_name.has_value()
-                                          ? EscapeQuotes(device_name.value())
+                     hash_.has_value() ? EscapeQuotes(hash_.value()) : "");
+    res.emplace_back("lbl_rule_desc", device_name_.has_value()
+                                          ? EscapeQuotes(device_name_.value())
                                           : "");
   }
 
   // VID::PID
-  if (level == StrictnessLevel::vid_pid) {
-    res.emplace_back("lbl_rule_vid", vid.has_value() ? EscapeQuotes(*vid) : "");
-    res.emplace_back("lbl_rule_vendor",
-                     vendor_name.has_value() ? EscapeQuotes(*vendor_name) : "");
-    res.emplace_back("lbl_rule_pid", pid.has_value() ? EscapeQuotes(*pid) : "");
-    res.emplace_back("lbl_rule_product",
-                     device_name.has_value() ? EscapeQuotes(*device_name) : "");
+  if (level_ == StrictnessLevel::vid_pid) {
+    res.emplace_back("lbl_rule_vid",
+                     vid_.has_value() ? EscapeQuotes(*vid_) : "");
+    res.emplace_back("lbl_rule_vendor", vendor_name_.has_value()
+                                            ? EscapeQuotes(*vendor_name_)
+                                            : "");
+    res.emplace_back("lbl_rule_pid",
+                     pid_.has_value() ? EscapeQuotes(*pid_) : "");
+    res.emplace_back("lbl_rule_product", device_name_.has_value()
+                                             ? EscapeQuotes(*device_name_)
+                                             : "");
     res.emplace_back("lbl_rule_port",
-                     port.has_value() ? EscapeQuotes(PortsToString()) : "");
+                     port_.has_value() ? EscapeQuotes(PortsToString()) : "");
   }
 
   // interface
-  if (level == StrictnessLevel::interface) {
+  if (level_ == StrictnessLevel::interface) {
     res.emplace_back(
         "lbl_rule_interface",
-        with_interface.has_value() ? EscapeQuotes(InterfacesToString()) : "");
-    res.emplace_back("lbl_rule_desc", device_name.has_value()
-                                          ? EscapeQuotes(device_name.value())
+        with_interface_.has_value() ? EscapeQuotes(InterfacesToString()) : "");
+    res.emplace_back("lbl_rule_desc", device_name_.has_value()
+                                          ? EscapeQuotes(device_name_.value())
                                           : "");
     res.emplace_back("lbl_rule_port",
-                     port.has_value() ? EscapeQuotes(PortsToString()) : "");
+                     port_.has_value() ? EscapeQuotes(PortsToString()) : "");
   }
 
   // non-strict
-  if (level == StrictnessLevel::non_strict) {
+  if (level_ == StrictnessLevel::non_strict) {
     res.emplace_back("lbl_rule_raw", EscapeQuotes(BuildString()));
   }
-  res.emplace_back("lbl_rule_target",
-                   map_target.count(target) != 0 ? map_target.at(target) : "");
+  res.emplace_back("lbl_rule_target", map_target.count(target_) != 0
+                                          ? map_target.at(target_)
+                                          : "");
   return res;
 }
 
