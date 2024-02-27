@@ -13,7 +13,6 @@ public:
 
 template <> class SerializableForLisp<vecPairs> {
   vecPairs vec;
-
 public:
   SerializableForLisp(vecPairs &&vec_) : vec{vec_} {};
   vecPairs SerializeForLisp() const { return vec; }
