@@ -6,9 +6,10 @@
 #include <boost/algorithm/string.hpp>
 
 using guard::utils::Log;
+using namespace utils;
 
 MessageDispatcher::MessageDispatcher(guard::Guard &guard) noexcept
-    : guard(guard) {}
+    : guard_(guard) {}
 
 bool MessageDispatcher::Dispatch(const LispMessage &msg) noexcept {
   // list usbs
@@ -30,7 +31,7 @@ bool MessageDispatcher::Dispatch(const LispMessage &msg) noexcept {
   // get congiguration info
   if (msg.action == "read" && msg.objects == "config_status") {
     Log::Info() << "Get config status";
-    std::cout << ToLispAssoc(guard.GetConfigStatus());
+    std::cout << ToLispAssoc(guard_.GetConfigStatus());
     return true;
   }
   // list usbguard rules
@@ -52,13 +53,13 @@ bool MessageDispatcher::SaveChangeRules(const LispMessage &msg) const noexcept {
   Log::Debug() << "Time measurement has started";
   if (msg.params.count("changes_json") == 0 ||
       msg.params.find("changes_json")->second.empty()) {
-    std::cout << mess_beg << mess_end;
+    std::cout << kMessBeg << kMessEnd;
     Log::Warning() << "bad request for rules,doing nothing";
     return true;
   }
   std::string json_string = msg.params.at("changes_json");
   boost::replace_all(json_string, "\\\\\"", "\\\"");
-  std::optional<std::string> result = guard.ParseJsonRulesChanges(json_string);
+  std::optional<std::string> result = guard_.ParseJsonRulesChanges(json_string);
   if (result)
     *result = EscapeQuotes(*result);
   vecPairs vec_result;
@@ -82,8 +83,8 @@ bool MessageDispatcher::ListUsbGuardRules(
   auto start = std::chrono::steady_clock::now();
   Log::Debug() << "Time measurement has started";
   std::vector<guard::GuardRule> vec_rules =
-      guard.GetConfigStatus().ParseGuardRulesFile().first;
-  std::cout << mess_beg;
+      guard_.GetConfigStatus().ParseGuardRulesFile().first;
+  std::cout << kMessBeg;
   std::string response;
   // map vendor ids to strings
   if (level == guard::StrictnessLevel::vid_pid) {
@@ -104,33 +105,33 @@ bool MessageDispatcher::ListUsbGuardRules(
       response += ToLisp(rule);
     }
   }
-  std::cout << response << mess_end;
+  std::cout << response << kMessEnd;
   Log::Debug() << "Elapsed(ms)=" << since(start).count();
   return true;
 }
 
 bool MessageDispatcher::ListUsbDevices() const noexcept {
   Log::Debug() << "Time measurement has started";
-  std::vector<guard::UsbDevice> vec_usb = guard.ListCurrentUsbDevices();
-  std::cout << mess_beg;
+  std::vector<guard::UsbDevice> vec_usb = guard_.ListCurrentUsbDevices();
+  std::cout << kMessBeg;
   for (const auto &usb : vec_usb) {
     std::cout << ToLisp(usb);
   }
-  std::cout << mess_end;
+  std::cout << kMessEnd;
   return true;
 }
 
 bool MessageDispatcher::AllowDevice(const LispMessage &msg) const noexcept {
   if (msg.params.count("usb_id") == 0 ||
       msg.params.find("usb_id")->second.empty()) {
-    std::cout << mess_beg << mess_end;
+    std::cout << kMessBeg << kMessEnd;
     Log::Warning() << "Bad request for usb allow,doing nothing";
     return true;
   }
-  if (guard.AllowOrBlockDevice(msg.params.find("usb_id")->second, true)) {
-    std::cout << mess_beg << "status" << WrapWithQuotes("OK") << mess_end;
+  if (guard_.AllowOrBlockDevice(msg.params.find("usb_id")->second, true)) {
+    std::cout << kMessBeg << "status" << WrapWithQuotes("OK") << kMessEnd;
   } else {
-    std::cout << mess_beg << "status" << WrapWithQuotes("FAIL") << mess_end;
+    std::cout << kMessBeg << "status" << WrapWithQuotes("FAIL") << kMessEnd;
   }
   return true;
 }
@@ -138,25 +139,25 @@ bool MessageDispatcher::AllowDevice(const LispMessage &msg) const noexcept {
 bool MessageDispatcher::BlockDevice(const LispMessage &msg) const noexcept {
   if (msg.params.count("usb_id") == 0 ||
       msg.params.find("usb_id")->second.empty()) {
-    std::cout << mess_beg << mess_end;
+    std::cout << kMessBeg << kMessEnd;
     Log::Warning() << "Bad request for usb allow,doing nothing";
     return true;
   }
-  if (guard.AllowOrBlockDevice(msg.params.find("usb_id")->second, false)) {
-    std::cout << mess_beg << "status" << WrapWithQuotes("OK") << mess_end;
+  if (guard_.AllowOrBlockDevice(msg.params.find("usb_id")->second, false)) {
+    std::cout << kMessBeg << "status" << WrapWithQuotes("OK") << kMessEnd;
   } else {
-    std::cout << mess_beg << "status" << WrapWithQuotes("FAIL") << mess_end;
+    std::cout << kMessBeg << "status" << WrapWithQuotes("FAIL") << kMessEnd;
   }
   return true;
 }
 
 bool MessageDispatcher::CheckConfig() const noexcept {
   Log::Info() << "Check config";
-  std::string str = mess_beg;
-  for (const auto &pair : guard.GetConfigStatus().udev_warnings) {
-    str += ToLisp("label_udev_rules_filename", pair.first);
+  std::string str = kMessBeg;
+  for (const auto &pair : guard_.GetConfigStatus().udev_warnings) {
+    str += ToLisp({"label_udev_rules_filename", pair.first});
   }
-  str += mess_end;
+  str += kMessEnd;
   std::cout << str;
   return true;
 }

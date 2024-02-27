@@ -30,7 +30,7 @@ private:
   bool BlockDevice(const LispMessage &msg) const noexcept;
   bool CheckConfig() const noexcept;
 
-  guard::Guard &guard;
-  const std::string mess_beg = "(";
-  const std::string mess_end = ")";
+  guard::Guard &guard_;
+  const std::string kMessBeg = "(";
+  const std::string kMessEnd = ")";
 };
