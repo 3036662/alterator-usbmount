@@ -1,6 +1,7 @@
 #include "systemd_dbus.hpp"
 #include "log.hpp"
 #include <boost/algorithm/string/predicate.hpp>
+#include <exception>
 #include <iostream>
 #include <thread>
 
@@ -77,17 +78,16 @@ std::optional<bool> Systemd::StartUnit(const std::string &unit_name) noexcept {
     auto isActive = IsUnitActive(unit_name);
     if (isActive && isActive.value()) {
       return true;
-    } else {
-      for (int i = 0; i < 10; ++i) {
-        Log::Info() << "Waiting for systemd starts the sevice ...";
-        std::this_thread::sleep_for(std::chrono::milliseconds(200));
-        isActive = IsUnitActive(unit_name);
-        if (isActive.has_value() && isActive.value())
-          return true;
-      }
+    }
+    for (int i = 0; i < 10; ++i) {
+      Log::Info() << "Waiting for systemd starts the sevice ...";
+      std::this_thread::sleep_for(std::chrono::milliseconds(200));
+      isActive = IsUnitActive(unit_name);
+      if (isActive.has_value() && isActive.value())
+        return true;
     }
 
-  } catch (const sdbus::Error &ex) {
+  } catch (const std::exception &ex) {
     Log::Error() << "Can't restart " << unit_name << " unit is active";
     Log::Error() << ex.what();
   }
@@ -110,17 +110,16 @@ std::optional<bool> Systemd::EnableUnit(const std::string &unit_name) noexcept {
     auto isEnabled = IsUnitEnabled(unit_name);
     if (isEnabled && isEnabled.value()) {
       return true;
-    } else {
-      for (int i = 0; i < 10; ++i) {
-        Log::Info() << "Waiting for systemd starts the sevice ...";
-        std::this_thread::sleep_for(std::chrono::milliseconds(200));
-        isEnabled = IsUnitEnabled(unit_name);
-        if (isEnabled.has_value() && isEnabled.value())
-          return true;
-      }
+    }
+    for (int i = 0; i < 10; ++i) {
+      Log::Info() << "Waiting for systemd starts the sevice ...";
+      std::this_thread::sleep_for(std::chrono::milliseconds(200));
+      isEnabled = IsUnitEnabled(unit_name);
+      if (isEnabled.has_value() && isEnabled.value())
+        return true;
     }
 
-  } catch (const sdbus::Error &ex) {
+  } catch (const std::exception &ex) {
     Log::Error() << "Can't enable " << unit_name << " unit is active";
     Log::Error() << ex.what();
   }
@@ -144,17 +143,15 @@ Systemd::DisableUnit(const std::string &unit_name) noexcept {
     auto isEnabled = IsUnitEnabled(unit_name);
     if (isEnabled && !isEnabled.value()) {
       return true;
-    } else {
-      for (int i = 0; i < 10; ++i) {
-        Log::Info() << "Waiting for systemd starts the sevice ...";
-        std::this_thread::sleep_for(std::chrono::milliseconds(200));
-        isEnabled = IsUnitEnabled(unit_name);
-        if (isEnabled.has_value() && !isEnabled.value())
-          return true;
-      }
     }
-
-  } catch (const sdbus::Error &ex) {
+    for (int i = 0; i < 10; ++i) {
+      Log::Info() << "Waiting for systemd starts the sevice ...";
+      std::this_thread::sleep_for(std::chrono::milliseconds(200));
+      isEnabled = IsUnitEnabled(unit_name);
+      if (isEnabled.has_value() && !isEnabled.value())
+        return true;
+    }
+  } catch (const std::exception &ex) {
     Log::Error() << "Can't disable " << unit_name << " unit is active";
     Log::Error() << ex.what();
   }
@@ -177,17 +174,15 @@ Systemd::RestartUnit(const std::string &unit_name) noexcept {
     auto isActive = IsUnitActive(unit_name);
     if (isActive && isActive.value()) {
       return true;
-    } else {
-      for (int i = 0; i < 10; ++i) {
-        Log::Info() << "Waiting for systemd restarts the sevice ...";
-        std::this_thread::sleep_for(std::chrono::milliseconds(200));
-        isActive = IsUnitActive(unit_name);
-        if (isActive.has_value() && isActive.value())
-          return true;
-      }
     }
-
-  } catch (const sdbus::Error &ex) {
+    for (int i = 0; i < 10; ++i) {
+      Log::Info() << "Waiting for systemd restarts the sevice ...";
+      std::this_thread::sleep_for(std::chrono::milliseconds(200));
+      isActive = IsUnitActive(unit_name);
+      if (isActive.has_value() && isActive.value())
+        return true;
+    }
+  } catch (const std::exception &ex) {
     Log::Error() << "Can't restart " << unit_name << " unit is active";
     Log::Error() << ex.what();
   }
@@ -214,16 +209,15 @@ std::optional<bool> Systemd::StopUnit(const std::string &unit_name) noexcept {
     isActive = IsUnitActive(unit_name);
     if (isActive && !isActive.value()) {
       return true;
-    } else {
-      for (int i = 0; i < 10; ++i) {
-        Log::Info() << "Waiting for systemd stops the sevice ...";
-        std::this_thread::sleep_for(std::chrono::milliseconds(200));
-        isActive = IsUnitActive(unit_name);
-        if (isActive.has_value() && !isActive.value())
-          return true;
-      }
     }
-  } catch (const sdbus::Error &ex) {
+    for (int i = 0; i < 10; ++i) {
+      Log::Info() << "Waiting for systemd stops the sevice ...";
+      std::this_thread::sleep_for(std::chrono::milliseconds(200));
+      isActive = IsUnitActive(unit_name);
+      if (isActive.has_value() && !isActive.value())
+        return true;
+    }
+  } catch (const std::exception &ex) {
     Log::Error() << "Can't stop " << unit_name << " unit is active";
     Log::Error() << ex.what();
   }
