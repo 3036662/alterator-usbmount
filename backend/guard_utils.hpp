@@ -26,11 +26,14 @@ std::vector<std::string> FoldUsbInterfacesList(std::string i_type);
 std::unordered_map<std::string, std::string>
 MapVendorCodesToNames(const std::unordered_set<std::string> &vendors) noexcept;
 
+/// @brief extract daemon target state from json (run || disabled)
 std::optional<bool>
 ExtractDaemonTargetState(boost::json::object *p_obj) noexcept;
 
+/// @brief extract daemon target implicit polict from json (block || allow)
 std::optional<Target> ExtractTargetPolicy(boost::json::object *p_obj) noexcept;
 
+/// @brief extract preset type from json
 std::optional<std::string>
 ExtractPresetMode(boost::json::object *p_obj) noexcept;
 
