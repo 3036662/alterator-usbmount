@@ -8,7 +8,6 @@
 namespace dbus_bindings {
 
 using guard::utils::Log;
-/******************************************************************************/
 
 Systemd::Systemd() noexcept : connection_{nullptr} { ConnectToSystemDbus(); }
 
@@ -31,8 +30,6 @@ Systemd::IsUnitEnabled(const std::string &unit_name) noexcept {
              ? std::nullopt
              : std::optional<bool>(boost::contains(result, "enabled"));
 }
-
-/******************************************************************************/
 
 std::optional<bool>
 Systemd::IsUnitActive(const std::string &unit_name) noexcept {
@@ -62,8 +59,6 @@ Systemd::IsUnitActive(const std::string &unit_name) noexcept {
              : std::optional<bool>(boost::starts_with(result, "active"));
 }
 
-/******************************************************************************/
-
 std::optional<bool> Systemd::StartUnit(const std::string &unit_name) noexcept {
   if (!Health())
     return std::nullopt;
@@ -92,7 +87,6 @@ std::optional<bool> Systemd::StartUnit(const std::string &unit_name) noexcept {
   }
   return std::nullopt;
 }
-/******************************************************************************/
 
 std::optional<bool> Systemd::EnableUnit(const std::string &unit_name) noexcept {
   if (!Health())
@@ -125,8 +119,6 @@ std::optional<bool> Systemd::EnableUnit(const std::string &unit_name) noexcept {
   return std::nullopt;
 }
 
-/******************************************************************************/
-
 std::optional<bool>
 Systemd::DisableUnit(const std::string &unit_name) noexcept {
   if (!Health())
@@ -157,7 +149,6 @@ Systemd::DisableUnit(const std::string &unit_name) noexcept {
   return std::nullopt;
 }
 
-/******************************************************************************/
 std::optional<bool>
 Systemd::RestartUnit(const std::string &unit_name) noexcept {
   if (!Health())
@@ -188,7 +179,6 @@ Systemd::RestartUnit(const std::string &unit_name) noexcept {
   return std::nullopt;
 }
 
-/******************************************************************************/
 std::optional<bool> Systemd::StopUnit(const std::string &unit_name) noexcept {
   if (!Health())
     return std::nullopt;
@@ -232,15 +222,11 @@ void Systemd::ConnectToSystemDbus() noexcept {
   }
 }
 
-/******************************************************************************/
-
 bool Systemd::Health() noexcept {
   if (!connection_)
     ConnectToSystemDbus();
   return static_cast<bool>(connection_);
 }
-
-/******************************************************************************/
 
 std::unique_ptr<sdbus::IProxy>
 Systemd::CreateProxyToSystemd(const std::string &path) {
