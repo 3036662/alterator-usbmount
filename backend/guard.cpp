@@ -152,6 +152,7 @@ Guard::ApplyJsonRulesChanges(const std::string &msg) noexcept {
   } catch (const std::exception &ex) {
     Log::Error() << "Can't parse JSON";
     Log::Error() << ex.what();
+    return std::nullopt;
   }
   // daemon target state (active or stopped)
   std::optional<bool> daemon_activate =
