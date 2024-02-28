@@ -165,7 +165,7 @@ ProcessJsonManualMode(const boost::json::object *ptr_jobj,
   }
   // if we need to remove some rules
   // put rules numbers to "rules_to_delete" vector
-  if (ptr_jobj->contains("deleted_rules") &&
+  if (ptr_jobj != nullptr && ptr_jobj->contains("deleted_rules") &&
       ptr_jobj->at("deleted_rules").is_array()) {
     for (const auto &element : ptr_jobj->at("deleted_rules").as_array()) {
       if (!element.is_string())
