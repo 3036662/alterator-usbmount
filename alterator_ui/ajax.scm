@@ -90,10 +90,16 @@
            
            ; disable block button if default policy is block
            (if (string=? "block" (get-value 'implicit_policy status))
-                    (form-update-activity "btn_prsnt_dev_block"  #f)
-                    (form-update-activity "btn_prsnt_dev_add"  #f) 
-           ) ; endif    
-           
+                    (begin        
+                        (form-update-activity "btn_prsnt_dev_block"  #f)
+                        (form-update-activity "btn_prsnt_dev_add"  #t) 
+                    )
+                    (begin
+                        (form-update-activity "btn_prsnt_dev_block"  #t)
+                        (form-update-activity "btn_prsnt_dev_add"  #f)
+                    )
+           ) ; endif     
+
            ; set checkbox checked if usbguard is active 
            (form-update-value "checkbox_use_control_hidden" 
                     (string=? "ACTIVE" (get-value 'usbguard_active status)))
