@@ -24,10 +24,10 @@ pkg_check_modules(SYSDTEMD REQUIRED systemd )
 add_subdirectory(backend)
 
 # for now - required only for fstab test
-pkg_check_modules(UDEV REQUIRED IMPORTED_TARGET libudev)
-add_executable(test_fstab fstab_test.cpp)
-target_link_libraries(test_fstab PRIVATE PkgConfig::UDEV)
-target_include_directories(test_fstab PUBLIC ${UDEV_INCLUDE_DIRS})
+#pkg_check_modules(UDEV REQUIRED IMPORTED_TARGET libudev)
+#add_executable(test_fstab fstab_test.cpp)
+#target_link_libraries(test_fstab PRIVATE PkgConfig::UDEV)
+#target_include_directories(test_fstab PUBLIC ${UDEV_INCLUDE_DIRS})
 
 # for android vid_pid parser
 add_subdirectory(android_vidpid_parser)
