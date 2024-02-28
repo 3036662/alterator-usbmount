@@ -5,6 +5,7 @@
 #include "utils.hpp"
 #include <boost/algorithm/string.hpp>
 #include <boost/json.hpp>
+#include <exception>
 #include <filesystem>
 #include <fstream>
 #include <set>
@@ -293,6 +294,295 @@ bool AddRejectAndroid(std::vector<GuardRule> &rules_to_add) noexcept {
     }
   }
   return true;
+}
+
+/*----------------- GuardRule utility functions ----------------- */
+
+bool VidPidValidator(const std::string &val) noexcept {
+  if (val.find(':') == std::string::npos)
+    return false;
+  std::vector<std::string> spl;
+  try {
+    boost::split(spl, val, [](const char symbol) { return symbol == ':'; });
+  } catch (const std::exception &ex) {
+    Log::Error() << ex.what();
+    return false;
+  }
+  if (spl.size() != 2)
+    return false;
+  if (spl[0] == "*" && spl[1] != "*")
+    return false;
+  for (const auto &element : spl) {
+    if (element.size() > 4)
+      return false;
+    if (element.size() < 4) {
+      return element == "*";
+    }
+    try {
+      std::stoi(element, nullptr, 16);
+    } catch (const std::exception &ex) {
+      Log::Error() << "Can't parse id " << element;
+      return false;
+    }
+  }
+  return true;
+}
+
+bool InterfaceValidator(const std::string &val) noexcept {
+  std::vector<std::string> spl;
+  try {
+    boost::split(spl, val, [](const char symbol) { return symbol == ':'; });
+  } catch (const std::exception &ex) {
+    Log::Error() << ex.what();
+    return false;
+  }
+  if (spl.size() != 3)
+    return false;
+  if (spl[0] == "*" && (spl[1] != "*" || spl[2] != "*"))
+    return false;
+  if (spl[1] == "*" && spl[2] != "*")
+    return false;
+  for (const auto &element : spl) {
+    if (element.size() != 2 && element == "*")
+      return true;
+    try {
+      std::stoi(element, nullptr, 16);
+    } catch (const std::exception &ex) {
+      Log::Error() << "Can't parse interface " << val;
+      return false;
+    }
+  }
+  return true;
+}
+
+std::vector<std::string> SplitRawRule(std::string raw_str) noexcept {
+  boost::trim(raw_str);
+  std::vector<std::string> res;
+  if (raw_str.empty())
+    return res;
+  utils::WrapBracesWithSpaces(raw_str);
+  // Split string with spaces.
+  // I current space is a part of a quoted string - skip it.
+  auto it_slow = raw_str.begin();
+  auto it_fast = it_slow;
+  ++it_fast;
+  bool dont_split{raw_str[0] == '\"'};
+  while (it_fast != raw_str.end()) {
+    if (*it_fast == ' ' && !dont_split) {
+      res.emplace_back(it_slow, it_fast);
+      while (it_fast != raw_str.end() && *it_fast == ' ')
+        ++it_fast;
+      it_slow = it_fast;
+    }
+    if (it_fast != raw_str.end() && *it_fast == '\"') {
+      dont_split = !dont_split;
+    }
+    if (it_fast != raw_str.end())
+      ++it_fast;
+  }
+  if (it_fast == raw_str.end() && !dont_split && it_slow < it_fast)
+    res.emplace_back(it_slow, it_fast);
+  for (std::string &str : res)
+    boost::trim(str);
+  for (auto it = res.begin(); it != res.end(); ++it) {
+    if (it->empty())
+      res.erase(it);
+  }
+  return res;
+}
+
+void WrapBracesWithSpaces(std::string &raw_str) noexcept {
+  std::string tmp;
+  for (auto it = raw_str.begin(); it != raw_str.end(); ++it) {
+    bool wrap =
+        *it == '{' || *it == '}' || *it == '!' || *it == '(' || *it == ')';
+    if (wrap) {
+      tmp.push_back(' ');
+    }
+    tmp.push_back(*it);
+    if (wrap) {
+      tmp.push_back(' ');
+    }
+  }
+  std::swap(raw_str, tmp);
+}
+
+std::optional<std::string>
+ParseToken(std::vector<std::string> &splitted, const std::string &name,
+           const std::function<bool(const std::string &)> &predicat) {
+
+  std::optional<std::string> res;
+  auto it_name = std::find(splitted.cbegin(), splitted.cend(), name);
+  if (it_name != splitted.cend()) {
+    auto it_name_param = it_name;
+    ++it_name_param;
+    if (it_name_param != splitted.cend() && predicat(*it_name_param)) {
+      res = *it_name_param;
+    } else {
+      Log::Error() << "Parsing error, token " << *it_name_param;
+      throw std::logic_error("Cant parse rule string");
+    }
+    splitted.erase(it_name, ++it_name_param);
+  }
+  return res;
+}
+
+std::string
+ParseConditionParameter(std::vector<std::string>::const_iterator it_start,
+                        std::vector<std::string>::const_iterator it_end,
+                        bool must_have_params) {
+  std::logic_error ex_common("Can't parse parameters for condition");
+  // Parse parameters.
+  auto it_open_round_brace = it_start;
+  if (*it_open_round_brace != "(") {
+    if (must_have_params) {
+      throw std::logic_error("( expected");
+    }
+    return "";
+  }
+  ++it_start;
+  if (it_start == it_end) {
+    throw ex_common;
+  }
+  auto it_close_round_brace = it_start;
+  ++it_close_round_brace;
+  if (it_close_round_brace == it_end || *it_close_round_brace != ")") {
+    throw ex_common;
+  }
+  return *it_start;
+}
+
+std::vector<std::string>::const_iterator
+ParseCurlyBracesArray(std::vector<std::string>::const_iterator it_range_begin,
+                      std::vector<std::string>::const_iterator it_end,
+                      const std::function<bool(const std::string &)> &predicat,
+                      std::vector<std::string> &res_array) {
+  std::logic_error ex_common("Cant parse rule string");
+  ++it_range_begin;
+  // if no array found -> throw exception
+  if (it_range_begin == it_end || *it_range_begin != "{") {
+    // Log::Error() << "Error parsing values for " << name << " param.";
+    throw ex_common;
+  }
+  auto it_range_end = std::find(it_range_begin, it_end, "}");
+  if (it_range_end == it_end) {
+    Log::Error() << "A closing \"}\" expectend for sequence.";
+    throw ex_common;
+  }
+  if (std::distance(it_range_begin, it_range_end) == 1) {
+    throw std::logic_error("Empty array {} is not supported");
+  }
+  // fill result with values
+  auto it_val = it_range_begin;
+  ++it_val;
+  while (it_val != it_range_end) {
+    if (predicat(*it_val)) {
+      res_array.emplace_back(*it_val);
+    } else {
+      Log::Error() << "Parsing error, token " << *it_val;
+      throw ex_common;
+    }
+    ++it_val;
+  }
+  return it_range_end;
+}
+
+bool CanConditionHaveParams(RuleConditions cond) noexcept {
+  return cond == RuleConditions::localtime ||
+         cond == RuleConditions::allowed_matches ||
+         cond == RuleConditions::rule_applied ||
+         cond == RuleConditions::rule_applied_past ||
+         cond == RuleConditions::rule_evaluated ||
+         cond == RuleConditions::rule_evaluated_past ||
+         cond == RuleConditions::random;
+}
+
+bool MustConditionHaveParams(RuleConditions cond) noexcept {
+  return cond == RuleConditions::localtime ||
+         cond == RuleConditions::allowed_matches ||
+         cond == RuleConditions::rule_applied_past ||
+         cond == RuleConditions::rule_evaluated_past;
+}
+
+RuleConditions ConvertToConditionWithParam(RuleConditions cond) noexcept {
+  if (cond == RuleConditions::rule_applied)
+    return RuleConditions::rule_applied_past;
+  if (cond == RuleConditions::rule_evaluated)
+    return RuleConditions::rule_evaluated_past;
+  if (cond == RuleConditions::random)
+    return RuleConditions::random_with_propability;
+  return cond;
+}
+
+/*------------------ ConfigStatus free-standing util functions ------------*/
+
+bool IsSuspiciousUdevFile(const std::string &str_path) {
+  std::ifstream file_udev_rule(str_path);
+  if (file_udev_rule.is_open()) {
+    std::string tmp_str;
+    // bool found_usb{false};
+    bool found_authorize{false};
+    // for each string
+    while (getline(file_udev_rule, tmp_str)) {
+      // case insentitive search
+      std::transform(tmp_str.begin(), tmp_str.end(), tmp_str.begin(),
+                     [](unsigned char symbol) {
+                       return std::isalnum(symbol) != 0 ? std::tolower(symbol)
+                                                        : symbol;
+                     });
+      // if (tmp_str.find("usb") != std::string::npos) {
+      //   found_usb = true;
+      // }
+      if (tmp_str.find("authorize") != std::string::npos) {
+        found_authorize = true;
+      }
+    }
+    tmp_str.clear();
+    file_udev_rule.close();
+    // if (found_usb && found_authorize) {
+    // a rule can ruin program behavior even if only authorized and no usb
+    if (found_authorize) {
+      Log::Info() << "Found file " << str_path;
+      return true;
+    }
+  } else {
+    throw std::runtime_error("Can't inspect file " + str_path);
+  }
+  return false;
+}
+
+std::unordered_map<std::string, std::string> InspectUdevRules(
+#ifdef UNIT_TEST
+    const std::vector<std::string> *vec
+#endif
+    ) noexcept {
+  std::unordered_map<std::string, std::string> res;
+  std::vector<std::string> udev_paths{"/usr/lib/udev/rules.d",
+                                      "/usr/local/lib/udev/rules.d",
+                                      "/run/udev/rules.d", "/etc/udev/rules.d"};
+#ifdef UNIT_TEST
+  if (vec != nullptr)
+    udev_paths = *vec;
+#endif
+  Log::Info() << "Inspecting udev folders";
+  for (const std::string &path : udev_paths) {
+    // Log::Info() << "Inspecting udev folder " << path;
+    // find all files in folder
+    std::vector<std::string> files =
+        ::utils::FindAllFilesInDirRecursive({path, ".rules"});
+    // for each file - check if it contains suspicious strings
+    for (const std::string &str_path : files) {
+      try {
+        if (utils::IsSuspiciousUdevFile(str_path)) {
+          Log::Info() << "Found file " << str_path;
+          res.emplace(str_path, "usb_rule");
+        }
+      } catch (const std::exception &ex) {
+        Log::Error() << ex.what();
+      }
+    }
+  }
+  return res;
 }
 
 } // namespace guard::utils

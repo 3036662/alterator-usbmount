@@ -92,6 +92,11 @@ public:
   BuildString(bool build_parent_hash = true,
               bool with_interface_array_no_operator = true) const noexcept;
 
+  /**
+   * @brief Builds a vector of string pairs, suitable for
+   * sending to lisp
+   * @return std::vector<std::string,std::string>
+   */
   vecPairs SerializeForLisp() const;
 
   /// @brief Converts a string representation of Rule StricnessLevel to a
@@ -116,8 +121,28 @@ public:
   inline Target target() const noexcept { return target_; };
 
 private:
-  static bool VidPidValidator(const std::string &val);
-  static bool InterfaceValidator(const std::string &val);
+  ///  @brief Build a condition string from this object.
+  std::string ConditionsToString() const;
+  /// @brief Builds a string from ports
+  std::string PortsToString() const;
+  /// @brief Builds a string from interfaces
+  std::string
+  InterfacesToString(bool with_interface_array_no_operator = true) const;
+
+  /**
+   * @brief Parse a token when operators are possible for token
+   *
+   * @param splitted Vector - a splitted rule string.
+   * @param name String name of a parameter to look for.
+   * @param predicat bool(sting&) function returning true, if string is valid
+   * value
+   * @return std::optional<std::pair<RuleOperator, std::vector<std::string>>>
+   * value for parameter
+   */
+  static std::optional<std::pair<RuleOperator, std::vector<std::string>>>
+  ParseTokenWithOperator(
+      std::vector<std::string> &splitted, const std::string &name,
+      const std::function<bool(const std::string &)> &predicat);
 
   /**
    * @brief Parse conditions
@@ -144,19 +169,6 @@ private:
                     std::vector<std::string>::const_iterator it_range_end);
 
   /**
-   * @brief Build a condition string from this object.
-   *
-   * @return std::string
-   */
-  std::string ConditionsToString() const;
-
-  std::string PortsToString() const;
-  std::string
-  InterfacesToString(bool with_interface_array_no_operator = true) const;
-
-  /*--------------------- static -------------------------*/
-
-  /**
    * @brief Checks if sring looks like one of parameter reserve words for rule
    *
    * @param str parameter
@@ -165,91 +177,8 @@ private:
    */
   static bool IsReservedWord(const std::string &str) noexcept;
 
-  /**
-   * @brief Split string by space, dont split double-quouted substrings
-   *
-   * @param raw_str String to split
-   * @return std::vector<std::string>
-   * @example "id    1    name   "Long Name"" -> { "id","1",""Long Name""}
-   */
-  static std::vector<std::string> SplitRawRule(std::string raw_str) noexcept;
-  /// @brief  // Inline wrap all curly and round braces and exclamation points
-  /// with spaces
-  static void WrapBracesWithSpaces(std::string &str);
-
-  /**
-   * @brief Parse token
-   *
-   * @param splitted vector - a splitted rule string.
-   * @param name String name of a parameter to look for.
-   * @param predicat bool(sting&) function returning true, if string is valid
-   * value
-   * @return std::optional<std::string> value for parameter
-   */
-  static std::optional<std::string>
-  ParseToken(std::vector<std::string> &splitted, const std::string &name,
-             const std::function<bool(const std::string &)> &predicat);
-
-  /**
-   * @brief Parse token when operators are possible for token
-   *
-   * @param splitted vector - a splitted rule string.
-   * @param name String name of a parameter to look for.
-   * @param predicat bool(sting&) function returning true, if string is valid
-   * value
-   * @return std::optional<std::pair<RuleOperator, std::vector<std::string>>>
-   * value for parameter
-   */
-  static std::optional<std::pair<RuleOperator, std::vector<std::string>>>
-  ParseTokenWithOperator(
-      std::vector<std::string> &splitted, const std::string &name,
-      const std::function<bool(const std::string &)> &predicat);
-
-  /**
-   * @brief Parses a condition parameter
-   * A parameter is expected to be enclosed in round braces.
-   *
-   * @param it_start An iterator, pointing to a token where to start. "("
-   * @param it_end  An iterator, pointing to the end of token sequence.
-   * @return A string value of parameter.
-   */
-  static std::string
-  ParseConditionParameter(std::vector<std::string>::const_iterator it_start,
-                          std::vector<std::string>::const_iterator it_end,
-                          bool must_have_params = false);
-  /**
-   * @brief Parses array {val1 val2 ...}
-   *
-   * @param it_range_begin Iterator to last token befor array
-   * @param it_end Iterator to end bound of sequence
-   * @param predicat Validator for a value
-   * @param res_array Array where values must be appended
-   * @return An iterator to the end of an array aka "}" token
-   */
-  static std::vector<std::string>::const_iterator ParseCurlyBracesArray(
-      std::vector<std::string>::const_iterator it_range_begin,
-      std::vector<std::string>::const_iterator it_end,
-      const std::function<bool(const std::string &)> &predicat,
-      std::vector<std::string> &res_array);
-
-  /**
-   * @brief Checks if a condition is allowed to have parameters.
-   *
-   * @param cond RuleConditions
-   * @return true
-   * @return false
-   */
-  static bool CanConditionHaveParams(RuleConditions cond);
-
-  static bool MustConditionHaveParams(RuleConditions cond);
-  /**
-   * @brief Choose an appropriate emun for RuleConditions
-   * in case it has parameters.
-   * @param cond
-   * @return RuleConditions
-   */
-  static RuleConditions ConvertToConditionWithParam(RuleConditions cond);
-
+  /* TODO This varibles should be refactored to consexpr if start using
+   * multithreading*/
   /// @brief Maps Target enum to a string.
   static const std::map<Target, std::string> map_target;
   /// @brief Maps RuleConditions enum to a string.

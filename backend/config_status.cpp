@@ -1,4 +1,5 @@
 #include "config_status.hpp"
+#include "guard_utils.hpp"
 #include "log.hpp"
 #include "systemd_dbus.hpp"
 #include "utils.hpp"
@@ -20,9 +21,9 @@ using guard::utils::Log;
 using ::utils::FindAllFilesInDirRecursive;
 
 ConfigStatus::ConfigStatus() noexcept
-    : udev_warnings{InspectUdevRules()}, udev_rules_OK{udev_warnings.empty()},
-      guard_daemon_OK{false}, guard_daemon_enabled{false},
-      guard_daemon_active{false},
+    : udev_warnings{utils::InspectUdevRules()},
+      udev_rules_OK{udev_warnings.empty()}, guard_daemon_OK{false},
+      guard_daemon_enabled{false}, guard_daemon_active{false},
       daemon_config_file_path{GetDaemonConfigPath()} {
   CheckDaemon();
   ParseDaemonConfig();
@@ -514,75 +515,6 @@ bool ConfigStatus::ChangeImplicitPolicy(bool block) noexcept {
   f_out.close();
   ParseDaemonConfig();
   return true;
-}
-
-bool ConfigStatus::IsSuspiciousUdevFile(const std::string &str_path) {
-  std::ifstream file_udev_rule(str_path);
-  if (file_udev_rule.is_open()) {
-    std::string tmp_str;
-    // bool found_usb{false};
-    bool found_authorize{false};
-    // for each string
-    while (getline(file_udev_rule, tmp_str)) {
-      // case insentitive search
-      std::transform(tmp_str.begin(), tmp_str.end(), tmp_str.begin(),
-                     [](unsigned char symbol) {
-                       return std::isalnum(symbol) != 0 ? std::tolower(symbol)
-                                                        : symbol;
-                     });
-      // if (tmp_str.find("usb") != std::string::npos) {
-      //   found_usb = true;
-      // }
-      if (tmp_str.find("authorize") != std::string::npos) {
-        found_authorize = true;
-      }
-    }
-    tmp_str.clear();
-    file_udev_rule.close();
-    // if (found_usb && found_authorize) {
-    // a rule can ruin program behavior even if only authorized and no usb
-    if (found_authorize) {
-      Log::Info() << "Found file " << str_path;
-      return true;
-    }
-  } else {
-    throw std::runtime_error("Can't inspect file " + str_path);
-  }
-  return false;
-}
-
-std::unordered_map<std::string, std::string> ConfigStatus::InspectUdevRules(
-#ifdef UNIT_TEST
-    const std::vector<std::string> *vec
-#endif
-    ) noexcept {
-  std::unordered_map<std::string, std::string> res;
-  std::vector<std::string> udev_paths{"/usr/lib/udev/rules.d",
-                                      "/usr/local/lib/udev/rules.d",
-                                      "/run/udev/rules.d", "/etc/udev/rules.d"};
-#ifdef UNIT_TEST
-  if (vec != nullptr)
-    udev_paths = *vec;
-#endif
-  Log::Info() << "Inspecting udev folders";
-  for (const std::string &path : udev_paths) {
-    // Log::Info() << "Inspecting udev folder " << path;
-    // find all files in folder
-    std::vector<std::string> files =
-        FindAllFilesInDirRecursive({path, ".rules"});
-    // for each file - check if it contains suspicious strings
-    for (const std::string &str_path : files) {
-      try {
-        if (IsSuspiciousUdevFile(str_path)) {
-          Log::Info() << "Found file " << str_path;
-          res.emplace(str_path, "usb_rule");
-        }
-      } catch (const std::exception &ex) {
-        Log::Error() << ex.what();
-      }
-    }
-  }
-  return res;
 }
 
 } // namespace guard

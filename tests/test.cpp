@@ -79,7 +79,7 @@ void Test::Run1() {
       "sdgzg098gav\\c" // bad path
   };
   const std::unordered_map<std::string, std::string> map =
-      guard::ConfigStatus::InspectUdevRules(&vec_mock);
+      guard::utils::InspectUdevRules(&vec_mock);
   const std::unordered_map<std::string, std::string> expected_map{
       std::pair<std::string, std::string>{file1, "usb_rule"},
       std::pair<std::string, std::string>{file5, "usb_rule"},
@@ -248,43 +248,43 @@ void Test::Run9() {
   guard::GuardRule parser("allow");
   {
     std::vector<std::string> expected{"a", "b"};
-    assert(parser.SplitRawRule("a b") == expected);
+    assert(SplitRawRule("a b") == expected);
   }
 
   {
     std::vector<std::string> expected{"a", "b"};
-    assert(parser.SplitRawRule("a b ") == expected);
+    assert(SplitRawRule("a b ") == expected);
   }
 
   {
     std::vector<std::string> expected{"a", "b"};
-    assert(parser.SplitRawRule("a    b ") == expected);
+    assert(SplitRawRule("a    b ") == expected);
   }
 
   {
     std::vector<std::string> expected{"a", "b"};
-    assert(parser.SplitRawRule("      a    b ") == expected);
+    assert(SplitRawRule("      a    b ") == expected);
   }
 
   {
     std::vector<std::string> expected{"\"a b\"", "c"};
-    assert(parser.SplitRawRule("      \"a b\"    c ") == expected);
+    assert(SplitRawRule("      \"a b\"    c ") == expected);
   }
 
   {
     std::vector<std::string> expected{"\"a b\"", "\"c d e\"", "fff", "ggg"};
-    assert(parser.SplitRawRule("      \"a b\"    \"c d e\" fff     ggg ") ==
+    assert(SplitRawRule("      \"a b\"    \"c d e\" fff     ggg ") ==
            expected);
   }
 
   {
     std::vector<std::string> expected{};
-    assert(parser.SplitRawRule("   ") == expected);
+    assert(SplitRawRule("   ") == expected);
   }
 
   {
     std::vector<std::string> expected{"\"\"", "\" \""};
-    assert(parser.SplitRawRule(" \"\"    \" \" ") == expected);
+    assert(SplitRawRule(" \"\"    \" \" ") == expected);
   }
   Log::Test() << "TEST9 ...OK";
 }

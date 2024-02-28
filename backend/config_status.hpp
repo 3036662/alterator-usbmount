@@ -145,21 +145,6 @@ private:
    */
   bool ExtractPolicy(const std::string &line) noexcept;
 
-  /**
-   * @brief Incpect a udev rule file.
-   * @throws std::runtime_error if can't open the file
-   */
-  static bool IsSuspiciousUdevFile(const std::string &str_path);
-
-  /// @brief  inspect udev rules for suspicious files
-  /// @param vec just for testing purposes
-  /// @return map of string file:warning
-  static std::unordered_map<std::string, std::string> InspectUdevRules(
-#ifdef UNIT_TEST
-      const std::vector<std::string> *vec = nullptr
-#endif
-      ) noexcept;
-
 #ifdef UNIT_TEST
   friend class ::Test;
 #endif
