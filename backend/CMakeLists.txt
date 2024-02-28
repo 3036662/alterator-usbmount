@@ -17,8 +17,11 @@ add_executable(simple main.cpp
 
 include(Format)
 Format(simple .)
+
+if(CMAKE_BUILD_TYPE STREQUAL "Debug")
 include(ClangTidy)
-#AddClangTidy(simple)
+AddClangTidy(simple)
+endif()
 
 
 include_directories(simple PUBLIC ${USBGUARD_INCLUDE_DIRS})
