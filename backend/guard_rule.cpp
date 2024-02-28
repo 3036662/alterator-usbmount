@@ -9,6 +9,7 @@
 #include <functional>
 #include <map>
 #include <sstream>
+#include <stdexcept>
 
 namespace guard {
 
@@ -65,8 +66,12 @@ GuardRule::GuardRule(const std::string &raw_str) {
   std::optional<std::string> str_id =
       utils::ParseToken(splitted, "id", utils::VidPidValidator);
 
-  if (str_id) {
-    size_t separator = str_id->find(':');
+  if (str_id.has_value()) {
+    size_t separator{0};
+    if (str_id->find(':') != std::string::npos)
+      separator = str_id->find(':');
+    else
+      throw std::logic_error("Bad vid_pid" + str_id.value_or(""));
     vid_ = str_id->substr(0, separator);
     pid_ = str_id->substr(separator + 1);
     if (vid_->empty() || pid_->empty())
