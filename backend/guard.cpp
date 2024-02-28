@@ -11,6 +11,7 @@
 #include <exception>
 #include <memory>
 #include <optional>
+#include <stdexcept>
 #include <unordered_set>
 
 namespace guard {
@@ -149,6 +150,8 @@ Guard::ApplyJsonRulesChanges(const std::string &msg) noexcept {
   try {
     json_value = json::parse(msg);
     ptr_jobj = json_value.if_object();
+    if (ptr_jobj == nullptr)
+      throw std::logic_error("Can't parse JSON");
   } catch (const std::exception &ex) {
     Log::Error() << "Can't parse JSON";
     Log::Error() << ex.what();
