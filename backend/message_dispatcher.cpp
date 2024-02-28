@@ -92,14 +92,14 @@ bool MessageDispatcher::ListUsbGuardRules(
   if (level == guard::StrictnessLevel::vid_pid) {
     std::unordered_set<std::string> vendors;
     for (const auto &rule : vec_rules) {
-      if (rule.vid())
-        vendors.insert(rule.vid().value());
+      if (rule.vid().has_value())
+        vendors.insert(rule.vid().value_or(""));
     }
     auto vendors_names = guard::utils::MapVendorCodesToNames(vendors);
     for (auto &rule : vec_rules) {
       if (rule.vid().has_value() &&
-          vendors_names.count(rule.vid().value()) > 0) {
-        rule.vendor_name(vendors_names.at(rule.vid().value()));
+          vendors_names.count(rule.vid().value_or("")) > 0) {
+        rule.vendor_name(vendors_names.at(rule.vid().value_or("")));
       }
     }
   }
