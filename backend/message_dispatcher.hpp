@@ -29,6 +29,7 @@ private:
   bool AllowDevice(const LispMessage &msg) const noexcept;
   bool BlockDevice(const LispMessage &msg) const noexcept;
   bool CheckConfig() const noexcept;
+  bool UploadRulesFile(const LispMessage &msg) const noexcept;
 
   guard::Guard &guard_;
   const std::string kMessBeg = "(";

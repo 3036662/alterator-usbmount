@@ -45,8 +45,28 @@ bool MessageDispatcher::Dispatch(const LispMessage &msg) const noexcept {
   if (msg.action == "read" && msg.objects == "apply_changes") {
     return SaveChangeRules(msg);
   }
+  // upload rules file
+  if (msg.action == "read" && msg.objects == "rules_upload") {
+    return UploadRulesFile(msg);
+  }
   // empty response
   std::cout << "(\n)\n";
+  return true;
+}
+
+bool MessageDispatcher::UploadRulesFile(const LispMessage &msg) const noexcept {
+  auto start = std::chrono::steady_clock::now();
+  Log::Debug() << "Uploading file started";
+  if (msg.params.count("upload_rules") == 0 ||
+      msg.params.at("upload_rules").empty()) {
+    std::cout << kMessBeg << kMessEnd;
+    Log::Warning() << "Empty rules file";
+    return true;
+  }
+  std::optional<std::vector<guard::GuardRule>> vec_rules =
+      guard_.UploadRules(msg.params.at("upload_rules"));
+  std::cout << kMessBeg << kMessEnd;
+  Log::Debug() << "Elapsed(ms)=" << since(start).count();
   return true;
 }
 
