@@ -200,8 +200,8 @@ ProcessJsonAppended(const boost::json::array *ptr_json_array_rules,
       // try to build a rule
       try {
         JsonRule json_rule(ptr_json_rule);
-        GuardRule rule{json_rule.BuildString()};
-        rules_to_add.push_back(std::move(rule));
+        GuardRule rule_new{json_rule.BuildString()};
+        rules_to_add.push_back(std::move(rule_new));
         if (tr_id != nullptr && !tr_id->empty()) {
           json_arr_OK.emplace_back(*tr_id);
         }

@@ -94,7 +94,7 @@ std::vector<std::string> SplitRawRule(std::string raw_str) noexcept;
 
 /// @brief  // Inline wrap all curly and round braces and exclamation points
 /// with spaces
-void WrapBracesWithSpaces(std::string &str) noexcept;
+void WrapBracesWithSpaces(std::string &raw_str) noexcept;
 
 /**
  * @brief Parse token
