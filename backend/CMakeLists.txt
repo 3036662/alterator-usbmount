@@ -29,7 +29,9 @@ endif()
 add_dependencies(simple run_cppcheck)
 
 include_directories(simple PUBLIC ${USBGUARD_INCLUDE_DIRS})
-include_directories(simple PUBLIC $CMAKE_SOURCE_DIR/tests) 
+include_directories(simple PUBLIC $CMAKE_SOURCE_DIR/tests)
+target_include_directories(simple PUBLIC  ${CMAKE_SOURCE_DIR}/thirdparty/cppcodec/cppcodec)
+
 
 target_link_libraries(simple PRIVATE boost_json)
 target_link_libraries(simple PRIVATE PkgConfig::USBGUARD)

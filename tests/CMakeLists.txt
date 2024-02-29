@@ -15,6 +15,8 @@ add_executable(test
 target_include_directories(test PRIVATE ../backend)
 target_include_directories(test PRIVATE .)
 include_directories(test PUBLIC ${USBGUARD_INCLUDE_DIRS})
+target_include_directories(test PUBLIC ${CMAKE_SOURCE_DIR}/thirdparty/cppcodec/cppcodec)
+
 
 target_link_libraries(test PRIVATE boost_json)
 target_link_libraries(test PRIVATE PkgConfig::USBGUARD)
