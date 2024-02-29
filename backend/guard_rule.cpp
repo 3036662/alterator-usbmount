@@ -145,7 +145,6 @@ GuardRule::ParseTokenWithOperator(
     const std::function<bool(const std::string &)> &predicat) {
   std::logic_error ex_common("Cant parse rule string");
   std::optional<std::pair<RuleOperator, std::vector<std::string>>> res;
-  bool have_operator{false};
   // find token
   auto it_name = std::find(splitted.cbegin(), splitted.cend(), name);
   if (it_name != splitted.cend()) {
@@ -163,6 +162,7 @@ GuardRule::ParseTokenWithOperator(
         [&it_param](const std::pair<RuleOperator, std::string> &val) {
           return val.second == *it_param;
         });
+    bool have_operator{false};
     have_operator = it_operator != map_operator.cend();
     //  If no operator is found, parse as usual param - value
     if (!have_operator) {
