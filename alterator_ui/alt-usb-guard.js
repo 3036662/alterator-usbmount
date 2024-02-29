@@ -124,7 +124,12 @@ $(document).ready(function () {
     }  
  });
 
- // file upload
+ /**
+  * file upload
+  * Substitute a file with its content, encoded with base64
+  * File is substituted because alterator can't handle loading file
+  * with unicode-escaped symbols
+  */
  $("#load_file_button").bind('click',function(){
   const fileInput = document.getElementById('file_input');
   if (fileInput.files.length > 0) {
@@ -134,9 +139,15 @@ $(document).ready(function () {
       reader.onload = function(event) {
             const fileContent = event.target.result;
             const encodedString = btoa(fileContent);
-            //console.log(encodedString);
-            // You can use the encodedString for further processing
-            $("#file_content").val(encodedString);
+            let file_encoded = new File([encodedString], "endoded.csv", {
+                    type: "text/plain",
+                    lastModified: new Date()
+                });
+            let container = new DataTransfer();
+            container.items.add(file_encoded); 
+            fileInput.files = container.files;
+            // console.log(encodedString);
+            $("#load_file_button").trigger("data_ready");
         };
       reader.readAsBinaryString(file);
     }

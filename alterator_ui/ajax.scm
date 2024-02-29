@@ -158,6 +158,17 @@
     (ls_usbs)
 )
 
+(define (upload_rules_callback)
+    (let ((
+        response  (woo-read "/simple/rules_upload" 'upload_rules (form-blob "file_input")) 
+         ))  
+        (woo-error (object->string response))
+    ) ; let
+   ; (woo-error  (form-blob "file_input"))
+   ;(woo-error  "OK")
+
+)
+
 (define (init)
   (config_status_check)
   (ls_guard_rules)
@@ -166,4 +177,5 @@
   (form-bind "btn_prsnt_dev_block" "click" block_device)
   (form-bind "hidden_manual_changes_data" "rules_json_ready" save_rules_handler) ;save changes event
   (form-bind "hidden_manual_changes_response" "rules_applied" update_after_rulles_applied)  
+  (form-bind-upload "load_file_button" "data_ready" "file_input" upload_rules_callback )
 )
