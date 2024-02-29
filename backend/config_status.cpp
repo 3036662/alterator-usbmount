@@ -389,7 +389,7 @@ bool ConfigStatus::OverwriteRulesFile(const std::string &new_content,
   return true;
 }
 
-bool ConfigStatus::TryToRun(bool run_daemon) noexcept {
+bool ConfigStatus::TryToRun(bool run_daemon) const noexcept {
   dbus_bindings::Systemd sysd;
   auto init_state = sysd.IsUnitActive(usb_guard_daemon_name);
   if (!init_state.has_value())
@@ -415,7 +415,8 @@ bool ConfigStatus::TryToRun(bool run_daemon) noexcept {
   return result.value_or(false);
 }
 
-bool ConfigStatus::ChangeDaemonStatus(bool active, bool enabled) noexcept {
+bool ConfigStatus::ChangeDaemonStatus(bool active,
+                                      bool enabled) const noexcept {
   dbus_bindings::Systemd sysd;
   auto init_state = sysd.IsUnitActive(usb_guard_daemon_name);
   if (!init_state.has_value())

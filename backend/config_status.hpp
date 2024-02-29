@@ -72,7 +72,7 @@ public:
    * @return true Success
    * @return false Fail
    */
-  bool ChangeDaemonStatus(bool active, bool enabled) noexcept;
+  bool ChangeDaemonStatus(bool active, bool enabled) const noexcept;
 
   /**
    * @brief Change USBGuard implicit policy
@@ -90,7 +90,7 @@ public:
    * @return true Succeded
    * @return false Failed
    */
-  bool TryToRun(bool run_daemon) noexcept;
+  bool TryToRun(bool run_daemon) const noexcept;
 
 private:
   /// @brief Return path for the  daemon .conf file
