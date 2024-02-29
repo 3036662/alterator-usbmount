@@ -9,6 +9,7 @@
 #include <filesystem>
 #include <fstream>
 #include <set>
+#include <utility>
 
 namespace guard::utils {
 
@@ -384,10 +385,12 @@ std::vector<std::string> SplitRawRule(std::string raw_str) noexcept {
     res.emplace_back(it_slow, it_fast);
   for (std::string &str : res)
     boost::trim(str);
-  for (auto it = res.begin(); it != res.end(); ++it) {
-    if (it->empty())
-      res.erase(it);
+  std::vector<std::string> tmp;
+  for (auto &str : res) {
+    if (!res.empty())
+      tmp.emplace_back(std::move(str));
   }
+  std::swap(res, tmp);
   return res;
 }
 
