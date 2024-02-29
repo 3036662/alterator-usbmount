@@ -21,8 +21,12 @@ Format(simple .)
 if(CMAKE_BUILD_TYPE STREQUAL "Debug")
 include(ClangTidy)
 AddClangTidy(simple)
+
+include(CppCheck)
+AddCppCheck(${CMAKE_CURRENT_SOURCE_DIR})
 endif()
 
+add_dependencies(simple run_cppcheck)
 
 include_directories(simple PUBLIC ${USBGUARD_INCLUDE_DIRS})
 include_directories(simple PUBLIC $CMAKE_SOURCE_DIR/tests) 

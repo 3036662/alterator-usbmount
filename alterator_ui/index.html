@@ -170,7 +170,6 @@
           </tbody>
         </table>
         <div name="list_interface_rules_buttons" class="right_buttons">
-          <input type="button" name="" class="btn" value="Load from file"/>
           <input type="button" name="" class="btn" value="Add" id="add_to_rules_unsorted" />
           <input type="button" name="" class="btn" id="delete_rules_from_unsorted_level" value="Delete"/>
         </div>
@@ -200,7 +199,6 @@
           </tbody>
         </table>
         <div name="list_interface_rules_buttons" class="right_buttons">
-          <input type="button" name="btn_load_interface_rules" class="btn" value="Load from file"/>
           <input type="button" name="" class="btn" value="Add" id="add_to_rules_interfase"/>
           <input type="button" name="" class="btn" id="delete_rules_from_interface_level" value="Delete"/>
         </div>
@@ -234,7 +232,6 @@
           </tbody>
         </table>
         <div name="list_vidpid_rules_buttons" class="right_buttons">
-          <input type="button" name="" class="btn" value="Load from file"/>
           <input type="button" name="" class="btn" value="Add" id="add_to_rules_vidpid"/>
           <input type="button" name="" class="btn" id = "delete_rules_from_vid_pid_level" value="Delete"/>
         </div>
@@ -262,7 +259,9 @@
           </tbody>
         </table>
         <div name="list_hash_rules_buttons" class="right_buttons">
-          <input type="button" name="" class="btn" value="Load from file"/>
+          <input type="button" name="load_file_button" id="load_file_button" class="btn" value="Load from file"/>
+          <input type="file" name="file_input" id="file_input"/>
+          <input type="hidden" name="file_content" id="file_content"/>
           <input type="button" name="" class="btn" value="Add" id="add_to_rules_hash"/>
           <input type="button" name="" class="btn" value="Delete" id="delete_rules_from_hash_level" />
         </div>

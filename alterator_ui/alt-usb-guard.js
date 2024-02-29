@@ -122,9 +122,26 @@ $(document).ready(function () {
         $('#'+el).css("border", "2px green solid");
       }  
     }  
-
  });
 
+ // file upload
+ $("#load_file_button").bind('click',function(){
+  const fileInput = document.getElementById('file_input');
+  if (fileInput.files.length > 0) {
+    const file = fileInput.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = function(event) {
+            const fileContent = event.target.result;
+            const encodedString = btoa(fileContent);
+            //console.log(encodedString);
+            // You can use the encodedString for further processing
+            $("#file_content").val(encodedString);
+        };
+      reader.readAsBinaryString(file);
+    }
+  } 
+ });
 
 }); // .ready
 
