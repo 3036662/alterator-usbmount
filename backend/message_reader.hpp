@@ -15,7 +15,7 @@ class MessageReader {
 public:
   /// @brief  Constructor
   /// @param guard Guard object
-  MessageReader(guard::Guard &guard) noexcept;
+  explicit MessageReader(guard::Guard &guard) noexcept;
 
   /// @brief Main loop - reades messages and sens them to dispatcher
   void Loop() const noexcept;

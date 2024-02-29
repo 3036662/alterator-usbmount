@@ -81,7 +81,7 @@ public:
   /// @brief Constructor from string
   /// @param string Fotmatted string 00:00:00
   /// @throws std::invalid_argument  std::out_of_range std::logical_error
-  explicit UsbType(const std::string &string);
+  explicit UsbType(const std::string &);
   UsbType(UsbType &&) noexcept = default;
   UsbType &operator=(UsbType &&) noexcept = default;
 

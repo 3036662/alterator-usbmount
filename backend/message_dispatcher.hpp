@@ -15,7 +15,7 @@ public:
    * @brief Constructor for Message Dispatcher
    * @param guard The Guard object
    */
-  MessageDispatcher(guard::Guard &guard) noexcept;
+  explicit MessageDispatcher(guard::Guard &guard) noexcept;
   /**
    * @brief Perfom an appropriate action for msg
    * @param msg LispMessage from MessageReader
