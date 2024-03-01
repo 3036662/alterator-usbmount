@@ -133,6 +133,10 @@ $(document).ready(function () {
  $("#load_file_button").bind('click',function(){
   const fileInput = document.getElementById('file_input');
   if (fileInput.files.length > 0) {
+    if(fileInput.files[0].size >10240000 ){
+        alert("This file is too big. Limit 10MB");
+        fileInput.value="";
+    }
     const file = fileInput.files[0];
     if (file) {
       const reader = new FileReader();
@@ -157,6 +161,103 @@ $(document).ready(function () {
 }); // .ready
 
 /*******************************************************/
+
+function AddRulesFromFile (data) {
+  alert("Gotcha");
+  //let data_clean = data.replaceAll("\\\\\"", "\\\"");
+  //console.log(data_clean);
+  //let result = data.replaceAll(/\s\s/g, "\s");
+ 
+  const rules_json=JSON.parse(data);
+  //set policy ratiobuttons
+  if (rules_json.hasOwnProperty('policy')){
+    if (rules_json['policy'] === 0){
+        $("#radio_black_list").val("radio_white_list"); 
+        $("#hidden_list_type").val("radio_white_list");
+    }
+    else{
+      $("#radio_black_list").val("radio_black_list"); 
+      $("#hidden_list_type").val("radio_black_list");
+    }
+  }
+  // fill the hash table
+  if (rules_json.hasOwnProperty("hash_rules") && Array.isArray(rules_json["hash_rules"])){
+    rules_json["hash_rules"].forEach(function(rule){
+      ++window.last_append_rule_id;
+      $("#list_hash_rules").append(
+        '<tr class="manual_appended" id="rule_'+window.last_append_rule_id+'">'+
+        '<td><input class="select_appended" type="checkbox"></td>' +
+        '<td>--</td>' +
+        '<td><span class="alterator-label"><input type="text" class="input_appended" name="hash" value=\''+
+        rule["hash"].replaceAll(/\\/g, '')+
+        '\'/><span></td>' +
+        '<td>'+ rule["name"].replaceAll(/\\/g, '') +'</td>'+
+        '<td class="appended_rule_target">' +
+        (rule["policy"] === 0 ? "allow" : "block") +
+        '</td></tr>');
+    });    
+  };
+  // fill the vidpid rules table
+  if (rules_json.hasOwnProperty("vidpid_rules") && Array.isArray(rules_json["vidpid_rules"])){
+    rules_json["vidpid_rules"].forEach(function(rule){
+      ++window.last_append_rule_id;
+      $("#list_vidpid_rules").append(
+        '<tr class="manual_appended" id="rule_'+window.last_append_rule_id+'">'+
+        '<td><input class="select_appended" type="checkbox"></td>' +
+        '<td>--</td>' +       
+        '<td><span class="alterator-label"><input type="text" class="input_appended" name="vid" value=\''+
+        rule["vid"].replaceAll(/\\/g, '')+
+        '\'><span></td>' +
+        '<td>--</td>' +
+        '<td><span class="alterator-label"><input type="text" class="input_appended" name="pid" value=\''+
+        rule["pid"].replaceAll(/\\/g, '')+
+        '\'><span></td>' +
+        '<td>--</td><td>--</td>'+
+        '<td class="appended_rule_target">' +
+        (rule["policy"] === 0 ? "allow" : "block") +
+        '</td></tr>');
+    });  
+  };
+  // fill the interface rule target
+  if (rules_json.hasOwnProperty("interf_rules") && Array.isArray(rules_json["interf_rules"])){
+    rules_json["interf_rules"].forEach(function(rule){
+      ++window.last_append_rule_id;
+      $("#list_interface_rules").append(
+        '<tr class="manual_appended" id="rule_'+window.last_append_rule_id+'">'+
+        '<td><input class="select_appended" type="checkbox"></td>' +
+        '<td>--</td>' +       
+        '<td><span class="alterator-label">'+
+        '<input type="text" class="input_appended" name="with_interface" value=\''+
+        rule["interface"].replaceAll(/\\/g, '')+
+        '\' /><span></td>' +
+        '<td>--</td><td>--</td>'+
+        '<td class="appended_rule_target">' +
+        (rule["policy"] === 0 ? "allow" : "block") +
+        '</td></tr>');
+    });    
+  };
+  // fill the row rules table
+  if (rules_json.hasOwnProperty("raw_rules") && Array.isArray(rules_json["raw_rules"])){
+    rules_json["raw_rules"].forEach(function(rule){
+      ++window.last_append_rule_id;
+      alert (rule["raw"]);
+      $("#list_unsorted_rules").append(
+        '<tr class="manual_appended" id="rule_'+window.last_append_rule_id+'">'+
+        '<td><input class="select_appended" type="checkbox"></td>' +
+        '<td>--</td>' + 
+        '<td><span class="alterator-label">'+
+        '<input type="text" class="input_appended" name="raw_rule" value=\''+
+        rule["raw"].replaceAll(/\\/g, '')+
+        '\'><span></td>' +
+        '<td class="appended_rule_target">' +
+        (rule["policy"] === 0 ? "allow" : "block") +
+        '</td></tr>');
+    });
+  };  
+
+  bindCheckBox();
+};
+
 
 function addRuleBehaviorAdd(button_id, row_html, table_id) {
   $(button_id).bind('click', function () {

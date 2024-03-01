@@ -13,6 +13,7 @@ add_executable(simple main.cpp
     guard_rule.cpp guard_rule.cpp
     json_rule.cpp
     guard_utils.cpp
+    csv_rule.cpp
 )
 
 include(Format)
@@ -31,6 +32,7 @@ add_dependencies(simple run_cppcheck)
 include_directories(simple PUBLIC ${USBGUARD_INCLUDE_DIRS})
 include_directories(simple PUBLIC $CMAKE_SOURCE_DIR/tests)
 target_include_directories(simple PUBLIC  ${CMAKE_SOURCE_DIR}/thirdparty/cppcodec/cppcodec)
+target_include_directories(simple PUBLIC  ${CMAKE_SOURCE_DIR}/thirdparty/rapidcsv/src)
 
 
 target_link_libraries(simple PRIVATE boost_json)

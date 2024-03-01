@@ -15,6 +15,6 @@ template <> class SerializableForLisp<vecPairs> {
   vecPairs vec;
 
 public:
-  explicit SerializableForLisp(vecPairs &&vec_) : vec{vec_} {};
+  explicit SerializableForLisp(vecPairs &&vec_) : vec{std::move(vec_)} {};
   vecPairs SerializeForLisp() const { return vec; }
 };

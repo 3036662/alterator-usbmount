@@ -5,7 +5,9 @@
 #include <IPCClient.hpp>
 #include <USBGuard.hpp>
 #include <memory>
+#include <optional>
 #include <string>
+#include <vector>
 
 namespace guard {
 
@@ -80,6 +82,9 @@ public:
    */
   std::optional<std::string>
   ApplyJsonRulesChanges(const std::string &msg) noexcept;
+
+  std::optional<std::vector<GuardRule>>
+  UploadRules(const std::string &file) noexcept;
 
 private:
   /// True if daemon is active

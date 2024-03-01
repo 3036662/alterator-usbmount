@@ -1,18 +1,27 @@
 #include "guard.hpp"
+#include "base64_rfc4648.hpp"
 #include "config_status.hpp"
+#include "csv_rule.hpp"
 #include "guard_rule.hpp"
 #include "guard_utils.hpp"
 #include "log.hpp"
+#include "rapidcsv.h"
 #include "usb_device.hpp"
 #include "utils.hpp"
 #include <boost/algorithm/string.hpp>
+#include <boost/algorithm/string/replace.hpp>
+#include <boost/beast/core/detail/base64.hpp>
 #include <boost/json.hpp>
 #include <boost/json/array.hpp>
+#include <cstddef>
+#include <cstdint>
 #include <exception>
 #include <memory>
 #include <optional>
 #include <stdexcept>
+#include <string>
 #include <unordered_set>
+#include <vector>
 
 namespace guard {
 
@@ -289,6 +298,57 @@ boost::json::object Guard::ProcessJsonAllowConnected(
   }
   res["STATUS"] = "OK";
   return res;
+}
+
+std::optional<std::vector<GuardRule>>
+Guard::UploadRules(const std::string &file) noexcept {
+  const size_t kColumnsRequired = 2;
+  HealthStatus();
+  try {
+    std::string csv_string =
+        cppcodec::base64_rfc4648::decode<std::string>(file);
+    csv_string = cppcodec::base64_rfc4648::decode<std::string>(csv_string);
+    Log::Debug() << csv_string;
+    csv_string = ::utils::UnUtf8(csv_string);
+    Log::Debug() << csv_string;
+    std::stringstream sstream(csv_string);
+    rapidcsv::Document doc(sstream, rapidcsv::LabelParams(-1, -1),
+                           rapidcsv::SeparatorParams(','));
+    if (doc.GetRowCount() == 0 || doc.GetColumnCount() < kColumnsRequired) {
+      Log::Error() << "Bad csv file";
+      return std::nullopt;
+    }
+    // Log::Debug() << csv_string;
+    size_t n_rows = doc.GetRowCount();
+    // Log::Debug() << "Rows count" << n_rows;
+    std::vector<size_t> failed_rules;
+    std::vector<GuardRule> res;
+    for (size_t i = 0; i < n_rows; ++i) {
+      try {
+        std::string raw_str_tule = utils::csv::CsvRule(doc, i).BuildString();
+        Log::Debug() << raw_str_tule;
+        GuardRule tmpRule(raw_str_tule);
+        Log::Debug() << "GUARD RULE";
+        Log::Debug() << tmpRule.BuildString();
+        tmpRule.number(i);
+        res.emplace_back(std::move(tmpRule));
+        Log::Debug() << "Parsed rule: " << i;
+      } catch (const std::logic_error &ex) {
+        Log::Debug() << "Can't parse a csv rule " << i;
+        Log::Debug() << ex.what();
+        failed_rules.push_back(i);
+      }
+    }
+    if (!failed_rules.empty()) {
+      Log::Warning() << "Parsing of " << failed_rules.size() << "was failed";
+      return std::nullopt;
+      // TODO send response with bad rules
+    }
+    return res;
+  } catch (const std::exception &ex) {
+    Log::Error() << "Can't parse a csv file";
+    return std::nullopt;
+  }
 }
 
 } // namespace guard

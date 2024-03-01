@@ -11,6 +11,8 @@
 
 namespace utils {
 
+std::string UnUtf8(const std::string &str) noexcept;
+
 /// @brief Wrap string with esape coutes
 /// @param str String to wrap
 /// @return New wrapped string
@@ -105,6 +107,8 @@ std::string ToLisp(const std::pair<std::string, std::string> &data) noexcept;
 /// @param str Source string
 /// @return Escaped string
 std::string EscapeQuotes(const std::string &str) noexcept;
+
+std::string EscapeAll(const std::string &str) noexcept;
 
 /**
  * @brief Utility function for timing

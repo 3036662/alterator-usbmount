@@ -6,10 +6,12 @@
 #include <boost/algorithm/string.hpp>
 #include <boost/algorithm/string/regex.hpp>
 #include <boost/json.hpp>
+#include <boost/json/object.hpp>
 #include <functional>
 #include <map>
 #include <sstream>
 #include <stdexcept>
+#include <sys/types.h>
 
 namespace guard {
 
@@ -338,6 +340,27 @@ vecPairs GuardRule::SerializeForLisp() const {
   res.emplace_back("lbl_rule_target", map_target.count(target_) != 0
                                           ? map_target.at(target_)
                                           : "");
+  return res;
+}
+
+boost::json::object GuardRule::BuildJsonObject() const {
+  namespace json = boost::json;
+  json::object res;
+  res["number"] = std::to_string(number_);
+  res["vid"] = vid_.value_or("");
+  res["pid"] = pid_.value_or("");
+  res["hash"] = EscapeQuotes(hash_.value_or(""));
+  res["parent_hash"] = parent_hash_.value_or("");
+  res["name"] = device_name_.value_or("");
+  res["serial"] = serial_.value_or("");
+  res["port"] = EscapeQuotes(PortsToString());
+  res["interface"] = InterfacesToString(true);
+  res["connect"] = conn_type_.value_or("");
+  res["cond"] = ConditionsToString();
+  res["level"] = static_cast<int>(StrictnessLevel::hash);
+  res["policy"] = static_cast<uint>(target_);
+  res["vendor_name"] = vendor_name_.value_or("");
+  res["raw"] = EscapeQuotes(BuildString(true, true));
   return res;
 }
 

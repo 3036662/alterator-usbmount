@@ -2,10 +2,13 @@
 #include "guard_rule.hpp"
 #include "guard_utils.hpp"
 #include "log.hpp"
+#include "types.hpp"
 #include "utils.hpp"
 #include <boost/algorithm/algorithm.hpp>
 #include <boost/algorithm/string.hpp>
+#include <iostream>
 #include <unordered_set>
+#include <vector>
 
 using guard::utils::Log;
 using namespace utils;
@@ -65,7 +68,32 @@ bool MessageDispatcher::UploadRulesFile(const LispMessage &msg) const noexcept {
   }
   std::optional<std::vector<guard::GuardRule>> vec_rules =
       guard_.UploadRules(msg.params.at("upload_rules"));
-  std::cout << kMessBeg << kMessEnd;
+  Log::Debug() << "Rules parsed";
+  if (vec_rules.has_value() && !vec_rules->empty()) {
+    std::optional<std::string> js_arr = guard::utils::BuildJsonArrayOfUpploaded(
+        vec_rules.value_or(std::vector<guard::GuardRule>()));
+    Log::Debug() << js_arr.value_or("no json arr");
+    vecPairs vec_result;
+    if (js_arr.has_value()) {
+      vec_result.emplace_back("status", "OK");
+      vec_result.emplace_back("response_json", EscapeAll(js_arr.value_or("")));
+      Log::Debug() << EscapeQuotes(js_arr.value_or("no json arr"));
+    } else {
+      Log::Error() << "Nothing build to JSON obj";
+      vec_result.emplace_back("status", "BAD");
+      vec_result.emplace_back("err_what", "0 parsed");
+    }
+    Log::Debug() << "Elapsed(ms)=" << since(start).count();
+    std::cout << ToLispAssoc(
+        SerializableForLisp<vecPairs>(std::move(vec_result)));
+    return true;
+  }
+  Log::Error() << "Empty rules list";
+  vecPairs vec_result;
+  vec_result.emplace_back("status", "BAD");
+  vec_result.emplace_back("err_what", "0 parsed");
+  std::cout << ToLispAssoc(
+      SerializableForLisp<vecPairs>(std::move(vec_result)));
   Log::Debug() << "Elapsed(ms)=" << since(start).count();
   return true;
 }

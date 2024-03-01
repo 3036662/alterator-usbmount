@@ -1,6 +1,7 @@
 #pragma once
 #include "serializible_for_lisp.hpp"
 #include <boost/json.hpp>
+#include <boost/json/object.hpp>
 #include <functional>
 #include <map>
 #include <optional>
@@ -98,6 +99,8 @@ public:
    * @return std::vector<std::string,std::string>
    */
   vecPairs SerializeForLisp() const;
+
+  boost::json::object BuildJsonObject() const;
 
   /// @brief Converts a string representation of Rule StricnessLevel to a
   /// StrictnessLevel

@@ -1,17 +1,71 @@
 #include "guard_utils.hpp"
+#include "guard_rule.hpp"
 #include "json_rule.hpp"
 #include "log.hpp"
 #include "usb_device.hpp"
 #include "utils.hpp"
 #include <boost/algorithm/string.hpp>
 #include <boost/json.hpp>
+#include <boost/json/array.hpp>
+#include <boost/json/object.hpp>
+#include <boost/json/serialize.hpp>
 #include <exception>
 #include <filesystem>
 #include <fstream>
+#include <optional>
 #include <set>
+#include <sys/types.h>
 #include <utility>
 
 namespace guard::utils {
+
+std::optional<std::string>
+BuildJsonArrayOfUpploaded(const std::vector<GuardRule> &vec_rules) noexcept {
+  namespace json = boost::json;
+  try {
+    json::object res_obj;
+    res_obj["hash_rules"] = json::array();
+    res_obj["vidpid_rules"] = json::array();
+    res_obj["interf_rules"] = json::array();
+    res_obj["raw_rules"] = json::array();
+    bool found_conflicting = false;
+    Target common_target_policy = Target::allow;
+    if (!vec_rules.empty())
+      common_target_policy = vec_rules[0].target();
+    res_obj["policy"] = static_cast<uint>(common_target_policy);
+    for (const auto &rule : vec_rules) {
+      if (rule.target() != common_target_policy)
+        found_conflicting = true;
+      Log::Debug() << rule.BuildJsonObject();
+      switch (rule.level()) {
+      case StrictnessLevel::hash:
+        res_obj.at("hash_rules").as_array().push_back(rule.BuildJsonObject());
+        break;
+      case StrictnessLevel::interface:
+        res_obj.at("interf_rules").as_array().push_back(rule.BuildJsonObject());
+        break;
+      case StrictnessLevel::vid_pid:
+        res_obj.at("vidpid_rules").as_array().push_back(rule.BuildJsonObject());
+        break;
+      case StrictnessLevel::non_strict:
+        res_obj.at("raw_rules").as_array().push_back(rule.BuildJsonObject());
+        break;
+      }
+    }
+    if (found_conflicting) {
+      res_obj["STATUS"] = "error";
+      res_obj["ERR_MSG"] = "Conflicting rule targets";
+      return json::serialize(res_obj);
+    }
+    res_obj["STATUS"] = "OK";
+    return json::serialize(res_obj);
+  } catch (const std::exception &ex) {
+    Log::Error() << "Error building json list of rules";
+    return std::nullopt;
+  }
+  Log::Debug() << "No exceptions but no JSON was build ";
+  return std::nullopt;
+}
 
 std::vector<std::string> FoldUsbInterfacesList(std::string i_type) {
   boost::erase_first(i_type, "with-interface");

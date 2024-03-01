@@ -17,7 +17,7 @@
 
 ; get udev rules filenames
 (define (udev_rules_check)
-    (form-update-enum "suspicious_udev_files" (woo-list "/simple/check_config_udev"))
+    (form-update-enum "suspicious_udev_files"  (woo-list "/simple/check_config_udev"))
 )
 
 ; remove first element from sublists ( (a b c) (a b c)) => ((b c)(b c))
@@ -158,16 +158,38 @@
     (ls_usbs)
 )
 
+(define (filter-lists lst field)
+  (filter (lambda (sublist) (member field sublist)) lst))
+
 (define (upload_rules_callback)
     (let ((
-        response  (woo-read "/simple/rules_upload" 'upload_rules (form-blob "file_input")) 
+        response  (removeFirstElement (woo-read "/simple/rules_upload" 'upload_rules (form-blob "file_input"))) 
          ))  
-        (woo-error (object->string response))
+       (if  (string=? "OK" (get-value 'status response))
+            (js "AddRulesFromFile" (get-value 'response_json response) )
+            (woo-error "An error occured while parsing csv file")
+       ) 
+      ;  (form-update-enum "list_hash_rules" (filter-lists  response "lbl_rule_hash"))
+      ;  (form-update-enum "list_vidpid_rules" (filter-lists  response "lbl_rule_vid"))
+      ;  (form-update-enum "list_interface_rules" (filter-lists  response "lbl_rule_desc"))
+      ;  (form-update-enum "list_unsorted_rules" (filter-lists  response "lbl_rule_raw"))       
+
+       ;(woo-error (object->string response))   
+
+       ;(woo-error (object->string  
+       ;                  (filter-lists  response "lbl_rule_vid")
+       ;                 (woo-list "/simple/list_rules" 'level "hash")
+       ;            ))
+
     ) ; let
    ; (woo-error  (form-blob "file_input"))
    ;(woo-error  "OK")
 
 )
+
+
+
+
 
 (define (init)
   (config_status_check)

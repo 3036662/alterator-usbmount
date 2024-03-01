@@ -1,11 +1,69 @@
 #include "utils.hpp"
+#include "log.hpp"
 #include "usb_device.hpp"
+#include <cstddef>
+#include <exception>
 #include <filesystem>
 #include <iostream>
+#include <stdexcept>
 #include <string>
 #include <utility>
 
 namespace utils {
+
+std::string UnUtf8(const std::string &str) noexcept {
+  std::string res;
+  size_t ind = 0;
+  std::runtime_error ex_bad_string("Invalid characters in string");
+  try {
+    while (ind < str.size()) {
+      // the "" - to sympol quotes - skip one
+      if ((str.at(ind) & 0b10000000) == 0 && ind < str.size() - 1 &&
+          str.at(ind) == char(0x22) && str.at(ind + 1) == char(0x22)) {
+        // if this symbol is " and next symbol is " skip this
+        ++ind;
+        continue;
+      }
+      // 1 byte char
+      if ((str.at(ind) & 0b10000000) == 0) {
+        res += str[ind]; // just push to result
+        ++ind;
+        continue;
+      }
+      // 2 bytes quotes
+      if ((str.at(ind) & 0b11100000) == 0b11000000 && ind < str.size() - 1) {
+        // \u00BB \u00AB
+        if (str.at(ind) == char(0xC2) &&
+            (str.at(ind + 1) == char(0xBB) || str.at(ind + 1) == char(0xAB))) {
+          res += '\"';
+          ind += 2;
+          continue;
+        }
+      }
+      // 3 bytes quotes
+      if ((str.at(ind) & 0b11110000) == 0b11100000 && ind < str.size() - 2) {
+        // \u2018 \u2019  \u201c \u201d
+        if (str.at(ind) == char(0xE2) && str.at(ind + 1) == char(0x80) &&
+            (str.at(ind + 2) == char(0x98) || str.at(ind + 2) == char(0x99) ||
+             str.at(ind + 2) == char(0x9D) || str.at(ind + 2) == char(0x9C0) ||
+             str.at(ind + 2) == char(0x9E))) {
+          res += '\"';
+          ind += 3;
+          continue;
+        }
+      }
+      // 4 bytes just skip
+      if ((str.at(ind) & 0b11111000) == 0b11110000) {
+        ind += 4;
+        continue;
+      }
+      throw std::runtime_error("Bad utf-8 string");
+    }
+  } catch (const std::exception &ex) {
+    guard::utils::Log::Error() << ex.what();
+  }
+  return res;
+}
 
 std::string WrapWithQuotes(const std::string &str) noexcept {
   std::string res;
@@ -17,10 +75,13 @@ std::string WrapWithQuotes(const std::string &str) noexcept {
 
 std::string UnQuote(const std::string &str) noexcept {
   std::string res = str;
-  if (str.size() >= 2 && str[0] == '\"' && str.back() == '\"') {
-    res = str;
-    res.erase(res.front());
-    res.erase(res.back());
+  try {
+    if (str.size() >= 2 && str[0] == '\"' && str.back() == '\"') {
+      res = std::string(str, 1, str.size() - 2);
+    }
+  } catch (const std::exception &ex) {
+    guard::utils::Log::Debug() << "Error Unquoting string(UnQoute)";
+    return str;
   }
   return res;
 }
@@ -78,6 +139,17 @@ std::string EscapeQuotes(const std::string &str) noexcept {
   std::string res;
   for (auto it = str.cbegin(); it != str.cend(); ++it) {
     if (*it == '\"' && res.back() != '\\') {
+      res.push_back('\\');
+    }
+    res.push_back(*it);
+  }
+  return res;
+}
+
+std::string EscapeAll(const std::string &str) noexcept {
+  std::string res;
+  for (auto it = str.cbegin(); it != str.cend(); ++it) {
+    if (*it == '\"' || *it == '\\') {
       res.push_back('\\');
     }
     res.push_back(*it);
