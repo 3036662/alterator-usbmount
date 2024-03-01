@@ -14,8 +14,6 @@ private:
   std::string interface_;
   std::string vidpid_;
   std::string hash_;
-  std::string device_name_;
-  std::string raw_;
 };
 
 } // namespace guard::utils::csv

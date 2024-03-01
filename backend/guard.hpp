@@ -84,7 +84,7 @@ public:
   ApplyJsonRulesChanges(const std::string &msg) noexcept;
 
   std::optional<std::vector<GuardRule>>
-  UploadRules(const std::string &file) noexcept;
+  UploadRulesCsv(const std::string &file) noexcept;
 
 private:
   /// True if daemon is active

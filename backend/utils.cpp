@@ -13,46 +13,33 @@ namespace utils {
 
 std::string UnUtf8(const std::string &str) noexcept {
   std::string res;
-  size_t ind = 0;
   std::runtime_error ex_bad_string("Invalid characters in string");
   try {
+    const uint kMaxIter = 10000;
+    uint iter_counter = 0;
+    size_t ind = 0;
     while (ind < str.size()) {
-      // the "" - to sympol quotes - skip one
-      if ((str.at(ind) & 0b10000000) == 0 && ind < str.size() - 1 &&
-          str.at(ind) == char(0x22) && str.at(ind + 1) == char(0x22)) {
-        // if this symbol is " and next symbol is " skip this
-        ++ind;
-        continue;
-      }
-      // 1 byte char
+      ++iter_counter;
+      if (iter_counter > kMaxIter)
+        throw std::runtime_error("Maximal number of iterations was reached");
+      // 1 byte char - skip quotes
       if ((str.at(ind) & 0b10000000) == 0) {
-        res += str[ind]; // just push to result
+        if (str.at(ind) != '\"' && str.at(ind) != '\'')
+          res += str.at(ind);
         ++ind;
         continue;
       }
-      // 2 bytes quotes
+      // 2 bytes - skip
       if ((str.at(ind) & 0b11100000) == 0b11000000 && ind < str.size() - 1) {
-        // \u00BB \u00AB
-        if (str.at(ind) == char(0xC2) &&
-            (str.at(ind + 1) == char(0xBB) || str.at(ind + 1) == char(0xAB))) {
-          res += '\"';
-          ind += 2;
-          continue;
-        }
+        ind += 2;
+        continue;
       }
-      // 3 bytes quotes
+      // 3 bytes - skip
       if ((str.at(ind) & 0b11110000) == 0b11100000 && ind < str.size() - 2) {
-        // \u2018 \u2019  \u201c \u201d
-        if (str.at(ind) == char(0xE2) && str.at(ind + 1) == char(0x80) &&
-            (str.at(ind + 2) == char(0x98) || str.at(ind + 2) == char(0x99) ||
-             str.at(ind + 2) == char(0x9D) || str.at(ind + 2) == char(0x9C0) ||
-             str.at(ind + 2) == char(0x9E))) {
-          res += '\"';
-          ind += 3;
-          continue;
-        }
+        ind += 3;
+        continue;
       }
-      // 4 bytes just skip
+      // 4 bytes - skip
       if ((str.at(ind) & 0b11111000) == 0b11110000) {
         ind += 4;
         continue;

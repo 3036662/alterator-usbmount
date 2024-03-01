@@ -45,6 +45,8 @@ const std::map<RuleOperator, std::string> GuardRule::map_operator{
     {RuleOperator::no_operator, ""}};
 
 GuardRule::GuardRule(const std::string &raw_str) {
+  // Log::Debug() << "parsing rule";
+  // Log::Debug() << raw_str;
   std::logic_error ex_common("Cant parse rule string");
   // Split string to tokens.
   std::vector<std::string> splitted{utils::SplitRawRule(raw_str)};

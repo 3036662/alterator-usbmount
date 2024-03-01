@@ -67,17 +67,18 @@ bool MessageDispatcher::UploadRulesFile(const LispMessage &msg) const noexcept {
     return true;
   }
   std::optional<std::vector<guard::GuardRule>> vec_rules =
-      guard_.UploadRules(msg.params.at("upload_rules"));
+      guard_.UploadRulesCsv(msg.params.at("upload_rules"));
   Log::Debug() << "Rules parsed";
   if (vec_rules.has_value() && !vec_rules->empty()) {
     std::optional<std::string> js_arr = guard::utils::BuildJsonArrayOfUpploaded(
         vec_rules.value_or(std::vector<guard::GuardRule>()));
-    Log::Debug() << js_arr.value_or("no json arr");
+    // Log::Debug() << js_arr.value_or("no json arr");
     vecPairs vec_result;
     if (js_arr.has_value()) {
       vec_result.emplace_back("status", "OK");
-      vec_result.emplace_back("response_json", EscapeAll(js_arr.value_or("")));
-      Log::Debug() << EscapeQuotes(js_arr.value_or("no json arr"));
+      vec_result.emplace_back("response_json",
+                              EscapeQuotes(js_arr.value_or("")));
+      // Log::Debug() << EscapeQuotes(js_arr.value_or("no json arr"));
     } else {
       Log::Error() << "Nothing build to JSON obj";
       vec_result.emplace_back("status", "BAD");

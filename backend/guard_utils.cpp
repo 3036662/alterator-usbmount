@@ -36,7 +36,7 @@ BuildJsonArrayOfUpploaded(const std::vector<GuardRule> &vec_rules) noexcept {
     for (const auto &rule : vec_rules) {
       if (rule.target() != common_target_policy)
         found_conflicting = true;
-      Log::Debug() << rule.BuildJsonObject();
+      // Log::Debug() << rule.BuildJsonObject();
       switch (rule.level()) {
       case StrictnessLevel::hash:
         res_obj.at("hash_rules").as_array().push_back(rule.BuildJsonObject());
@@ -48,7 +48,9 @@ BuildJsonArrayOfUpploaded(const std::vector<GuardRule> &vec_rules) noexcept {
         res_obj.at("vidpid_rules").as_array().push_back(rule.BuildJsonObject());
         break;
       case StrictnessLevel::non_strict:
-        res_obj.at("raw_rules").as_array().push_back(rule.BuildJsonObject());
+        // must be empty for now - because loading of raw rules from csv is
+        // unsupported
+        // res_obj.at("raw_rules").as_array().push_back(rule.BuildJsonObject());
         break;
       }
     }

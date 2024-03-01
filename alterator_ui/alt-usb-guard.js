@@ -163,11 +163,6 @@ $(document).ready(function () {
 /*******************************************************/
 
 function AddRulesFromFile (data) {
-  alert("Gotcha");
-  //let data_clean = data.replaceAll("\\\\\"", "\\\"");
-  //console.log(data_clean);
-  //let result = data.replaceAll(/\s\s/g, "\s");
- 
   const rules_json=JSON.parse(data);
   //set policy ratiobuttons
   if (rules_json.hasOwnProperty('policy')){
@@ -189,9 +184,9 @@ function AddRulesFromFile (data) {
         '<td><input class="select_appended" type="checkbox"></td>' +
         '<td>--</td>' +
         '<td><span class="alterator-label"><input type="text" class="input_appended" name="hash" value=\''+
-        rule["hash"].replaceAll(/\\/g, '')+
+        rule["hash"]+
         '\'/><span></td>' +
-        '<td>'+ rule["name"].replaceAll(/\\/g, '') +'</td>'+
+        '<td>-</td>'+
         '<td class="appended_rule_target">' +
         (rule["policy"] === 0 ? "allow" : "block") +
         '</td></tr>');
@@ -206,11 +201,11 @@ function AddRulesFromFile (data) {
         '<td><input class="select_appended" type="checkbox"></td>' +
         '<td>--</td>' +       
         '<td><span class="alterator-label"><input type="text" class="input_appended" name="vid" value=\''+
-        rule["vid"].replaceAll(/\\/g, '')+
+        rule["vid"]+
         '\'><span></td>' +
         '<td>--</td>' +
         '<td><span class="alterator-label"><input type="text" class="input_appended" name="pid" value=\''+
-        rule["pid"].replaceAll(/\\/g, '')+
+        rule["pid"]+
         '\'><span></td>' +
         '<td>--</td><td>--</td>'+
         '<td class="appended_rule_target">' +
@@ -228,7 +223,7 @@ function AddRulesFromFile (data) {
         '<td>--</td>' +       
         '<td><span class="alterator-label">'+
         '<input type="text" class="input_appended" name="with_interface" value=\''+
-        rule["interface"].replaceAll(/\\/g, '')+
+        rule["interface"]+
         '\' /><span></td>' +
         '<td>--</td><td>--</td>'+
         '<td class="appended_rule_target">' +
@@ -247,7 +242,7 @@ function AddRulesFromFile (data) {
         '<td>--</td>' + 
         '<td><span class="alterator-label">'+
         '<input type="text" class="input_appended" name="raw_rule" value=\''+
-        rule["raw"].replaceAll(/\\/g, '')+
+        rule["raw"]+
         '\'><span></td>' +
         '<td class="appended_rule_target">' +
         (rule["policy"] === 0 ? "allow" : "block") +
