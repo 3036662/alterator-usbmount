@@ -133,8 +133,8 @@ $(document).ready(function () {
  $("#load_file_button").bind('click',function(){
   const fileInput = document.getElementById('file_input');
   if (fileInput.files.length > 0) {
-    if(fileInput.files[0].size >10240000 ){
-        alert("This file is too big. Limit 10MB");
+    if(fileInput.files[0].size >1024000 ){
+        alert("This file is too big. Limit 1 MB");
         fileInput.value="";
     }
     const file = fileInput.files[0];
