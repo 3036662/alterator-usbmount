@@ -169,27 +169,8 @@
             (js "AddRulesFromFile" (get-value 'response_json response) )
             (woo-error "An error occured while parsing csv file")
        ) 
-      ;  (form-update-enum "list_hash_rules" (filter-lists  response "lbl_rule_hash"))
-      ;  (form-update-enum "list_vidpid_rules" (filter-lists  response "lbl_rule_vid"))
-      ;  (form-update-enum "list_interface_rules" (filter-lists  response "lbl_rule_desc"))
-      ;  (form-update-enum "list_unsorted_rules" (filter-lists  response "lbl_rule_raw"))       
-
-       ;(woo-error (object->string response))   
-
-       ;(woo-error (object->string  
-       ;                  (filter-lists  response "lbl_rule_vid")
-       ;                 (woo-list "/simple/list_rules" 'level "hash")
-       ;            ))
-
     ) ; let
-   ; (woo-error  (form-blob "file_input"))
-   ;(woo-error  "OK")
-
 )
-
-
-
-
 
 (define (init)
   (config_status_check)
