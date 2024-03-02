@@ -15,7 +15,7 @@ std::string UnUtf8(const std::string &str) noexcept {
   std::string res;
   std::runtime_error ex_bad_string("Invalid characters in string");
   try {
-    const uint kMaxIter = 10000;
+    const uint kMaxIter = 1'000'000;
     uint iter_counter = 0;
     size_t ind = 0;
     while (ind < str.size()) {
