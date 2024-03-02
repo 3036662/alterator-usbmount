@@ -1,0 +1,11 @@
+[Desktop Entry]
+Encoding=UTF-8
+Type=Application
+Categories=X-Alterator-System
+Icon=sysinfo
+Terminal=false
+Name=Simple
+X-Alterator-URI=/simple
+X-Alterator-Weight=20
+X-Alterator-UI=html
+Name[ru]=USBGuard
