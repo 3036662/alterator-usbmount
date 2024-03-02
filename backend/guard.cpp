@@ -320,7 +320,7 @@ Guard::UploadRulesCsv(const std::string &file) noexcept {
     }
     // Log::Debug() << csv_string;
     size_t n_rows = doc.GetRowCount();
-    // Log::Debug() << "Rows count" << n_rows;
+    Log::Debug() << "Rows count" << n_rows;
     std::vector<size_t> failed_rules;
     std::vector<GuardRule> res;
     for (size_t i = 0; i < n_rows; ++i) {
@@ -343,6 +343,7 @@ Guard::UploadRulesCsv(const std::string &file) noexcept {
       Log::Warning() << "Parsing of " << failed_rules.size() << "was failed";
       return std::nullopt;
     }
+    Log::Debug() << "CSV rules number = " << res.size();
     return res;
   } catch (const std::exception &ex) {
     Log::Error() << "Can't parse a csv file";
