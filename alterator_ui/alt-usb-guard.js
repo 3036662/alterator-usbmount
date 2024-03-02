@@ -165,6 +165,9 @@ $(document).ready(function () {
 function AddRulesFromFile (data) {
   const rules_json=JSON.parse(data);
   //set policy ratiobuttons
+  if (rules_json["STATUS"]==="error"){
+    alert(rules_json["ERR_MSG"]);
+  }
   if (rules_json.hasOwnProperty('policy')){
     if (rules_json['policy'] === 0){
         $("#radio_black_list").val("radio_white_list"); 
@@ -249,8 +252,8 @@ function AddRulesFromFile (data) {
         '</td></tr>');
     });
   };  
-
   bindCheckBox();
+  document.getElementById('file_input').value = '';
 };
 
 
