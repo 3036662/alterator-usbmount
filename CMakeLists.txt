@@ -3,7 +3,7 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 add_compile_options(-Wall -Wextra -pedantic)
 
-project(backendcpp LANGUAGES CXX)
+project(alterator_usbguard LANGUAGES CXX VERSION 0.1)
 
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(USBGUARD REQUIRED IMPORTED_TARGET libusbguard)
