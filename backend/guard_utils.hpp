@@ -2,7 +2,6 @@
 
 /**
  * @brief Usb-related free-standing functions
- *
  */
 
 #include "guard_rule.hpp"
@@ -14,6 +13,9 @@
 
 namespace guard::utils {
 
+/**
+ * @brief Build a json response for rules uploaded from csv
+ */
 std::optional<std::string>
 BuildJsonArrayOfUpploaded(const std::vector<GuardRule> &vec_rules) noexcept;
 
