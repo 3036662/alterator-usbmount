@@ -1,7 +1,7 @@
 
 add_library(boost_json OBJECT boost_json.cpp)
 
-add_executable(simple main.cpp
+add_executable(usbguard main.cpp
     lisp_message.hpp lisp_message.cpp
     message_reader.hpp message_reader.cpp
     message_dispatcher.cpp message_dispatcher.hpp
@@ -17,36 +17,36 @@ add_executable(simple main.cpp
 )
 
 include(Format)
-Format(simple .)
+Format(usbguard .)
 
 if(CMAKE_BUILD_TYPE STREQUAL "Debug")
 include(ClangTidy)
-AddClangTidy(simple)
+AddClangTidy(usbguard)
 
 include(CppCheck)
 AddCppCheck(${CMAKE_CURRENT_SOURCE_DIR})
-add_dependencies(simple run_cppcheck)
+add_dependencies(usbguard run_cppcheck)
 endif()
 
 
 
-include_directories(simple PUBLIC ${USBGUARD_INCLUDE_DIRS})
-include_directories(simple PUBLIC $CMAKE_SOURCE_DIR/tests)
-target_include_directories(simple PUBLIC  ${CMAKE_SOURCE_DIR}/thirdparty/cppcodec/cppcodec)
-target_include_directories(simple PUBLIC  ${CMAKE_SOURCE_DIR}/thirdparty/rapidcsv/src)
+include_directories(usbguard PUBLIC ${USBGUARD_INCLUDE_DIRS})
+include_directories(usbguard PUBLIC $CMAKE_SOURCE_DIR/tests)
+target_include_directories(usbguard PUBLIC  ${CMAKE_SOURCE_DIR}/thirdparty/cppcodec/cppcodec)
+target_include_directories(usbguard PUBLIC  ${CMAKE_SOURCE_DIR}/thirdparty/rapidcsv/src)
 
 
-target_link_libraries(simple PRIVATE boost_json)
-target_link_libraries(simple PRIVATE PkgConfig::USBGUARD)
-target_link_libraries(simple PRIVATE SDBusCpp::sdbus-c++)
+target_link_libraries(usbguard PRIVATE boost_json)
+target_link_libraries(usbguard PRIVATE PkgConfig::USBGUARD)
+target_link_libraries(usbguard PRIVATE SDBusCpp::sdbus-c++)
 
-install(TARGETS simple
+install(TARGETS usbguard
     RUNTIME DESTINATION "/usr/lib/alterator/backend3"
 )
 install(FILES 
         ${CMAKE_SOURCE_DIR}/alterator_ui/ajax.scm 
         ${CMAKE_SOURCE_DIR}/alterator_ui/index.html 
-        DESTINATION "/usr/share/alterator/ui/simple"
+        DESTINATION "/usr/share/alterator/ui/usbguard"
 )
 install(FILES 
     ${CMAKE_SOURCE_DIR}/alterator_ui/alt_usb_guard.css
@@ -68,6 +68,10 @@ install(FILES
     DESTINATION "/etc/usbguard/"
 )
 
+install(FILES
+    ${CMAKE_SOURCE_DIR}/alterator_ui/USBGuard.desktop
+    DESTINATION "/usr/share/alterator/applications/"
+)
 
 install(CODE "execute_process(COMMAND service alteratord restart)")
 install(CODE "execute_process(COMMAND service ahttpd restart)")
