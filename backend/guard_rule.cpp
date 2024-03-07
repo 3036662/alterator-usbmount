@@ -203,6 +203,7 @@ std::string GuardRule::ConditionsToString() const {
   // check if any operator
   if (map_operator.count(cond_->first) != 0) {
     res += map_operator.at(cond_->first);
+    res += " ";
     if (cond_->first != RuleOperator::no_operator)
       res += "{";
   }
