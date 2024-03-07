@@ -505,15 +505,20 @@ std::vector<std::string> SplitRawRule(std::string raw_str) noexcept {
 
 void WrapBracesWithSpaces(std::string &raw_str) noexcept {
   std::string tmp;
+  // if symbol is a part of a quouted string - dont wrap
+  bool dont_wrap{raw_str[0] == '\"'};
   for (auto it = raw_str.begin(); it != raw_str.end(); ++it) {
     bool wrap =
         *it == '{' || *it == '}' || *it == '!' || *it == '(' || *it == ')';
-    if (wrap) {
+    if (!dont_wrap && wrap) {
       tmp.push_back(' ');
     }
     tmp.push_back(*it);
-    if (wrap) {
+    if (!dont_wrap && wrap) {
       tmp.push_back(' ');
+    }
+    if (it != raw_str.end() && *it == '\"') {
+      dont_wrap = !dont_wrap;
     }
   }
   std::swap(raw_str, tmp);
