@@ -65,6 +65,12 @@ GuardRule::GuardRule(const std::string &raw_str) {
   splitted.erase(splitted.begin());
   if (splitted.size() == 1)
     return;
+
+  // Conditions may or may not exist in the string.
+  // Parse conditions first beacuse the "allow-matched()" condition contains
+  // nested rule
+  cond_ = ParseConditions(splitted);
+
   // id (vid:pid)
   // token id MUST contain a ':' symbol
   std::optional<std::string> str_id =
@@ -91,10 +97,10 @@ GuardRule::GuardRule(const std::string &raw_str) {
       [](const std::string &val) { return !IsReservedWord(val); };
   // hash length MUST be > 10 symbols
   hash_ = utils::ParseToken(
-      splitted, "hash", [](const std::string &val) { return val.size() > 10; });
+      splitted, "hash", [](const std::string &val) { return val.size() > 7; });
   parent_hash_ =
       utils::ParseToken(splitted, "parent-hash",
-                        [](const std::string &val) { return val.size() > 10; });
+                        [](const std::string &val) { return val.size() > 7; });
   device_name_ = utils::ParseToken(splitted, "name", default_predicat);
   serial_ = utils::ParseToken(splitted, "serial", default_predicat);
   port_ = ParseTokenWithOperator(splitted, "via-port", default_predicat);
@@ -114,8 +120,6 @@ GuardRule::GuardRule(const std::string &raw_str) {
 
   conn_type_ =
       utils::ParseToken(splitted, "with-connect-type", default_predicat);
-  // Conditions may or may not exist in the string.
-  cond_ = ParseConditions(splitted);
 
   // check
   for (std::string &str : splitted)
@@ -133,11 +137,13 @@ GuardRule::GuardRule(const std::string &raw_str) {
     throw std::logic_error("Not all tokens were parsed");
   }
   // Determine the stricness level
-  if (hash_)
+  // conditions,parent-hash and port are not used for hashing
+  // if rule contains a port or a condition - this is a "raw" rule
+  if (hash_ && !cond_ && !port_ && !parent_hash_)
     level_ = StrictnessLevel::hash;
-  else if (vid_ && pid_)
+  else if (vid_ && pid_ && !cond_ && !port_ && !parent_hash_)
     level_ = StrictnessLevel::vid_pid;
-  else if (with_interface_)
+  else if (with_interface_ && !cond_ && !port_ && !parent_hash_)
     level_ = StrictnessLevel::interface;
   else
     level_ = StrictnessLevel::non_strict;
