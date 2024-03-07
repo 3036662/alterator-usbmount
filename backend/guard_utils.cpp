@@ -8,6 +8,7 @@
 #include "usb_device.hpp"
 #include "utils.hpp"
 #include <boost/algorithm/string.hpp>
+#include <boost/algorithm/string/trim.hpp>
 #include <boost/json.hpp>
 #include <boost/json/array.hpp>
 #include <boost/json/object.hpp>
@@ -558,15 +559,23 @@ ParseConditionParameter(std::vector<std::string>::const_iterator it_start,
     return "";
   }
   ++it_start;
+
+  std::string res;
+  while (it_start != it_end && *it_start != ")") {
+    res += *it_start;
+    res += " ";
+    ++it_start;
+  }
+  // if a closing brace was not found
   if (it_start == it_end) {
     throw ex_common;
   }
   auto it_close_round_brace = it_start;
-  ++it_close_round_brace;
   if (it_close_round_brace == it_end || *it_close_round_brace != ")") {
     throw ex_common;
   }
-  return *it_start;
+  boost::trim(res);
+  return res;
 }
 
 std::vector<std::string>::const_iterator
