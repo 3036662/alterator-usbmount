@@ -141,6 +141,8 @@ GuardRule::GuardRule(const std::string &raw_str) {
     level_ = StrictnessLevel::interface;
   else
     level_ = StrictnessLevel::non_strict;
+  // Log::Debug() << "RULE BUILT";
+  // Log::Debug() << BuildString();
 }
 
 std::optional<std::pair<RuleOperator, std::vector<std::string>>>
@@ -287,7 +289,7 @@ GuardRule::InterfacesToString(bool with_interface_array_no_operator) const {
         with_interface_->first != RuleOperator::equals) {
       res << map_operator.at(with_interface_->first);
     }
-    res << "{";
+    res << " {";
     for (const auto &interf : with_interface_->second) {
       res << " " << interf;
     }
