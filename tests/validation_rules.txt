@@ -11,7 +11,7 @@ curly braces without operator are allowed only for
 List of conditions:
 
     localtime(time_range): Evaluates to true if the local time is in the specified time range. time_range can be written either as HH:MM[:SS] or HH:MM[:SS]-HH:MM[:SS].
-  NOT_SUPPORTED - allowed-matches(query): Evaluates to true if an allowed device matches the specified query. The query uses the rule syntax. Conditions in the query are not evaluated.
+    allowed-matches(query): Evaluates to true if an allowed device matches the specified query. The query uses the rule syntax. Conditions in the query are not evaluated.
     rule-applied: Evaluates to true if the rule currently being evaluated ever matched a device.
     rule-applied(past_duration): Evaluates to true if the rule currently being evaluated matched a device in the past duration of time specified by the parameter. past_duration can be written as HH:MM:SS, HH:MM, or SS.
     rule-evaluated: Evaluates to true if the rule currently being evaluated was ever evaluated before.
@@ -28,3 +28,7 @@ Interpretation of the set operator:
     none-of: Evaluate to true if none of the specified conditions evaluated to true.
     equals: Same as all-of.
     equals-ordered: Same as all-of
+	
+Sorting rules:
+	port, condition and parent-hash fields are not used for hash-evaluating, so if one of ru
+	

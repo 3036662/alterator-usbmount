@@ -1,5 +1,6 @@
 allow
-allow hash "0,;UW~fn" id  7Dbb:* serial "R0Ci+jH'" parent-hash "f<A^w5kG" name "g-!};_LI" with-interface equals { 4d:61:* B1:bA:* db:dE:A9 B2:*:* 3A:aE:* 6d:*:* } via-port  "|+|iC%y4" block name "wSNm}ee/" hash "4pAg0-_dddddk" via-port "<Q~kbL2x"  with-interface equals-ordered  { Cd:*:* D7:Ff:ae E2:*:* 52:B0:* 4D:*:* 0d:21:* }
+allow id 7Dbb:* serial "R0Ci+jH'" name "g-!};_LI" hash "0,;UW~fn" parent-hash "f<A^w5kG" via-port "|+|iC%y4" with-interface { 4d:61:* B1:bA:* db:dE:A9 B2:*:* 3A:aE:* 6d:*:* }
+allow hash "0,;UW~fn" id  7Dbb:* serial "R0Ci+jH'" parent-hash  "f<A^w5kG" name "g-!};_LI" with-interface equals { 4d:61:* B1:bA:* db:dE:A9 B2:*:* 3A:aE:* 6d:*:* } via-port  "|+|iC%y4" allow hash "4pAg0-_k" via-port "<Q~kbL2x" with-interface equals-ordered { Cd:*:* D7:Ff:ae E2:*:* 52:B0:* 4D:*:* 0d:21:* }
 allow hash "0,;UW~fn" id  7Dbb:*  serial "R0Ci+jH'" parent-hash "f<A^w5kG" name "g-!};_LI" with-interface equals { 4d:61:* B1:bA:* db:dE:A9 B2:*:* 3A:aE:* 6d:*:* } via-port one-of { "|+|iC%y4" "}SB@jbVd" }
 block hash "NlcFk|zb"
 allow hash "4pAg0-_k" with-interface equals-ordered { Cd:*:* D7:Ff:ae E2:*:* 52:B0:* 4D:*:* 0d:21:* } via-port "<Q~kbL2x" name "wSNm}ee/"
@@ -7,3 +8,5 @@ allow hash "6CJS2jC_" id 5cBE:fc52 with-interface equals { 00:c1:A6 2E:*:* 1e:*:
 allow hash "6^~>+n`s" via-port "/^WlPN7G"  if rule-evaluated
 allow hash "z$6EAE`V" if !localtime(2:00)
 allow id fA6E:* serial "v]s`5riB" hash "]:.drVPa" parent-hash "!dcVB5iT" via-port "%C`qdl9b" if allowed-matches(name "mIba4_Mk")
+allow hash "G4Rs_h^K"  if equals { true false !true false }
+allow hash "G4Rs_h^K" if equals{true false !true false}
