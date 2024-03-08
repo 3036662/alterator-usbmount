@@ -30,6 +30,6 @@ Interpretation of the set operator:
     equals-ordered: Same as all-of
 	
 Sorting rules:
-	port, condition, and parent-hash fields are not used for hash-evaluating, so if one of the rules contains some of these values, 
+	port, condition fields are not used for hash-evaluating, so if one of the rules contains some of these values, 
     It will be sorted as a row rule.
 	

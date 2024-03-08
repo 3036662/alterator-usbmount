@@ -151,11 +151,11 @@ void GuardRule::DetermineStrictnessLevel() noexcept {
   // Determine the stricness level
   // conditions,parent-hash and port are not used for hashing
   // if rule contains a port or a condition - this is a "raw" rule
-  if (hash_ && !cond_ && !port_ && !parent_hash_)
+  if (hash_ && !cond_ && !port_)
     level_ = StrictnessLevel::hash;
-  else if (vid_ && pid_ && !cond_ && !port_ && !parent_hash_)
+  else if (vid_ && pid_ && !cond_ && !port_)
     level_ = StrictnessLevel::vid_pid;
-  else if (with_interface_ && !cond_ && !port_ && !parent_hash_)
+  else if (with_interface_ && !cond_ && !port_)
     level_ = StrictnessLevel::interface;
   else
     level_ = StrictnessLevel::non_strict;
