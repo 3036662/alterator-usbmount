@@ -4,6 +4,7 @@
 #include "utils.hpp"
 #include <algorithm>
 #include <boost/algorithm/string.hpp>
+#include <boost/algorithm/string/predicate.hpp>
 #include <boost/algorithm/string/regex.hpp>
 #include <boost/json.hpp>
 #include <boost/json/object.hpp>
@@ -49,33 +50,27 @@ GuardRule::GuardRule(const std::string &raw_str) {
   // Log::Debug() << raw_str;
   std::logic_error ex_common("Cant parse rule string");
   // Split string to tokens.
-  std::vector<std::string> splitted{utils::SplitRawRule(raw_str)};
-  if (splitted.empty())
+  std::vector<std::string> tokens{utils::SplitRawRule(raw_str)};
+  if (tokens.empty())
     throw ex_common;
   // Map strings to values/
   // The target is mandatory.
-  auto it_target = std::find_if(map_target.cbegin(), map_target.cend(),
-                                [&splitted](const auto &element) {
-                                  return element.second == splitted[0];
-                                });
+  auto it_target = std::find_if(
+      map_target.cbegin(), map_target.cend(),
+      [&tokens](const auto &element) { return element.second == tokens[0]; });
   if (it_target == map_target.cend()) {
     throw ex_common;
   }
   target_ = it_target->first;
-  splitted.erase(splitted.begin());
-  if (splitted.size() == 1)
-    return;
-
+  tokens.erase(tokens.begin());
   // Conditions may or may not exist in the string.
   // Parse conditions first beacuse the "allow-matched()" condition contains
   // nested rule
-  cond_ = ParseConditions(splitted);
-
+  cond_ = ParseConditions(tokens);
   // id (vid:pid)
   // token id MUST contain a ':' symbol
   std::optional<std::string> str_id =
-      utils::ParseToken(splitted, "id", utils::VidPidValidator);
-
+      utils::ParseToken(tokens, "id", utils::VidPidValidator);
   if (str_id.has_value()) {
     size_t separator{0};
     if (str_id->find(':') != std::string::npos)
@@ -87,40 +82,46 @@ GuardRule::GuardRule(const std::string &raw_str) {
     if (vid_->empty() || pid_->empty())
       throw ex_common;
   }
-
+  // The default predicat for validation
+  std::function<bool(const std::string &)> default_predicat =
+      [](const std::string &val) {
+        return !IsReservedWord(val) && !boost::starts_with(val, "\\\"") &&
+               !boost::ends_with(val, "\\\"");
+      };
   // Hash, device_name, serial, port, and with_interface may or may not exist in
   // the string. default_predicat - Function is the default behavior of values
   // validating.
-
-  // The default predicat for validation
-  std::function<bool(const std::string &)> default_predicat =
-      [](const std::string &val) { return !IsReservedWord(val); };
-  // hash length MUST be > 10 symbols
+  // hash length MUST be > 7 symbols
   hash_ = utils::ParseToken(
-      splitted, "hash", [](const std::string &val) { return val.size() > 7; });
+      tokens, "hash", [](const std::string &val) { return val.size() > 7; });
   parent_hash_ =
-      utils::ParseToken(splitted, "parent-hash",
+      utils::ParseToken(tokens, "parent-hash",
                         [](const std::string &val) { return val.size() > 7; });
-  device_name_ = utils::ParseToken(splitted, "name", default_predicat);
-  serial_ = utils::ParseToken(splitted, "serial", default_predicat);
-  port_ = ParseTokenWithOperator(splitted, "via-port", default_predicat);
+  device_name_ = utils::ParseToken(tokens, "name", default_predicat);
+  serial_ = utils::ParseToken(tokens, "serial", default_predicat);
+  port_ = ParseTokenWithOperator(tokens, "via-port", default_predicat);
 
   // if a rules contains  with-interface { i1, i2 } array - insert the "equals"
   // operator
   auto it_with_interface =
-      std::find(splitted.begin(), splitted.end(), "with-interface");
-  if (it_with_interface != splitted.end()) {
+      std::find(tokens.begin(), tokens.end(), "with-interface");
+  if (it_with_interface != tokens.end()) {
     ++it_with_interface;
-    if (it_with_interface != splitted.end() && *it_with_interface == "{") {
-      splitted.insert(it_with_interface, "equals");
+    if (it_with_interface != tokens.end() && *it_with_interface == "{") {
+      tokens.insert(it_with_interface, "equals");
     }
   }
-  with_interface_ = ParseTokenWithOperator(splitted, "with-interface",
+  with_interface_ = ParseTokenWithOperator(tokens, "with-interface",
                                            utils::InterfaceValidator);
+  conn_type_ = utils::ParseToken(tokens, "with-connect-type", default_predicat);
 
-  conn_type_ =
-      utils::ParseToken(splitted, "with-connect-type", default_predicat);
+  DetermineStrictnessLevel();
+  FinalValidator(tokens);
+  // Log::Debug() << "RULE BUILT";
+  // Log::Debug() << BuildString();
+}
 
+void GuardRule::FinalValidator(std::vector<std::string> &splitted) const {
   // check
   for (std::string &str : splitted)
     boost::trim(str);
@@ -136,6 +137,17 @@ GuardRule::GuardRule(const std::string &raw_str) {
     }
     throw std::logic_error("Not all tokens were parsed");
   }
+
+  if (vid_.value_or("").empty() && (pid_.value_or("").empty()) &&
+      (hash_.value_or("").empty()) && (parent_hash_.value_or("").empty()) &&
+      (device_name_.value_or("").empty()) && (serial_.value_or("").empty()) &&
+      !port_.has_value() && !with_interface_.has_value() &&
+      !conn_type_.has_value() && !cond_.has_value()) {
+    throw std::logic_error("Empty rule");
+  }
+}
+
+void GuardRule::DetermineStrictnessLevel() noexcept {
   // Determine the stricness level
   // conditions,parent-hash and port are not used for hashing
   // if rule contains a port or a condition - this is a "raw" rule
@@ -147,8 +159,6 @@ GuardRule::GuardRule(const std::string &raw_str) {
     level_ = StrictnessLevel::interface;
   else
     level_ = StrictnessLevel::non_strict;
-  // Log::Debug() << "RULE BUILT";
-  // Log::Debug() << BuildString();
 }
 
 std::optional<std::pair<RuleOperator, std::vector<std::string>>>

@@ -518,7 +518,7 @@ void WrapBracesWithSpaces(std::string &raw_str) noexcept {
     if (!dont_wrap && wrap) {
       tmp.push_back(' ');
     }
-    if (it != raw_str.end() && *it == '\"') {
+    if (*it == '\"') {
       dont_wrap = !dont_wrap;
     }
   }
@@ -528,7 +528,6 @@ void WrapBracesWithSpaces(std::string &raw_str) noexcept {
 std::optional<std::string>
 ParseToken(std::vector<std::string> &splitted, const std::string &name,
            const std::function<bool(const std::string &)> &predicat) {
-
   std::optional<std::string> res;
   auto it_name = std::find(splitted.cbegin(), splitted.cend(), name);
   if (it_name != splitted.cend()) {

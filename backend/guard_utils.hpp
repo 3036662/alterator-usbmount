@@ -100,7 +100,7 @@ bool InterfaceValidator(const std::string &val) noexcept;
  *
  * @param raw_str String to split
  * @return std::vector<std::string>
- * @example "id    1    name   "Long Name"" -> { "id","1",""Long Name""}
+ * @details "id    1    name   "Long Name"" -> { "id","1",""Long Name""}
  */
 std::vector<std::string> SplitRawRule(std::string raw_str) noexcept;
 
