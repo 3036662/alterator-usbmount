@@ -17,7 +17,7 @@ list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
 
 # dbus + systemd
 find_package(sdbus-c++ REQUIRED)
-pkg_check_modules(SYSDTEMD REQUIRED systemd )
+pkg_check_modules(SYSTEMD REQUIRED IMPORTED_TARGET systemd)
 
 
 # backend
@@ -28,6 +28,13 @@ add_subdirectory(backend)
 #add_executable(test_fstab fstab_test.cpp)
 #target_link_libraries(test_fstab PRIVATE PkgConfig::UDEV)
 #target_include_directories(test_fstab PUBLIC ${UDEV_INCLUDE_DIRS})
+
+
+# the daemon
+message("Building daemon...")
+add_subdirectory(daemon)
+
+
 
 # android vid_pid parser
 if(CMAKE_BUILD_TYPE STREQUAL "Debug")
