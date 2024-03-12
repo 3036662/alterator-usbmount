@@ -15,12 +15,6 @@ namespace guard {
  * */
 class ConfigStatus : public SerializableForLisp<ConfigStatus> {
 
-private:
-  const std::string usb_guard_daemon_name = "usbguard.service";
-  const std::string unit_dir_path = "/lib/systemd/system";
-  const std::string usbguard_default_config_path =
-      "/etc/usbguard/usbguard-daemon.conf";
-
 public:
   /// @brief Constructor checks for udev rules and daemon status
   ConfigStatus() noexcept;
@@ -104,6 +98,12 @@ private:
   void ParseDaemonConfig() noexcept;
 
   /**
+   * @brief Check rules and config file permission.
+   *
+   */
+  void CheckConfigFilesPermissions() noexcept;
+
+  /**
    * @brief Extracts a confing filename from string
    *
    * @param line String line from config
@@ -142,12 +142,20 @@ private:
    */
   bool ExtractPolicy(const std::string &line) noexcept;
 
+  const std::string usb_guard_daemon_name = "usbguard.service";
+  const std::string unit_dir_path = "/lib/systemd/system";
+  const std::string usbguard_default_config_path =
+      "/etc/usbguard/usbguard-daemon.conf";
+
   // warning_info : filename
   std::unordered_map<std::string, std::string> udev_warnings_;
   bool udev_rules_OK_;
   bool guard_daemon_OK;
   bool guard_daemon_enabled_;
   bool guard_daemon_active_;
+  bool config_file_permissions_OK_;
+  bool rules_file_permissions_OK_;
+
   std::string daemon_config_file_path_;
   // filled by ParseDaemonConfig
   std::string daemon_rules_file_path;

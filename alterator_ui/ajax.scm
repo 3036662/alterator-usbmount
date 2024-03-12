@@ -39,6 +39,7 @@
 ; udev:     "OK" or BAD 
 (define (config_status_check)
    (let ((status  (removeFirstElement (woo-read "/usbguard/config_status")) ))
+   ; (woo-error (object->string status))
            ; if udev=OK
            (if (string=? "OK" (get-value 'udev status)) 
                 (begin
@@ -88,6 +89,12 @@
                 )    
            ) ; endif
            
+           ; file permissions warning
+           (if  (string=? "OK" (get-value 'config_files_permissions status))
+                (form-update-visibility "warning_file_permissions" #f)
+                (form-update-visibility "warning_file_permissions" #t)
+           ) ; endif            
+
            ; disable block button if default policy is block
            (if (string=? "block" (get-value 'implicit_policy status))
                     (begin        

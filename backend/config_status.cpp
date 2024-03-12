@@ -24,9 +24,12 @@ ConfigStatus::ConfigStatus() noexcept
     : udev_warnings_{utils::InspectUdevRules()},
       udev_rules_OK_{udev_warnings_.empty()}, guard_daemon_OK{false},
       guard_daemon_enabled_{false}, guard_daemon_active_{false},
-      daemon_config_file_path_{GetDaemonConfigPath()} {
+      config_file_permissions_OK_(false), rules_file_permissions_OK_(false),
+      daemon_config_file_path_{GetDaemonConfigPath()},
+      rules_files_exists_(false) {
   CheckDaemon();
   ParseDaemonConfig();
+  CheckConfigFilesPermissions();
 }
 
 vecPairs ConfigStatus::SerializeForLisp() const {
@@ -41,6 +44,9 @@ vecPairs ConfigStatus::SerializeForLisp() const {
   res.emplace_back("allowed_users", boost::join(ipc_allowed_users_, ", "));
   res.emplace_back("allowed_groups", boost::join(ipc_allowed_groups_, ", "));
   res.emplace_back("implicit_policy", implicit_policy_target_);
+  res.emplace_back(
+      "config_files_permissions",
+      config_file_permissions_OK_ && rules_file_permissions_OK_ ? "OK" : "BAD");
   return res;
 }
 
@@ -283,6 +289,36 @@ void ConfigStatus::ParseDaemonConfig() noexcept {
     ExtractPolicy(line);
   }
   file_dconfig.close();
+}
+
+void ConfigStatus::CheckConfigFilesPermissions() noexcept {
+  namespace fs = std::filesystem;
+  try {
+    fs::path config_path(daemon_config_file_path_);
+    if (fs::exists(config_path)) {
+      fs::perms conf_perm = fs::status(config_path).permissions();
+      if (conf_perm == (fs::perms::owner_write | fs::perms::owner_read)) {
+        config_file_permissions_OK_ = true;
+      } else {
+        config_file_permissions_OK_ = false;
+        Log::Error() << "USBGuard config file (" << daemon_config_file_path_
+                     << ") must have 0600 permissions";
+      }
+    }
+    if (fs::exists(daemon_rules_file_path)) {
+      fs::perms conf_perm = fs::status(daemon_rules_file_path).permissions();
+      if (conf_perm == (fs::perms::owner_write | fs::perms::owner_read)) {
+        rules_file_permissions_OK_ = true;
+      } else {
+        rules_file_permissions_OK_ = false;
+        Log::Error() << "USBGuard rules file (" << daemon_rules_file_path
+                     << ") must have 0600 permissions";
+      }
+    }
+  } catch (const std::exception &ex) {
+    Log::Error() << "Can't check file permissions for USBGuard files";
+    Log::Error() << ex.what();
+  }
 }
 
 std::pair<std::vector<GuardRule>, uint>
