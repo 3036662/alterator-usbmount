@@ -103,7 +103,7 @@ ConfigStatus Guard::GetConfigStatus() noexcept {
   //  TODO if daemon is on active think about creating policy before enabling
   if (!HealthStatus())
     ConnectToUsbGuard();
-  config_status.guard_daemon_active = HealthStatus();
+  config_status.guard_daemon_active(HealthStatus());
   return config_status;
 }
 

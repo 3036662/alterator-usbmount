@@ -206,7 +206,7 @@ bool MessageDispatcher::BlockDevice(const LispMessage &msg) const noexcept {
 bool MessageDispatcher::CheckConfig() const noexcept {
   Log::Info() << "Check config";
   std::string str = kMessBeg;
-  for (const auto &pair : guard_.GetConfigStatus().udev_warnings) {
+  for (const auto &pair : guard_.GetConfigStatus().udev_warnings()) {
     str += ToLisp({"label_udev_rules_filename", pair.first});
   }
   str += kMessEnd;

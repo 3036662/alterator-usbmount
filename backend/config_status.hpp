@@ -22,20 +22,6 @@ private:
       "/etc/usbguard/usbguard-daemon.conf";
 
 public:
-  // warning_info : filename
-  std::unordered_map<std::string, std::string> udev_warnings;
-  bool udev_rules_OK;
-  bool guard_daemon_OK;
-  bool guard_daemon_enabled;
-  bool guard_daemon_active;
-  std::string daemon_config_file_path;
-  // filled by ParseDaemonConfig
-  std::string daemon_rules_file_path;
-  bool rules_files_exists;
-  std::set<std::string> ipc_allowed_users;
-  std::set<std::string> ipc_allowed_groups;
-  std::string implicit_policy_target;
-
   /// @brief Constructor checks for udev rules and daemon status
   ConfigStatus() noexcept;
 
@@ -48,7 +34,6 @@ public:
 
   /**
    * @brief Parses usbguard rules.conf file
-   *
    * @return  std::pair<std::vector<GuardRule>,uint> Parsed rules,total lines in
    * file
    */
@@ -92,6 +77,17 @@ public:
    * @return false Failed
    */
   bool TryToRun(bool run_daemon) const noexcept;
+
+  inline bool guard_daemon_active() const noexcept {
+    return guard_daemon_active_;
+  }
+  inline void guard_daemon_active(bool status) noexcept {
+    guard_daemon_active_ = status;
+  }
+  inline std::unordered_map<std::string, std::string>
+  udev_warnings() const noexcept {
+    return udev_warnings_;
+  }
 
 private:
   /// @brief Return path for the  daemon .conf file
@@ -145,6 +141,20 @@ private:
    * to this.implicit_policy_target
    */
   bool ExtractPolicy(const std::string &line) noexcept;
+
+  // warning_info : filename
+  std::unordered_map<std::string, std::string> udev_warnings_;
+  bool udev_rules_OK_;
+  bool guard_daemon_OK;
+  bool guard_daemon_enabled_;
+  bool guard_daemon_active_;
+  std::string daemon_config_file_path_;
+  // filled by ParseDaemonConfig
+  std::string daemon_rules_file_path;
+  bool rules_files_exists_;
+  std::set<std::string> ipc_allowed_users_;
+  std::set<std::string> ipc_allowed_groups_;
+  std::string implicit_policy_target_;
 
 #ifdef UNIT_TEST
   friend class ::Test;

@@ -100,11 +100,11 @@ void Test::Run2() {
   }
 
   cs.CheckDaemon();
-  Log::Test() << " ACTIVE " << cs.guard_daemon_active << " ENABLED "
-              << cs.guard_daemon_enabled << " DAEMON_OK " << cs.guard_daemon_OK
-              << " UDEV_RULES_OK " << cs.udev_rules_OK;
-  assert(cs.guard_daemon_active == false);
-  assert(cs.guard_daemon_enabled == false);
+  Log::Test() << " ACTIVE " << cs.guard_daemon_active_ << " ENABLED "
+              << cs.guard_daemon_enabled_ << " DAEMON_OK " << cs.guard_daemon_OK
+              << " UDEV_RULES_OK " << cs.udev_rules_OK_;
+  assert(cs.guard_daemon_active_ == false);
+  assert(cs.guard_daemon_enabled_ == false);
 
   if (std::system("systemctl start usbguard")) {
     throw std::logic_error("can't start usbguard");
@@ -113,11 +113,11 @@ void Test::Run2() {
     throw std::logic_error("can't enable usbguard");
   }
   cs.CheckDaemon();
-  Log::Test() << " ACTIVE " << cs.guard_daemon_active << " ENABLED "
-              << cs.guard_daemon_enabled << " DAEMON_OK " << cs.guard_daemon_OK
-              << " UDEV_RULES_OK " << cs.udev_rules_OK;
-  assert(cs.guard_daemon_active == true);
-  assert(cs.guard_daemon_enabled == true);
+  Log::Test() << " ACTIVE " << cs.guard_daemon_active_ << " ENABLED "
+              << cs.guard_daemon_enabled_ << " DAEMON_OK " << cs.guard_daemon_OK
+              << " UDEV_RULES_OK " << cs.udev_rules_OK_;
+  assert(cs.guard_daemon_active_ == true);
+  assert(cs.guard_daemon_enabled_ == true);
   Log::Test() << "TEST2 ... OK";
 }
 
@@ -133,10 +133,10 @@ void Test::Run4() {
   guard::ConfigStatus cs;
   cs.ParseDaemonConfig();
   Log::Test() << "Found rules file " << cs.daemon_rules_file_path;
-  Log::Test() << "Rules file exists = " << cs.rules_files_exists;
+  Log::Test() << "Rules file exists = " << cs.rules_files_exists_;
   assert(!cs.daemon_rules_file_path.empty() &&
          cs.daemon_rules_file_path == "/etc/usbguard/rules.conf" &&
-         cs.rules_files_exists ==
+         cs.rules_files_exists_ ==
              std::filesystem::exists(cs.daemon_rules_file_path));
   Log::Test() << "TEST4 ... OK";
 }
@@ -145,33 +145,33 @@ void Test::Run5() {
   guard::ConfigStatus cs;
   cs.ParseDaemonConfig();
   Log::Test() << "Users found:";
-  for (const std::string &user : cs.ipc_allowed_users) {
+  for (const std::string &user : cs.ipc_allowed_users_) {
     Log::Test() << user;
   }
 
   const std::string path_to_users = "/etc/usbguard/IPCAccessControl.d/";
   std::set<std::string> expected_set = {"root"};
-  assert(cs.ipc_allowed_users == expected_set);
+  assert(cs.ipc_allowed_users_ == expected_set);
 
   if (std::system("usbguard add-user test")) {
     throw std::logic_error("Can't add user to usbguard");
   }
   cs.ParseDaemonConfig();
-  for (const std::string &user : cs.ipc_allowed_users) {
+  for (const std::string &user : cs.ipc_allowed_users_) {
     Log::Test() << user;
   }
   expected_set.insert("test");
-  assert(cs.ipc_allowed_users == expected_set);
+  assert(cs.ipc_allowed_users_ == expected_set);
 
   if (std::system("usbguard remove-user test")) {
     throw std::logic_error("Can't add user to usbguard");
   }
   cs.ParseDaemonConfig();
-  for (const std::string &user : cs.ipc_allowed_users) {
+  for (const std::string &user : cs.ipc_allowed_users_) {
     Log::Test() << user;
   }
   expected_set.erase("test");
-  assert(cs.ipc_allowed_users == expected_set);
+  assert(cs.ipc_allowed_users_ == expected_set);
 
   Log::Test() << "TEST5 ... OK";
 }
@@ -180,11 +180,11 @@ void Test::Run6() {
   guard::ConfigStatus cs;
   cs.ParseDaemonConfig();
   Log::Test() << "Groups found:";
-  for (const std::string &group : cs.ipc_allowed_groups) {
+  for (const std::string &group : cs.ipc_allowed_groups_) {
     Log::Test() << group;
   }
   std::set<std::string> expected{"wheel"};
-  assert(cs.ipc_allowed_groups == expected);
+  assert(cs.ipc_allowed_groups_ == expected);
   Log::Test() << "TEST6 ... OK";
 }
 
@@ -1248,8 +1248,8 @@ void Test::Run15(){
     assert(*res =="{\"rules_OK\":[],\"rules_BAD\":[],\"STATUS\":\"OK\"}" );
 
     guard::ConfigStatus cs;
-    assert(!cs.guard_daemon_active);
-    assert(!cs.guard_daemon_enabled);
+    assert(!cs.guard_daemon_active_);
+    assert(!cs.guard_daemon_enabled_);
   }
   std::this_thread::sleep_for(std::chrono::milliseconds(100));
 
@@ -1262,8 +1262,8 @@ void Test::Run15(){
     assert(*res =="{\"rules_OK\":[],\"rules_BAD\":[],\"STATUS\":\"OK\"}" );
 
     guard::ConfigStatus cs;
-    assert(cs.guard_daemon_active);
-    assert(cs.guard_daemon_enabled);
+    assert(cs.guard_daemon_active_);
+    assert(cs.guard_daemon_enabled_);
   }
 
   Log::Test() << "[TEST] TEST 15 ... OK";
@@ -1272,24 +1272,24 @@ void Test::Run15(){
 void Test::Run16(){
   Log::Test() << "Test changing implicit policy";
   guard::ConfigStatus cs;
-  auto init_policy=cs.implicit_policy_target;
+  auto init_policy=cs.implicit_policy_target_;
 
   std::this_thread::sleep_for(std::chrono::milliseconds(100));
 
   cs.ChangeImplicitPolicy(false);
-   Log::Test() << "cs.policy "<< cs.implicit_policy_target ;
-  assert(cs.implicit_policy_target =="allow");
+   Log::Test() << "cs.policy "<< cs.implicit_policy_target_ ;
+  assert(cs.implicit_policy_target_ =="allow");
   
   std::this_thread::sleep_for(std::chrono::milliseconds(100));
 
   cs.ChangeImplicitPolicy(true);
-  Log::Test() << "cs.policy "<< cs.implicit_policy_target;
-  assert(cs.implicit_policy_target =="block");
+  Log::Test() << "cs.policy "<< cs.implicit_policy_target_;
+  assert(cs.implicit_policy_target_ =="block");
   
   std::this_thread::sleep_for(std::chrono::milliseconds(100));
 
   cs.ChangeImplicitPolicy(init_policy=="block");
-  assert( cs.implicit_policy_target==init_policy);
+  assert( cs.implicit_policy_target_==init_policy);
   Log::Test() << "TEST 16 ... OK";
 }
 
@@ -1305,8 +1305,8 @@ Log::Info() <<"Sleep ...";
   assert (result);
   Log::Test() <<*result;
   assert (result=="{\"STATUS\":\"OK\"}");
-  assert (guard.GetConfigStatus().guard_daemon_active);
-  assert (guard.GetConfigStatus().guard_daemon_enabled);
+  assert (guard.GetConfigStatus().guard_daemon_active_);
+  assert (guard.GetConfigStatus().guard_daemon_enabled_);
 }
 
 Log::Info() <<"Sleep ...";
@@ -1317,8 +1317,8 @@ std::this_thread::sleep_for(std::chrono::milliseconds(10000));
   auto result=guard.ApplyJsonRulesChanges(json);
   assert (result);
   assert (result=="{\"STATUS\":\"OK\"}");
-  assert (!guard.GetConfigStatus().guard_daemon_active);
-  assert (!guard.GetConfigStatus().guard_daemon_enabled);
+  assert (!guard.GetConfigStatus().guard_daemon_active_);
+  assert (!guard.GetConfigStatus().guard_daemon_enabled_);
 }
 Log::Info() <<"Sleep ...";
 std::this_thread::sleep_for(std::chrono::milliseconds(10000));
@@ -1329,8 +1329,8 @@ std::this_thread::sleep_for(std::chrono::milliseconds(10000));
   assert (result);
   Log::Test() <<*result;
   assert (result=="{\"rules_OK\":[],\"rules_BAD\":[],\"STATUS\":\"OK\"}");
-  assert (!guard.GetConfigStatus().guard_daemon_active);
-  assert (!guard.GetConfigStatus().guard_daemon_enabled);
+  assert (!guard.GetConfigStatus().guard_daemon_active_);
+  assert (!guard.GetConfigStatus().guard_daemon_enabled_);
 }
   Log::Test() << "TEST 17 ... OK";
 }
