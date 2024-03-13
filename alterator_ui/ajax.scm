@@ -154,9 +154,21 @@
         (if 
             (string=? "OK" (get-value 'status response))
             (form-update-value "hidden_manual_changes_response" (get-value 'ids_json response) )
-            (woo-error "An error occured while processing new rules" )
+            (woo-error "An error occurred when starting the USB Guard with new rules. We recommend checking the rules and configuration files for correctness." )
         )
     ); //let 
+)
+
+; send all changes to backend for validation
+(define (validate_rules_handler)
+    (let ((  response  (removeFirstElement (woo-read "/usbguard/validate_changes" 'changes_json  (form-value "hidden_manual_changes_data"))) ))
+        (if 
+            (string=? "OK" (get-value 'status response))
+            (form-update-value "hidden_manual_changes_response" (get-value 'ids_json response) )
+            (woo-error "An error occurred when starting the USB Guard with new rules. We recommend checking the rules and configuration files for correctness." )
+        )
+    ); //let
+
 )
 
 (define (update_after_rulles_applied)
@@ -180,11 +192,13 @@
 )
 
 (define (init)
+ ; (form-update-activity "save_rules"  #f)  
   (config_status_check)
   (ls_guard_rules)
   (form-bind "btn_prsnt_scan" "click" ls_usbs)
   (form-bind "btn_prsnt_dev_add" "click" allow_device)
   (form-bind "btn_prsnt_dev_block" "click" block_device)
+  (form-bind "hidden_manual_changes_data" "rules_json_validation" validate_rules_handler) ;save changes event
   (form-bind "hidden_manual_changes_data" "rules_json_ready" save_rules_handler) ;save changes event
   (form-bind "hidden_manual_changes_response" "rules_applied" update_after_rulles_applied)  
   (form-bind-upload "load_file_button" "data_ready" "file_input" upload_rules_callback )

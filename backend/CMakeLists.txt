@@ -14,6 +14,7 @@ add_executable(usbguard main.cpp
     json_rule.cpp
     guard_utils.cpp
     csv_rule.cpp
+    json_changes.cpp
 )
 
 

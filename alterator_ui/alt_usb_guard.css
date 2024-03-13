@@ -84,3 +84,8 @@
     width: 100%;
     border: 0px;
 }
+
+.crossed-out {
+    text-decoration: line-through;
+    font-weight: bold;
+}

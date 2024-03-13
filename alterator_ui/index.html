@@ -33,7 +33,7 @@
             <svg>
               <circle cx="10" cy="10" r="8" fill="red" />
             </svg>
-            <span> Wrong file permissions for UsbGuard config files.</span>
+            <span> Wrong file permissions for UsbGuard config files (requiered 0600).</span>
           </div>
           <!-- status udev is OK-->
           <div name="udev_status_ok" class="service_status">
@@ -283,8 +283,11 @@
       <hr />
         <form onsubmit="return false;">
           <input type="hidden" name="hidden_manual_changes_data" id = "hidden_manual_changes_data"/>
-          <input type="hidden" name="hidden_manual_changes_response" id = "hidden_manual_changes_response"/>  
-          <input class="right_buttons btn" type="button" name="save_rules" id="save_rules_button" value="SAVE ALL RULES" />
+          <input type="hidden" name="hidden_manual_changes_response" id = "hidden_manual_changes_response"/>
+          
+          <input class="right_buttons btn" type="button" name="save_rules" id="save_rules_button" value="SAVE ALL RULES"/>
+          <input class="right_buttons btn" type="button" name="validate_rules" id="validate_rules_button" value="CHECK THE RULES" />  
+          
         </form>
       </div>
     </body>

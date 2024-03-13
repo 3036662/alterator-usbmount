@@ -850,7 +850,7 @@ void Test::Run14(){
                         "[{\"vid\":\"a000\"},{\"pid\":\"a5a5\"}]}]}";
     const boost::json::value jv= boost::json::parse(json);                    
     const boost::json::object* ptr_obj= jv.as_object().at("appended_rules").as_array().at(0).if_object();                   
-    guard::utils::json::JsonRule json_rule(ptr_obj);
+    guard::json::JsonRule json_rule(ptr_obj);
     guard::GuardRule rule(json_rule.BuildString());
     
     assert(rule.target() == guard::Target::allow);
@@ -872,7 +872,7 @@ void Test::Run14(){
     const boost::json::value jv= boost::json::parse(json);                    
     const boost::json::object* ptr_obj= jv.as_object().at("appended_rules").as_array().at(0).if_object();  
     try{                 
-    guard::utils::json::JsonRule json_rule(ptr_obj);
+    guard::json::JsonRule json_rule(ptr_obj);
     guard::GuardRule rule(json_rule.BuildString());
     }
     catch(const std::logic_error& ex){
@@ -892,7 +892,7 @@ void Test::Run14(){
     const boost::json::value jv= boost::json::parse(json);                    
     const boost::json::object* ptr_obj= jv.as_object().at("appended_rules").as_array().at(0).if_object();  
     try{                 
-          guard::utils::json::JsonRule json_rule(ptr_obj);
+          guard::json::JsonRule json_rule(ptr_obj);
     guard::GuardRule rule(json_rule.BuildString());
     }
     catch(const std::logic_error& ex){
@@ -912,7 +912,7 @@ void Test::Run14(){
     const boost::json::value jv= boost::json::parse(json);                    
     const boost::json::object* ptr_obj= jv.as_object().at("appended_rules").as_array().at(0).if_object();  
     try{                 
-          guard::utils::json::JsonRule json_rule(ptr_obj);
+          guard::json::JsonRule json_rule(ptr_obj);
     guard::GuardRule rule(json_rule.BuildString());
     }
     catch(const std::logic_error& ex){
@@ -931,7 +931,7 @@ void Test::Run14(){
     const boost::json::value jv= boost::json::parse(json);                    
     const boost::json::object* ptr_obj= jv.as_object().at("appended_rules").as_array().at(0).if_object();  
     try{                 
-        guard::utils::json::JsonRule json_rule(ptr_obj);
+        guard::json::JsonRule json_rule(ptr_obj);
     guard::GuardRule rule(json_rule.BuildString());
     }
     catch(const std::logic_error& ex){
@@ -954,7 +954,7 @@ void Test::Run14(){
                         "]}]}";
     const boost::json::value jv= boost::json::parse(json);                    
     const boost::json::object* ptr_obj= jv.as_object().at("appended_rules").as_array().at(0).if_object();                   
-       guard::utils::json::JsonRule json_rule(ptr_obj);
+       guard::json::JsonRule json_rule(ptr_obj);
     guard::GuardRule rule(json_rule.BuildString());
     
     assert(rule.target() == guard::Target::allow);
@@ -981,7 +981,7 @@ void Test::Run14(){
                         "]}]}";         
     const boost::json::value jv= boost::json::parse(json);                    
     const boost::json::object* ptr_obj= jv.as_object().at("appended_rules").as_array().at(0).if_object();                   
-        guard::utils::json::JsonRule json_rule(ptr_obj);
+        guard::json::JsonRule json_rule(ptr_obj);
     guard::GuardRule rule(json_rule.BuildString());
     
     assert(rule.target() == guard::Target::allow);
@@ -1015,7 +1015,7 @@ void Test::Run14(){
     const boost::json::value jv= boost::json::parse(json);                    
     const boost::json::object* ptr_obj= jv.as_object().at("appended_rules").as_array().at(0).if_object();  
     try{                 
-          guard::utils::json::JsonRule json_rule(ptr_obj);
+          guard::json::JsonRule json_rule(ptr_obj);
     guard::GuardRule rule(json_rule.BuildString());
     }
     catch(const std::logic_error& ex){
@@ -1038,7 +1038,7 @@ void Test::Run14(){
                         "]}]}";       
     const boost::json::value jv= boost::json::parse(json);                    
     const boost::json::object* ptr_obj= jv.as_object().at("appended_rules").as_array().at(0).if_object();                   
-       guard::utils::json::JsonRule json_rule(ptr_obj);
+       guard::json::JsonRule json_rule(ptr_obj);
     guard::GuardRule rule(json_rule.BuildString());
     assert(rule.target() == guard::Target::allow);
     assert(rule.vid_ == "a000");
@@ -1066,7 +1066,7 @@ void Test::Run14(){
                         "]}]}";          
     const boost::json::value jv= boost::json::parse(json);                    
     const boost::json::object* ptr_obj= jv.as_object().at("appended_rules").as_array().at(0).if_object();                   
-        guard::utils::json::JsonRule json_rule(ptr_obj);
+        guard::json::JsonRule json_rule(ptr_obj);
     guard::GuardRule rule(json_rule.BuildString());
     
     assert(rule.target() == guard::Target::block);
@@ -1088,7 +1088,7 @@ void Test::Run14(){
                         "]}]}";           
     const boost::json::value jv= boost::json::parse(json);                    
     const boost::json::object* ptr_obj= jv.as_object().at("appended_rules").as_array().at(0).if_object();                   
-       guard::utils::json::JsonRule json_rule(ptr_obj);
+       guard::json::JsonRule json_rule(ptr_obj);
     guard::GuardRule rule(json_rule.BuildString());
     
     assert(rule.target() == guard::Target::block);
@@ -1111,7 +1111,7 @@ void Test::Run14(){
                         "]}]}";   
     const boost::json::value jv= boost::json::parse(json);                    
     const boost::json::object* ptr_obj= jv.as_object().at("appended_rules").as_array().at(0).if_object();                   
-        guard::utils::json::JsonRule json_rule(ptr_obj);
+        guard::json::JsonRule json_rule(ptr_obj);
     guard::GuardRule rule(json_rule.BuildString());
     
     assert(rule.target() == guard::Target::allow);
@@ -1150,7 +1150,7 @@ void Test::Run14(){
                         "]}]}";
     const boost::json::value jv= boost::json::parse(json);                    
     const boost::json::object* ptr_obj= jv.as_object().at("appended_rules").as_array().at(0).if_object();                   
-       guard::utils::json::JsonRule json_rule(ptr_obj);
+       guard::json::JsonRule json_rule(ptr_obj);
     guard::GuardRule rule(json_rule.BuildString());
     
     assert(rule.target() == guard::Target::allow);
@@ -1191,7 +1191,7 @@ void Test::Run14(){
                         "]}]}";
     const boost::json::value jv= boost::json::parse(json);                    
     const boost::json::object* ptr_obj= jv.as_object().at("appended_rules").as_array().at(0).if_object();                   
-        guard::utils::json::JsonRule json_rule(ptr_obj);
+        guard::json::JsonRule json_rule(ptr_obj);
     guard::GuardRule rule(json_rule.BuildString());
     
     assert(rule.target() == guard::Target::allow);
@@ -1233,9 +1233,10 @@ void Test::Run15(){
   {
     guard::Guard guard;
     std::string json ="{\"policy_type\":\"radio_white_list\", \"preset_mode\":\"manual_mode\",\"deleted_rules\":null,\"appended_rules\":[],\"run_daemon\":\"true\"}"; 
-    auto res=guard.ApplyJsonRulesChanges(json);
+    auto res=guard.ProcessJsonRulesChanges(json,true);
     assert(res.has_value());
-    assert(*res =="{\"rules_OK\":[],\"rules_BAD\":[],\"STATUS\":\"OK\"}" );
+    Log::Debug() << "res= "<<*res;
+    assert(boost::contains(*res,"\"STATUS\":\"OK\""));
   }
 
 
@@ -1243,9 +1244,10 @@ void Test::Run15(){
     //stop daemon
     guard::Guard guard;
     std::string json ="{\"policy_type\":\"radio_white_list\",\"preset_mode\":\"manual_mode\",\"deleted_rules\":null,\"appended_rules\":[],\"run_daemon\":\"false\"}"; 
-    auto res=guard.ApplyJsonRulesChanges(json);
+    auto res=guard.ProcessJsonRulesChanges(json,true);
     assert(res.has_value());
-    assert(*res =="{\"rules_OK\":[],\"rules_BAD\":[],\"STATUS\":\"OK\"}" );
+    //Log::Debug() << "res= "<<*res;
+    assert(*res =="{\"rules_OK\":[],\"rules_BAD\":[],\"rules_DELETED\":[],\"STATUS\":\"OK\",\"ACTION\":\"apply\"}" );
 
     guard::ConfigStatus cs;
     assert(!cs.guard_daemon_active_);
@@ -1257,9 +1259,10 @@ void Test::Run15(){
     // run daemon
     guard::Guard guard;
     std::string json ="{\"policy_type\":\"radio_white_list\",\"preset_mode\":\"manual_mode\",\"deleted_rules\":null,\"appended_rules\":[],\"run_daemon\":\"true\"}"; 
-    auto res=guard.ApplyJsonRulesChanges(json);
+    auto res=guard.ProcessJsonRulesChanges(json,true);
     assert(res.has_value());
-    assert(*res =="{\"rules_OK\":[],\"rules_BAD\":[],\"STATUS\":\"OK\"}" );
+    Log::Debug() << "res= "<<*res;
+    assert(*res =="{\"rules_OK\":[],\"rules_BAD\":[],\"rules_DELETED\":[],\"STATUS\":\"OK\",\"ACTION\":\"apply\"}" );
 
     guard::ConfigStatus cs;
     assert(cs.guard_daemon_active_);
@@ -1301,10 +1304,10 @@ Log::Info() <<"Sleep ...";
 {
   guard::Guard guard;
   std::string json ="{\"policy_type\":\"radio_white_list\",\"preset_mode\":\"put_connected_to_white_list\",\"deleted_rules\":[],\"appended_rules\":[],\"run_daemon\":\"true\"}";
-  auto result=guard.ApplyJsonRulesChanges(json);
+  auto result=guard.ProcessJsonRulesChanges(json,true);
   assert (result);
   Log::Test() <<*result;
-  assert (result=="{\"STATUS\":\"OK\"}");
+  assert (boost::contains(*result,"\"STATUS\":\"OK\""));
   assert (guard.GetConfigStatus().guard_daemon_active_);
   assert (guard.GetConfigStatus().guard_daemon_enabled_);
 }
@@ -1314,9 +1317,9 @@ std::this_thread::sleep_for(std::chrono::milliseconds(10000));
 {
   guard::Guard guard;
   std::string json ="{\"policy_type\":\"radio_white_list\",\"preset_mode\":\"put_connected_to_white_list\",\"deleted_rules\":null,\"appended_rules\":[],\"run_daemon\":\"false\"}";
-  auto result=guard.ApplyJsonRulesChanges(json);
+  auto result=guard.ProcessJsonRulesChanges(json,true);
   assert (result);
-  assert (result=="{\"STATUS\":\"OK\"}");
+  assert (boost::contains(*result,"\"STATUS\":\"OK\""));
   assert (!guard.GetConfigStatus().guard_daemon_active_);
   assert (!guard.GetConfigStatus().guard_daemon_enabled_);
 }
@@ -1325,10 +1328,10 @@ std::this_thread::sleep_for(std::chrono::milliseconds(10000));
 {
   guard::Guard guard;
   std::string json ="{\"policy_type\":\"radio_black_list\",\"preset_mode\":\"manual_mode\",\"deleted_rules\":null,\"appended_rules\":[],\"run_daemon\":\"false\"}";
-  auto result=guard.ApplyJsonRulesChanges(json);
+  auto result=guard.ProcessJsonRulesChanges(json,true);
   assert (result);
   Log::Test() <<*result;
-  assert (result=="{\"rules_OK\":[],\"rules_BAD\":[],\"STATUS\":\"OK\"}");
+  assert (boost::contains(*result,"\"STATUS\":\"OK\""));
   assert (!guard.GetConfigStatus().guard_daemon_active_);
   assert (!guard.GetConfigStatus().guard_daemon_enabled_);
 }

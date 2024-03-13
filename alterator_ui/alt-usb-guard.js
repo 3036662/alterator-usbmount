@@ -110,12 +110,27 @@ $(document).ready(function () {
     $("#hidden_manual_changes_data").trigger('rules_json_ready');
   });
 
+  // on check rules clicked
+  $("#validate_rules_button").bind('click', function () {
+    var deletedFields = localStorage.getItem('deletedFields');
+    var rules_changes={
+      preset_mode: $("#presets_input_hidden").val(),
+      deleted_rules:  JSON.parse(deletedFields),
+      appended_rules: collectAppendedRules(),
+      run_daemon: $("#checkbox_use_control_hidden").val()==="#t" ? "true":"false",
+      policy_type: $("#hidden_list_type").val() 
+    }
+    $("#hidden_manual_changes_data").val(JSON.stringify(rules_changes));
+    $("#hidden_manual_changes_data").trigger('rules_json_validation');
+  });
+
   // bind response recieved
   $("#hidden_manual_changes_response").bind('update-value change',function(){
     if ( $(this).val()!==""){  
       var response=JSON.parse( $(this).val());
       $(this).val("");
-      if (response["STATUS"] ==="OK"){
+  
+      if (response["STATUS"] ==="OK" && response["ACTION"]==="apply"){
         $(".manual_appended").remove();
         localStorage.removeItem("deletedFields");
         $(this).trigger("rules_applied");
@@ -126,7 +141,11 @@ $(document).ready(function () {
       }
       for (const el of response["rules_OK"]){
         $('#'+el).css("border", "2px green solid");
-      }  
+      }
+      CrossDeletedByBackend("list_hash_rules",response["rules_DELETED"]);
+      CrossDeletedByBackend("list_vidpid_rules",response["rules_DELETED"]);
+      CrossDeletedByBackend("list_interface_rules",response["rules_DELETED"]);
+      CrossDeletedByBackend("list_unsorted_rules",response["rules_DELETED"]);
     }  
  });
 
@@ -149,7 +168,7 @@ $(document).ready(function () {
       reader.onload = function(event) {
             const fileContent = event.target.result;
             const encodedString = btoa(fileContent);
-            let file_encoded = new File([encodedString], "endoded.csv", {
+            let file_encoded = new File([encodedString], "encoded.csv", {
                     type: "text/plain",
                     lastModified: new Date()
                 });
@@ -324,7 +343,23 @@ function SaveDeleted(table_id) {
     if (val !== "") {
       deletedFields.push(val);
     }
-    $(this).remove();
+    if ($(this).hasClass("manual_appended")){
+      $(this).remove()
+    }
+    else{
+      $(this).addClass('crossed-out');
+    }
   });
   localStorage.setItem('deletedFields', JSON.stringify(deletedFields));
+}
+
+function CrossDeletedByBackend(table_id,deleted){
+  
+  $('#' + table_id + " tr").each(function () {
+    var val = $(this).find("span[name='name']").text();
+    if (val !=="" && deleted.includes(parseInt(val,10)) && !$(this).hasClass('crossed-out') ){
+      $(this).addClass('crossed-out');
+    }
+  
+  });
 }
