@@ -143,6 +143,10 @@ $(document).ready(function () {
         alert("This file is too big. Limit 1 MB");
         fileInput.value="";
     }
+    if(fileInput.files[0].size ==0 ){
+      alert("This file is empty.");
+      fileInput.value="";
+    }
     const file = fileInput.files[0];
     if (file) {
       const reader = new FileReader();
@@ -163,6 +167,12 @@ $(document).ready(function () {
     }
   } 
  });
+
+ // bind appended checkboxes to checkbox in headers of tables
+ CatchTableHeaderCheckbok('list_hash_rules');
+ CatchTableHeaderCheckbok('list_vidpid_rules');
+ CatchTableHeaderCheckbok('list_interface_rules');
+ CatchTableHeaderCheckbok('list_unsorted_rules');
 
 }); // .ready
 
@@ -344,6 +354,7 @@ function AddRulesFromFile (data) {
     });
   };  
   bindCheckBox();
+  $('#validate_rules_button').trigger('validation_needed');
   document.getElementById('file_input').value = '';
 };
 
@@ -446,5 +457,24 @@ function ActivateManualModeButtons(activate){
       buttons[i].disabled = true;
       buttons[i].classList.add("ui-state-disabled");          
     }
+  }
+}
+
+
+// check all appended rules if checkbox in table header is checked
+function CatchTableHeaderCheckbok(table_id){
+  let checkboxTh = $("#"+table_id+" th input[type='checkbox']:first");
+  if (checkboxTh.length>0){
+    $(checkboxTh[0]).change(function (){
+      if ($(this).is(':checked')) {
+        $('#'+table_id+' '+'input.select_appended[type="checkbox"]').attr("checked", true);
+        $('#'+table_id+' '+'input.select_appended[type="checkbox"]').trigger("change")
+        
+      }
+      else {
+        $('#'+table_id+' '+'input.select_appended[type="checkbox"]').attr("checked", false);
+        $('#'+table_id+' '+'input.select_appended[type="checkbox"]').trigger("change");
+      }
+    });
   }
 }

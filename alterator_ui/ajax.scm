@@ -185,7 +185,10 @@
          ))  
        (if  (string=? "OK" (get-value 'status response))
             (js "AddRulesFromFile" (get-value 'response_json response) )
-            (woo-error "An error occured while parsing csv file")
+            (if (string=? "ERROR_EMPTY" (get-value 'status response))
+                (woo-error "An empty csv file. Parsed 0 rules.")
+                (woo-error "An error occured while parsing csv file")
+            )
        ) 
     ) ; let
 )
