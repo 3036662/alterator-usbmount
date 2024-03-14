@@ -107,19 +107,28 @@
                     )
            ) ; endif     
 
-           ; set checkbox checked if usbguard is active 
-           (form-update-value "checkbox_use_control_hidden" 
-                    (string=? "ACTIVE" (get-value 'usbguard_active status)))
+
            ;show allowed users and groups
            (form-update-value "usbguard_users" (get-value 'allowed_users status)) 
            (form-update-value "usbguard_groups" (get-value 'allowed_groups status)) 
-           
-           ;select a preset
-           (form-update-value "presets_input_hidden" "manual_mode")
+                     
            ;select a list type (white or black)
            (if (string=? "block" (get-value 'implicit_policy status))
                (form-update-value "hidden_list_type" "radio_white_list")
                (form-update-value "hidden_list_type" "radio_black_list") 
+           )
+
+           ; set checkbox checked if usbguard is active 
+           (if (string=? "ACTIVE" (get-value 'usbguard_active status))             
+                (begin
+                    (form-update-value "checkbox_use_control_hidden" #t)
+                    (form-update-value "presets_input_hidden" "manual_mode")
+                )
+                ;select a preset
+                (begin
+                    (form-update-value "checkbox_use_control_hidden" #f)                  
+                    (form-update-value "presets_input_hidden" "put_connected_to_white_list")
+                )
            )
 
    )  ; //let
