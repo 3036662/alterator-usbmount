@@ -4,6 +4,7 @@ $(document).ready(function () {
   // state of check  can be changed from lisp 
   // with form-update-value for hidden input 
   $('#checkbox_use_control').change(function () {
+    $('#validate_rules_button').trigger('validation_needed');
     if ($("#checkbox_use_control").attr('checked')) {
       $("#checkbox_use_control_hidden").val("#t");
     }
