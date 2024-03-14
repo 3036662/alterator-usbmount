@@ -1246,8 +1246,8 @@ void Test::Run15(){
     std::string json ="{\"policy_type\":\"radio_white_list\",\"preset_mode\":\"manual_mode\",\"deleted_rules\":null,\"appended_rules\":[],\"run_daemon\":\"false\"}"; 
     auto res=guard.ProcessJsonRulesChanges(json,true);
     assert(res.has_value());
-    //Log::Debug() << "res= "<<*res;
-    assert(*res =="{\"rules_OK\":[],\"rules_BAD\":[],\"rules_DELETED\":[],\"STATUS\":\"OK\",\"ACTION\":\"apply\"}" );
+    Log::Debug() << "res= "<<*res;
+    assert(*res =="{\"rules_OK\":[],\"rules_BAD\":[],\"rules_DELETED\":[],\"STATUS\":\"OK\",\"rules_PRESET\":{},\"ACTION\":\"apply\"}" );
 
     guard::ConfigStatus cs;
     assert(!cs.guard_daemon_active_);
@@ -1262,7 +1262,7 @@ void Test::Run15(){
     auto res=guard.ProcessJsonRulesChanges(json,true);
     assert(res.has_value());
     Log::Debug() << "res= "<<*res;
-    assert(*res =="{\"rules_OK\":[],\"rules_BAD\":[],\"rules_DELETED\":[],\"STATUS\":\"OK\",\"ACTION\":\"apply\"}" );
+    assert(*res =="{\"rules_OK\":[],\"rules_BAD\":[],\"rules_DELETED\":[],\"STATUS\":\"OK\",\"rules_PRESET\":{},\"ACTION\":\"apply\"}" );
 
     guard::ConfigStatus cs;
     assert(cs.guard_daemon_active_);

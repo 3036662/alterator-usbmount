@@ -78,7 +78,7 @@
           <div>
             <input type="hidden" id="checkbox_use_control_hidden" name="checkbox_use_control_hidden" /> 
             <input type="checkbox" id="checkbox_use_control" name="checkbox_use_control" />
-            <label for="use_usb_control">Use usb ports control</label> 
+            <label for="checkbox_use_control">Use usb ports control</label> 
           </div>
         </form>
       </div>
@@ -183,8 +183,8 @@
           </tbody>
         </table>
         <div name="list_interface_rules_buttons" class="right_buttons">
-          <input type="button" name="" class="btn" value="Add" id="add_to_rules_unsorted" />
-          <input type="button" name="" class="btn" id="delete_rules_from_unsorted_level" value="Delete"/>
+          <input type="button" name="" class="btn manual_mode_button" value="Add" id="add_to_rules_unsorted" />
+          <input type="button" name="" class="btn manual_mode_button" id="delete_rules_from_unsorted_level" value="Delete"/>
         </div>
       </form>
 
@@ -212,8 +212,8 @@
           </tbody>
         </table>
         <div name="list_interface_rules_buttons" class="right_buttons">
-          <input type="button" name="" class="btn" value="Add" id="add_to_rules_interfase"/>
-          <input type="button" name="" class="btn" id="delete_rules_from_interface_level" value="Delete"/>
+          <input type="button" name="" class="btn manual_mode_button" value="Add" id="add_to_rules_interfase"/>
+          <input type="button" name="" class="btn manual_mode_button" id="delete_rules_from_interface_level" value="Delete"/>
         </div>
       </form>
 
@@ -245,8 +245,8 @@
           </tbody>
         </table>
         <div name="list_vidpid_rules_buttons" class="right_buttons">
-          <input type="button" name="" class="btn" value="Add" id="add_to_rules_vidpid"/>
-          <input type="button" name="" class="btn" id = "delete_rules_from_vid_pid_level" value="Delete"/>
+          <input type="button" name="" class="btn manual_mode_button" value="Add" id="add_to_rules_vidpid"/>
+          <input type="button" name="" class="btn manual_mode_button" id = "delete_rules_from_vid_pid_level" value="Delete"/>
         </div>
       </form>
 
@@ -272,11 +272,11 @@
           </tbody>
         </table>
         <div name="list_hash_rules_buttons" class="right_buttons">
-          <input type="button" name="load_file_button" id="load_file_button" class="btn" value="Load from file"/>
-          <input type="file" name="file_input" id="file_input" accept=".csv"/>
+          <input type="button" name="load_file_button" id="load_file_button" class="btn manual_mode_button" value="Load from file"/>
+          <input type="file" name="file_input" id="file_input" class="manual_mode_button" accept=".csv"/>
           <input type="hidden" name="hidden_file_uplod_response" id = "hidden_file_uplod_response"/>  
-          <input type="button" name="" class="btn" value="Add" id="add_to_rules_hash"/>
-          <input type="button" name="" class="btn" value="Delete" id="delete_rules_from_hash_level" />
+          <input type="button" name="" class="btn manual_mode_button" value="Add" id="add_to_rules_hash"/>
+          <input type="button" name="" class="btn manual_mode_button" value="Delete" id="delete_rules_from_hash_level" />
         </div>
       </form>
     <div id="module_footer">  

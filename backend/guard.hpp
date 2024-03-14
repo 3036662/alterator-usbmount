@@ -76,7 +76,9 @@ public:
    *  "rules_BAD": [
    *    "rule_1"
    *   ],
-   *  "rules_OK": []
+   *  "rules_OK": [],
+   *  "rules_DELETED" :[],
+   *  "ACTION": "apply"
    * }
    * @endcode
    */

@@ -85,12 +85,15 @@ private:
    */
   void AddBlockAndroid();
 
+  boost::json::object AddAppendByPresetToResponse() const;
+
   // default init
   std::string preset_mode_;
   std::vector<GuardRule> new_rules_;
   std::vector<uint> rules_to_delete_;
   std::vector<uint> rules_deleted_;
   std::vector<GuardRule> rules_to_add_;
+  std::vector<GuardRule> added_by_preset_; // just for displaing to user
   ConfigStatus config_;
   boost::json::object obj_result_;
   std::optional<std::vector<UsbDevice>> active_devices_;

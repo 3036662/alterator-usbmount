@@ -153,7 +153,7 @@
     (let ((  response  (removeFirstElement (woo-read "/usbguard/apply_changes" 'changes_json  (form-value "hidden_manual_changes_data"))) ))
         (if 
             (string=? "OK" (get-value 'status response))
-            (form-update-value "hidden_manual_changes_response" (get-value 'ids_json response) )
+            (js "ValidationResponseCallback" (get-value 'ids_json response) )
             (woo-error "An error occurred when starting the USB Guard with new rules. We recommend checking the rules and configuration files for correctness." )
         )
     ); //let 
@@ -164,11 +164,10 @@
     (let ((  response  (removeFirstElement (woo-read "/usbguard/validate_changes" 'changes_json  (form-value "hidden_manual_changes_data"))) ))
         (if 
             (string=? "OK" (get-value 'status response))
-            (form-update-value "hidden_manual_changes_response" (get-value 'ids_json response) )
+            (js "ValidationResponseCallback" (get-value 'ids_json response) )
             (woo-error "An error occurred when starting the USB Guard with new rules. We recommend checking the rules and configuration files for correctness." )
         )
     ); //let
-
 )
 
 (define (update_after_rulles_applied)
@@ -191,8 +190,21 @@
     ) ; let
 )
 
+; validation finished signal from js
+(define (validation_finished)
+    (form-update-activity "save_rules"  #t)
+    (form-update-activity "validate_rules"  #f)
+)
+; some changes where made - validation needed
+(define (validation_needed)
+    (form-update-activity "save_rules"  #f)
+    (form-update-activity "validate_rules"  #t)
+)
+
 (define (init)
- ; (form-update-activity "save_rules"  #f)  
+  (validation_needed)  
+  (form-bind "validate_rules" "validation_finished" validation_finished)  
+  (form-bind "validate_rules" "validation_needed" validation_needed)
   (config_status_check)
   (ls_guard_rules)
   (form-bind "btn_prsnt_scan" "click" ls_usbs)

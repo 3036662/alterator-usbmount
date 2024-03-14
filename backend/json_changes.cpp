@@ -4,6 +4,7 @@
 #include "log.hpp"
 #include "utils.hpp"
 #include <boost/json/array.hpp>
+#include <boost/json/object.hpp>
 #include <boost/json/serialize.hpp>
 #include <exception>
 #include <filesystem>
@@ -96,13 +97,17 @@ std::string JsonChanges::Process(bool apply) {
   } else {
     obj_result_["STATUS"] = "OK";
   }
-  Log::Debug() << obj_result_;
-  if (!obj_result_.contains("RULES_BAD")) {
+
+  if (!obj_result_.contains("rules_BAD")) {
     obj_result_["rules_BAD"] = json::array();
   }
-  if (!obj_result_.contains("RULES_OK")) {
+  if (!obj_result_.contains("rules_OK")) {
     obj_result_["rules_OK"] = json::array();
   }
+
+  obj_result_["rules_PRESET"] = AddAppendByPresetToResponse();
+
+  Log::Debug() << obj_result_;
   // if we dont need to apply the rules
   if (!apply) {
     obj_result_["ACTION"] = "validation";
@@ -176,6 +181,7 @@ void JsonChanges::AddBlockAndroid() {
                             element.as_object().at("pid").as_string().c_str());
       try {
         rules_to_add_.emplace_back(string_builder.str());
+        added_by_preset_.emplace_back(string_builder.str());
       } catch (const std::logic_error &ex) {
         Log::Warning() << "Error creating a rule from JSON";
         Log::Warning() << string_builder.str();
@@ -185,10 +191,53 @@ void JsonChanges::AddBlockAndroid() {
   }
 }
 
+boost::json::object JsonChanges::AddAppendByPresetToResponse() const {
+  json::object res;
+  if (!added_by_preset_.empty()) {
+    res["hash"] = json::array();
+    res["interface"] = json::array();
+    res["vidpid"] = json::array();
+    res["raw"] = json::array();
+    for (const auto &rule : added_by_preset_) {
+      switch (rule.level()) {
+      case StrictnessLevel::hash: {
+        json::object tmp_hash;
+        tmp_hash["hash"] = ::utils::UnQuote(rule.hash());
+        tmp_hash["description"] = ::utils::UnQuote(rule.device_name());
+        tmp_hash["target"] = static_cast<uint>(rule.target());
+        res["hash"].as_array().emplace_back(std::move(tmp_hash));
+      } break;
+      case guard::StrictnessLevel::interface: {
+        json::object tmp_interface;
+        tmp_interface["interface"] = rule.InterfacesToString();
+        tmp_interface["target"] = static_cast<uint>(rule.target());
+        res["interface"].as_array().emplace_back(std::move(tmp_interface));
+      } break;
+      case guard::StrictnessLevel::vid_pid: {
+        json::object tmp_vidpid;
+        tmp_vidpid["vid"] = rule.vid().value_or("");
+        tmp_vidpid["pid"] = rule.pid().value_or("");
+        tmp_vidpid["target"] = static_cast<uint>(rule.target());
+        res["vidpid"].as_array().emplace_back(std::move(tmp_vidpid));
+      } break;
+      case guard::StrictnessLevel::non_strict: {
+        json::object tmp_raw;
+        tmp_raw["raw"] = rule.BuildString();
+        tmp_raw["target"] = static_cast<uint>(rule.target());
+        res["raw"].as_array().emplace_back(std::move(tmp_raw));
+      } break;
+      }
+    }
+  }
+  return res;
+}
+
 void JsonChanges::AddBlockUsbStorages() {
   try {
     rules_to_add_.emplace_back("block with-interface 08:*:*");
+    added_by_preset_.emplace_back("block with-interface 08:*:*");
     rules_to_add_.emplace_back("block with-interface 06:*:*");
+    added_by_preset_.emplace_back("block with-interface 06:*:*");
   } catch (const std::logic_error &ex) {
     Log::Error() << "Can't add a rules for USB storages";
     Log::Error() << ex.what();
@@ -199,6 +248,7 @@ void JsonChanges::AddBlockUsbStorages() {
 void JsonChanges::AddAllowHid() {
   try {
     rules_to_add_.emplace_back("allow with-interface 03:*:*");
+    added_by_preset_.emplace_back("allow with-interface 03:*:*");
   } catch (const std::logic_error &ex) {
     Log::Error() << "Can't add a rules for HID devices";
     Log::Error() << ex.what();
@@ -216,6 +266,7 @@ void JsonChanges::ProcessAllowConnected() {
                    << " hash " << ::utils::QuoteIfNotQuoted(dev.hash());
     try {
       rules_to_add_.emplace_back(string_builder.str());
+      added_by_preset_.emplace_back(string_builder.str());
     } catch (const std::logic_error &ex) {
       Log::Error() << "Can't create a rule for device"
                    << "allow name " << ::utils::QuoteIfNotQuoted(dev.name())
@@ -308,6 +359,10 @@ void JsonChanges::ProcessJsonAppended() {
       try {
         guard::json::JsonRule json_rule(ptr_json_rule);
         GuardRule rule_new{json_rule.BuildString()};
+        ;
+        if (rule_new.target() == target_policy_) {
+          throw std::logic_error("Redundant rule");
+        }
         rules_to_add_.push_back(std::move(rule_new));
         if (tr_id != nullptr && !tr_id->empty()) {
           json_arr_OK.emplace_back(*tr_id);

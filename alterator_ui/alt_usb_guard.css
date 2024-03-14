@@ -89,3 +89,7 @@
     text-decoration: line-through;
     font-weight: bold;
 }
+
+.validator_appended{
+    border: 2px green solid;
+}
