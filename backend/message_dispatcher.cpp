@@ -63,12 +63,15 @@ bool MessageDispatcher::Dispatch(const LispMessage &msg) const noexcept {
   return true;
 }
 
-bool MessageDispatcher::UploadRulesFile(const LispMessage &msg) const noexcept {
+bool MessageDispatcher::UploadRulesFile(const LispMessage &msg) noexcept {
   auto start = std::chrono::steady_clock::now();
   Log::Debug() << "Uploading file started";
   if (msg.params.count("upload_rules") == 0 ||
       msg.params.at("upload_rules").empty()) {
-    std::cout << kMessBeg << kMessEnd;
+    vecPairs vec_result;
+    vec_result.emplace_back("status", "ERROR_EMPTY");
+    std::cout << ToLispAssoc(
+        SerializableForLisp<vecPairs>(std::move(vec_result)));
     Log::Warning() << "Empty rules file";
     return true;
   }
