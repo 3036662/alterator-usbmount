@@ -238,6 +238,9 @@ void JsonChanges::AddBlockUsbStorages() {
     added_by_preset_.emplace_back("block with-interface 08:*:*");
     rules_to_add_.emplace_back("block with-interface 06:*:*");
     added_by_preset_.emplace_back("block with-interface 06:*:*");
+    rules_to_add_.emplace_back("block with-interface one-of { 06:*:* 08:*:* }");
+    added_by_preset_.emplace_back(
+        "block with-interface one-of { 06:*:* 08:*:* }");
   } catch (const std::logic_error &ex) {
     Log::Error() << "Can't add a rules for USB storages";
     Log::Error() << ex.what();
