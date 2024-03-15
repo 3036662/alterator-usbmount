@@ -1,5 +1,13 @@
 $(document).ready(function () {
 
+  $("#usbguard_enabled").bind('update-value change', function () {
+    $("#span_usbguard_enabled").text( $("#usbguard_enabled").val());
+  });
+
+  $("#usbguard_active").bind('update-value change', function () {
+    $("#span_usbguard_active").text( $("#usbguard_active").val());
+  });
+
   // workaround to check and uncheck checkbox as usual input
   // state of check  can be changed from lisp 
   // with form-update-value for hidden input 

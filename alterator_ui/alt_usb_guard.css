@@ -93,3 +93,7 @@
 .validator_appended{
     border: 2px green solid;
 }
+
+.inline{
+    display: inline;
+}

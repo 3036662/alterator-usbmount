@@ -70,8 +70,14 @@
                 )
                 ;else usbguard not totally fine
                 (begin
-                     (form-update-value "usbguard_enabled" (get-value 'usbguard_enabled status) )
-                     (form-update-value "usbguard_active" (get-value 'usbguard_active status))
+                     (if (string=? "ENABLED"  (get-value 'usbguard_enabled status)) 
+                        (form-update-value "usbguard_enabled" (_ "Autorun is ENABLED"))
+                        (form-update-value "usbguard_enabled" (_ "Autorun is DISABLED"))                                     
+                     )
+                     (if (string=? "ACTIVE"  (get-value 'usbguard_active status))
+                         (form-update-value "usbguard_active" (_ "Process is ACTIVE") )
+                         (form-update-value "usbguard_active" (_ "Process is STOPPED") )   
+                     )                                     
                      (form-update-visibility "guard_status_ok" #f)
                      (form-update-visibility "guard_status_bad" #t)
                      ; if usbguard prosess is active
@@ -141,7 +147,7 @@
             (if   
                 (equal? "OK" (woo-get-option status 'status))
                 (update_after_rulles_applied)
-                (woo-throw  "Error while trying to unblock selected device. You can unblock it using hash or interface.")
+                (woo-error (_ "Error while trying to unblock selected device. You can unblock it using hash or interface."))
             )
         ); let
     ) ; endif
@@ -154,7 +160,7 @@
             (if   
                 (equal? "OK" (woo-get-option status 'status))
                 (update_after_rulles_applied)
-                (woo-throw  "Error while trying to block selected device")
+                (woo-error  (_ "Error while trying to block selected device"))
             )
         ); let
     ); endif
@@ -167,7 +173,7 @@
         (if 
             (string=? "OK" (get-value 'status response))
             (js "ValidationResponseCallback" (get-value 'ids_json response) )
-            (woo-error "An error occurred when starting the USB Guard with new rules. We recommend checking the rules and configuration files for correctness." )
+            (woo-error (_ "An error occurred when starting the USB Guard with new rules. We recommend checking the rules and configuration files for correctness." ))
         )
     ); //let 
 )
@@ -178,7 +184,7 @@
         (if 
             (string=? "OK" (get-value 'status response))
             (js "ValidationResponseCallback" (get-value 'ids_json response) )
-            (woo-error "An error occurred when starting the USB Guard with new rules. We recommend checking the rules and configuration files for correctness." )
+            (woo-error (_ "An error occurred when starting the USB Guard with new rules. We recommend checking the rules and configuration files for correctness." ))
         )
     ); //let
 )
@@ -199,8 +205,8 @@
        (if  (string=? "OK" (get-value 'status response))
             (js "AddRulesFromFile" (get-value 'response_json response) )
             (if (string=? "ERROR_EMPTY" (get-value 'status response))
-                (woo-error "An empty csv file. Parsed 0 rules.")
-                (woo-error "An error occured while parsing csv file")
+                (woo-error (_ "An empty csv file. Parsed 0 rules."))
+                (woo-error (_ "An error occured while parsing csv file"))
             )
        ) 
     ) ; let
