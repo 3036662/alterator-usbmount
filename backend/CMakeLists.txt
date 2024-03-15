@@ -78,6 +78,18 @@ install(FILES
     DESTINATION "/usr/share/alterator/applications/"
 )
 
+
+
+set(BUILD_MO_COMMAND "msgfmt --output-file=${CMAKE_BINARY_DIR}/alterator-usbguard.mo ${CMAKE_SOURCE_DIR}/alterator_ui/alterator-usbguard.po)")
+message("Command ${BUILD_MO_COMMAND}")
+install(CODE "execute_process(COMMAND ${BUILD_MO_COMMAND}")
+install(FILES
+    ${CMAKE_BINARY_DIR}/alterator-usbguard.mo
+    DESTINATION "/usr/share/locale/ru/LC_MESSAGES/"
+)
+
+
+
 install(CODE "execute_process(COMMAND service alteratord restart)")
 install(CODE "execute_process(COMMAND service ahttpd restart)")
 install(CODE "execute_process(COMMAND systemctl restart alteratord )")
