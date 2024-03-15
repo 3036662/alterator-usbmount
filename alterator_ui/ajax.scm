@@ -136,24 +136,28 @@
 
 ; unblock the selected device 
  (define (allow_device)
-    (let ((  status  (woo-read-first "/usbguard/usb_allow" 'usb_id  (form-value "list_prsnt_devices")) )) 
-        (if   
-            (equal? "OK" (woo-get-option status 'status))
-            (update_after_rulles_applied)
-            (woo-throw  "Error while trying to unblock selected device")
-        )
-    ); let
+    (if (string? (form-value "list_prsnt_devices"))
+        (let ((  status  (woo-read-first "/usbguard/usb_allow" 'usb_id  (form-value "list_prsnt_devices")) )) 
+            (if   
+                (equal? "OK" (woo-get-option status 'status))
+                (update_after_rulles_applied)
+                (woo-throw  "Error while trying to unblock selected device")
+            )
+        ); let
+    ) ; endif
  )
 
  ;block selected device
  (define (block_device)
-     (let ((  status  (woo-read-first "/usbguard/usb_block" 'usb_id  (form-value "list_prsnt_devices")) )) 
-        (if   
-            (equal? "OK" (woo-get-option status 'status))
-            (update_after_rulles_applied)
-            (woo-throw  "Error while trying to block selected device")
-        )
-    ); let
+    (if (string? (form-value "list_prsnt_devices"))    
+        (let ((  status  (woo-read-first "/usbguard/usb_block" 'usb_id  (form-value "list_prsnt_devices")) )) 
+            (if   
+                (equal? "OK" (woo-get-option status 'status))
+                (update_after_rulles_applied)
+                (woo-throw  "Error while trying to block selected device")
+            )
+        ); let
+    ); endif
  )
 
 
