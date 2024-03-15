@@ -107,8 +107,8 @@ std::string JsonChanges::Process(bool apply) {
 
   obj_result_["rules_PRESET"] = AddAppendByPresetToResponse();
 
-  Log::Debug() << obj_result_;
-  // if we dont need to apply the rules
+  // Log::Debug() << obj_result_;
+  //  if we dont need to apply the rules
   if (!apply) {
     obj_result_["ACTION"] = "validation";
     return json::serialize(obj_result_);
@@ -123,7 +123,7 @@ std::string JsonChanges::Process(bool apply) {
     str_new_rules += rule.BuildString(true, true);
     str_new_rules += "\n";
   }
-  Log::Debug() << "new rules " << str_new_rules;
+  // Log::Debug() << "new rules " << str_new_rules;
   // overwrite the rules and test launch if some rules were added or deleted
   if (rules_changed_by_policy_ || !rules_to_delete_.empty() ||
       !rules_to_add_.empty()) {
