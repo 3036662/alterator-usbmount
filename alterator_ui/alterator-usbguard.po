@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2024-03-15 15:26+0300\n"
-"PO-Revision-Date: 2024-03-15 15:29+0300\n"
+"PO-Revision-Date: 2024-03-15 16:00+0300\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: ru\n"
@@ -164,7 +164,7 @@ msgstr "Описание"
 
 #: стандартный ввод:43
 msgid "Masks VID:PID"
-msgstr "Маска VID:PID"
+msgstr "Маски VID:PID"
 
 #: стандартный ввод:45
 msgid "PID"
