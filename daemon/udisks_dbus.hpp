@@ -1,0 +1,16 @@
+#pragma once
+#include "usb_udev_device.hpp"
+#include <memory.h>
+#include <sdbus-c++/sdbus-c++.h>
+
+class UdisksDbus {
+public:
+  UdisksDbus() = delete;
+  UdisksDbus(std::unique_ptr<sdbus::IConnection> &conn);
+
+  bool ProcessDevice(const UsbUdevDevice &dev);
+
+private:
+  std::unique_ptr<sdbus::IConnection> &dbus_;
+  std::unique_ptr<sdbus::IProxy> proxy_udisks_;
+};

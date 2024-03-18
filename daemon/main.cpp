@@ -1,5 +1,6 @@
 
 #include "daemon.hpp"
+#include <chrono>
 #include <iostream>
 #include <systemd/sd-daemon.h>
 #include <thread>
@@ -13,7 +14,8 @@ int main() {
   Daemon &daemon = Daemon::instance();
   // Daemon main loop
   while (daemon.IsRunning()) {
-    std::this_thread::sleep_for(std::chrono::seconds(1));
+    daemon.CheckEvents();
+    std::this_thread::sleep_for(std::chrono::milliseconds(500));
   }
 
   std::cerr << SD_DEBUG << "The daemon process ended gracefully.";
