@@ -148,7 +148,7 @@
             (if   
                 (equal? "OK" (woo-get-option status 'status))
                 (update_after_rulles_applied)
-                (woo-error (_ "Error while trying to unblock selected device. You can unblock it using hash or interface."))
+                (woo-error (_ "Error while trying to unblock selected device. You can unblock it with crearing hash rule or interface rule."))
             )
         ); let
     ) ; endif
