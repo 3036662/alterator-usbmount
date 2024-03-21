@@ -204,7 +204,7 @@ function ValidationResponseCallback(data){
       $('#'+el).css("border", "3px red solid");
   }
   for (const el of response["rules_OK"]){
-      $('#'+el).css("border", "2px green solid");
+      $('#'+el).css("border", "3px green solid");
   }
   CrossDeletedByBackend("list_hash_rules",response["rules_DELETED"]);
   CrossDeletedByBackend("list_vidpid_rules",response["rules_DELETED"]);
