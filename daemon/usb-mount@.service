@@ -1,0 +1,11 @@
+[Unit] 
+Description=Mount USB Drive on %i 
+ 
+[Service]
+RemainAfterExit=true
+Type=oneshot
+ExecStart=/home/oleg/dev/alterator/alterator_usbguard/build/daemon/mount_test  %i add
+ExecStop=/home/oleg/dev/alterator/alterator_usbguard/build/daemon/mount_test  %i remove
+
+[Install]
+WantedBy=multi-user.target

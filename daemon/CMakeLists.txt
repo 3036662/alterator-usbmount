@@ -5,6 +5,20 @@ add_executable(altusbd
     udisks_dbus.cpp
 )
 
+add_executable(mount_test
+    mount_test.cpp
+)
+target_link_libraries(mount_test PRIVATE PkgConfig::UDEV)
+pkg_check_modules(LIBMOUNT REQUIRED IMPORTED_TARGET mount)
+target_link_libraries(mount_test PRIVATE PkgConfig::LIBMOUNT)
+install(FILES 
+    ${CMAKE_SOURCE_DIR}/daemon/usb-mount@.service
+    DESTINATION "/lib/systemd/system/"
+)
+
+
+
+
 if(CMAKE_BUILD_TYPE STREQUAL "Debug")
     include(Format)
     Format(altusbd .)
