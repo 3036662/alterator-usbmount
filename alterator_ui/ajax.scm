@@ -5,6 +5,7 @@
 
 (define (ls_usbs)
     (form-update-enum "list_prsnt_devices" (woo-list "/usbguard/list_curr_usbs" ))
+    (js "CatchDeviceSelection")
 )
 
 ; list usbguard rules
