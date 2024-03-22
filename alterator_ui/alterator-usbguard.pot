@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-03-22 08:45+0300\n"
+"POT-Creation-Date: 2024-03-22 12:58+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -190,10 +190,14 @@ msgid "This file is too big. Limit 1 MB."
 msgstr ""
 
 #: стандартный ввод:60
-msgid "SAVE ALL RULES"
+msgid "Error. The file contains rules with conflicting targets."
 msgstr ""
 
 #: стандартный ввод:61
+msgid "SAVE ALL RULES"
+msgstr ""
+
+#: стандартный ввод:62
 msgid "CHECK THE RULES"
 msgstr ""
 

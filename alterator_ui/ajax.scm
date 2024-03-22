@@ -45,7 +45,7 @@
            (if (string=? "OK" (get-value 'udev status)) 
                 (begin
                     (form-update-visibility "udev_status_ok" #t)
-                    (form-update-visibility "udev_config_warinigs" #f)
+                    (form-update-visibility "udev_config_warnings" #f)
                     (form-update-visibility "suspicious_udev_files" #f)
                     (form-update-visibility "udev_status_warnig" #f)
                 )
@@ -53,7 +53,7 @@
                ( begin
                     (form-update-visibility "udev_status_ok" #f)
                     (form-update-visibility "udev_status_warnig" #t)
-                    (form-update-visibility "udev_config_warinigs" #t)
+                    (form-update-visibility "udev_config_warnings" #t)
                     (form-update-visibility "suspicious_udev_files" #t)
                     (udev_rules_check) 
                )
@@ -205,10 +205,13 @@
          ))  
        (if  (string=? "OK" (get-value 'status response))
             (js "AddRulesFromFile" (get-value 'response_json response) )
-            (if (string=? "ERROR_EMPTY" (get-value 'status response))
-                (woo-error (_ "An empty csv file. Parsed 0 rules."))
-                (woo-error (_ "An error occured while parsing csv file"))
-            )
+            (begin
+                (js "ClearFileInput")
+                (if (string=? "ERROR_EMPTY" (get-value 'status response))
+                    (js "alert" (_ "An empty csv file. Parsed 0 rules."))
+                    (js "alert" (_ "An error occured while parsing csv file"))
+                )                
+            )            
        ) 
     ) ; let
 )

@@ -274,11 +274,20 @@ function ValidationResponseCallback(data){
 }
 
 
+function ClearFileInput(){
+  const fileInput = document.getElementById('file_input');
+  fileInput.value="";
+}
+
 function AddRulesFromFile (data) {
   const rules_json=JSON.parse(data);
   //set policy ratiobuttons
   if (rules_json["STATUS"]==="error"){
-    alert(rules_json["ERR_MSG"]);
+    if (rules_json["ERR_MSG"]==="Conflicting rule targets"){
+      alert($("#alert_conflicts_in_file").text());
+      ClearFileInput();
+      return;
+    }
   }
   if (rules_json.hasOwnProperty('policy')){
     if (rules_json['policy'] === 0){
