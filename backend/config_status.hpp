@@ -1,8 +1,10 @@
 #pragma once
 
+#include "guard_audit.hpp"
 #include "guard_rule.hpp"
 #include "serializible_for_lisp.hpp"
 #include "types.hpp"
+#include <optional>
 #include <set>
 #include <unordered_map>
 
@@ -72,6 +74,10 @@ public:
    */
   bool TryToRun(bool run_daemon) const noexcept;
 
+  std::optional<GuardAudit> GetAudit() const noexcept;
+
+  // getters and setters
+
   inline bool guard_daemon_active() const noexcept {
     return guard_daemon_active_;
   }
@@ -84,8 +90,6 @@ public:
   }
 
 private:
-  enum class AuditType { kFileAudit, kLinuxAudit, kUndefined };
-
   /// @brief Return path for the  daemon .conf file
   /// @return A string path, empty string if failed
   /// @details usbguard.service is expected to be installed in

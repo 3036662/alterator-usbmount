@@ -1,4 +1,5 @@
 #include "config_status.hpp"
+#include "guard_audit.hpp"
 #include "guard_utils.hpp"
 #include "log.hpp"
 #include "systemd_dbus.hpp"
@@ -505,6 +506,15 @@ bool ConfigStatus::TryToRun(bool run_daemon) const noexcept {
     sysd.StopUnit(usb_guard_daemon_name);
   }
   return result.value_or(false);
+}
+
+std::optional<GuardAudit> ConfigStatus::GetAudit() const noexcept {
+  try {
+    return std::make_optional<GuardAudit>(audit_backend_, audit_file_path_);
+  } catch (const std::exception &ex) {
+    Log::Error() << "Can't get GuardAudit";
+    return std::nullopt;
+  }
 }
 
 bool ConfigStatus::ChangeDaemonStatus(bool active,
