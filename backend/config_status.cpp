@@ -48,6 +48,8 @@ vecPairs ConfigStatus::SerializeForLisp() const {
   res.emplace_back(
       "config_files_permissions",
       config_file_permissions_OK_ && rules_file_permissions_OK_ ? "OK" : "BAD");
+  res.emplace_back("audit_type",
+                   audit_backend_ == AuditType::kFileAudit ? "file" : "audit");
   return res;
 }
 

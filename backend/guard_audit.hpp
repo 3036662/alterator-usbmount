@@ -26,6 +26,10 @@ public:
   std::vector<std::string>
   GetByFilter(const std::vector<std::string> &filters) const noexcept;
 
+  std::vector<std::string> GetByPage(const std::vector<std::string> &filters,
+                                     uint page_number,
+                                     uint pages_size) const noexcept;
+
 private:
   std::vector<std::string>
   GetFromFile(const std::vector<std::string> &filters) const;

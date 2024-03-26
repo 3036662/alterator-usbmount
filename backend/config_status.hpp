@@ -74,6 +74,10 @@ public:
    */
   bool TryToRun(bool run_daemon) const noexcept;
 
+  /**
+   * @brief Get the GuardAudit object
+   * @return std::optional<GuardAudit> 
+   */
   std::optional<GuardAudit> GetAudit() const noexcept;
 
   // getters and setters
