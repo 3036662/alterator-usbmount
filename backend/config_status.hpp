@@ -76,7 +76,7 @@ public:
 
   /**
    * @brief Get the GuardAudit object
-   * @return std::optional<GuardAudit> 
+   * @return std::optional<GuardAudit>
    */
   std::optional<GuardAudit> GetAudit() const noexcept;
 

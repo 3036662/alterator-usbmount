@@ -259,6 +259,8 @@
         (form-update-value "log_textarea" (_ "A Linux audit is used for logging. You can inspect it with ausearch -ts recent -m USER_DEVICE"))
         (form-update-visibility "log_search_input" #f)
         (form-update-visibility "log_search_button" #f)
+        (form-update-visibility "next_page" #f)
+        (form-update-visibility "prev_page" #f)
     )      
   ) ; endif
 )
