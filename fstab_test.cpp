@@ -60,7 +60,7 @@ int main(int argrc, char *argc[]) {
           std::cout << "MODEL_ID = " << model_id << "\n";
         }
         std::cout << "\n" << "\n";
-
+         printDeviceProperties(device);
         if (action!=nullptr && vendor_id!=nullptr && model_id!=nullptr && strcmp(vendor_id, "8564") == 0 &&
             strcmp(model_id, "1000") == 0) {
           std::cout << "We have found the chosen device!" << "\n";
@@ -75,7 +75,7 @@ int main(int argrc, char *argc[]) {
             if (block!=nullptr) {
               std::cout << "dev = " << block << "\n";
              // mountBlock(block);
-             printDeviceProperties(device);
+             //printDeviceProperties(device);
             }
           }
         }
@@ -86,7 +86,7 @@ int main(int argrc, char *argc[]) {
 }
 
 void printDeviceProperties(std::shared_ptr<udev_device> &device) {
-  std::cerr <<"PRINT PROPERPERTIES"<<"\n";
+  std::cerr <<"PRINT PROPERTIES"<<"\n";
   struct udev_list_entry *properties =
       udev_device_get_properties_list_entry(device.get());
   if (properties==nullptr)

@@ -34,7 +34,9 @@ target_include_directories(test_fstab PUBLIC ${UDEV_INCLUDE_DIRS})
 message("Building daemon...")
 add_subdirectory(daemon)
 
-
+# the daemon
+message("Building automount...")
+add_subdirectory(automount)
 
 # android vid_pid parser
 if(CMAKE_BUILD_TYPE STREQUAL "Debug")
