@@ -183,6 +183,8 @@ $(document).ready(function () {
  CatchTableHeaderCheckbok('list_interface_rules');
  CatchTableHeaderCheckbok('list_unsorted_rules');
 
+
+
 }); // .ready
 
 
@@ -202,7 +204,7 @@ function ValidationResponseCallback(data){
       $('#'+el).css("border", "3px red solid");
   }
   for (const el of response["rules_OK"]){
-      $('#'+el).css("border", "2px green solid");
+      $('#'+el).css("border", "3px green solid");
   }
   CrossDeletedByBackend("list_hash_rules",response["rules_DELETED"]);
   CrossDeletedByBackend("list_vidpid_rules",response["rules_DELETED"]);
@@ -272,11 +274,20 @@ function ValidationResponseCallback(data){
 }
 
 
+function ClearFileInput(){
+  const fileInput = document.getElementById('file_input');
+  fileInput.value="";
+}
+
 function AddRulesFromFile (data) {
   const rules_json=JSON.parse(data);
   //set policy ratiobuttons
   if (rules_json["STATUS"]==="error"){
-    alert(rules_json["ERR_MSG"]);
+    if (rules_json["ERR_MSG"]==="Conflicting rule targets"){
+      alert($("#alert_conflicts_in_file").text());
+      ClearFileInput();
+      return;
+    }
   }
   if (rules_json.hasOwnProperty('policy')){
     if (rules_json['policy'] === 0){
@@ -381,7 +392,14 @@ function addRuleBehaviorAdd(button_id, row_html, table_id) {
       '</td></tr>');
     bindCheckBox();
     // validation is needed after change
-    $('.input_appended').bind('input',function(){$('#validate_rules_button').trigger('validation_needed');});
+    $('.input_appended').bind('input',function(){
+      if ($('#validate_rules_button').hasClass('ui-state-disabled')){
+        $("#validate_rules_button").removeClass("ui-state-disabled");
+        document.getElementById('validate_rules_button').disabled=false; 
+        $("#save_rules_button").addClass("ui-state-disabled");
+        document.getElementById('save_rules_button').disabled=true; 
+      }
+      });
   });
 };
 
@@ -485,5 +503,63 @@ function CatchTableHeaderCheckbok(table_id){
         $('#'+table_id+' '+'input.select_appended[type="checkbox"]').trigger("change");
       }
     });
+  }
+}
+
+// disable block button if already blocked
+// prevent blocking already block (and unblocking already unblocked)
+function CatchDeviceSelection(){ 
+ // enable block button
+ if ($("#btn_prsnt_dev_block").hasClass("disabled_by_block_rule")){
+  $("#btn_prsnt_dev_block").removeClass("disabled_by_block_rule");
+  $("#btn_prsnt_dev_block").removeClass("ui-state-disabled");
+  document.getElementById('btn_prsnt_dev_block').disabled=false; 
+}
+// enable allow button
+ if ($("#btn_prsnt_dev_add").hasClass("disabled_by_allow_rule")){
+  $("#btn_prsnt_dev_add").removeClass("disabled_by_allow_rule");
+  $("#btn_prsnt_dev_add").removeClass("ui-state-disabled");
+  document.getElementById('btn_prsnt_dev_add').disabled=false;
+}
+
+// bind click
+ $('#devices_list_table tr').bind('click',(function() {
+  var status = $(this).find('span[name="label_prsnt_usb_status"]').text();
+  if (status==="allow"){
+    // disable allow button
+    if (!$("#btn_prsnt_dev_add").hasClass("ui-state-disabled") &&  document.getElementById('btn_prsnt_dev_add').disabled==false){
+      $("#btn_prsnt_dev_add").addClass("ui-state-disabled");
+      $("#btn_prsnt_dev_add").addClass("disabled_by_allow_rule");
+      document.getElementById('btn_prsnt_dev_add').disabled=true;     
+    }
+    // enable block button
+    if ($("#btn_prsnt_dev_block").hasClass("disabled_by_block_rule")){
+      $("#btn_prsnt_dev_block").removeClass("disabled_by_block_rule");
+      $("#btn_prsnt_dev_block").removeClass("ui-state-disabled");
+      document.getElementById('btn_prsnt_dev_block').disabled=false; 
+    }
+  }
+  if (status==="block"){
+    // enable allow button
+    if ($("#btn_prsnt_dev_add").hasClass("disabled_by_allow_rule")){
+      $("#btn_prsnt_dev_add").removeClass("disabled_by_allow_rule");
+      $("#btn_prsnt_dev_add").removeClass("ui-state-disabled");
+      document.getElementById('btn_prsnt_dev_add').disabled=false;
+    }
+    //disable block button
+    if (!$("#btn_prsnt_dev_block").hasClass("ui-state-disabled") && document.getElementById('btn_prsnt_dev_block').disabled==false){
+      $("#btn_prsnt_dev_block").addClass("ui-state-disabled");
+      $("#btn_prsnt_dev_block").addClass("disabled_by_block_rule");
+      document.getElementById('btn_prsnt_dev_block').disabled=true;      
+    }
+    
+  }
+ }));
+}
+
+function UpdateTextArrea(id,data){
+  var textareaElement = $('textarea[name="'+id+'"]');
+  if (textareaElement.length > 0) {
+    textareaElement.val(data);
   }
 }
