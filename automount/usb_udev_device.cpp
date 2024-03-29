@@ -40,7 +40,7 @@ void UsbUdevDevice::getUdevDeviceInfo() {
       nullptr, udev_device_unref);
 
   while (entry != NULL) {
-    logger_->debug("ITERATION LOOP");
+    // logger_->debug("ITERATION LOOP");
     const char *p_path = udev_list_entry_get_name(entry);
     std::unique_ptr<udev_device, decltype(&udev_device_unref)> device(
         udev_device_new_from_syspath(udev.get(), p_path), udev_device_unref);

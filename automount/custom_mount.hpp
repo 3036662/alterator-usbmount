@@ -18,18 +18,23 @@ public:
   CustomMount &operator=(const CustomMount &) = delete;
   CustomMount &&operator=(CustomMount &&) = delete;
 
-  CustomMount(const std::shared_ptr<spdlog::logger> &logger) noexcept;
+  CustomMount(std::shared_ptr<UsbUdevDevice> &ptr_device,
+              const std::shared_ptr<spdlog::logger> &logger) noexcept;
 
-  bool Mount(std::shared_ptr<UsbUdevDevice> &ptr_device,
-             const UidGid &uid_gid) noexcept;
+  bool Mount(const UidGid &uid_gid) noexcept;
 
 private:
   bool CreateAclMountPoint() noexcept;
-
   void SetAcl(const std::string &mount_point);
+  bool CreatMountEndpoint() noexcept;
+  bool PerfomMount() noexcept;
 
   const char *mount_root = "/run/alt-usb-mount/";
   const std::shared_ptr<spdlog::logger> logger_;
+  std::shared_ptr<UsbUdevDevice> ptr_device_;
+
   std::optional<uid_t> uid_;
   std::optional<gid_t> gid_;
+  std::optional<std::string> base_mount_point_; // base mount point with acl
+  std::optional<std::string> end_mount_point_;  // child dir for mounting
 };

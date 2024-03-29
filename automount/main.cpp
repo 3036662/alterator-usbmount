@@ -1,3 +1,4 @@
+#define SPDLOG_ACTIVE_LEVEL SPDLOG_LEVEL_DEBUG
 #include "custom_mount.hpp"
 #include "usb_udev_device.hpp"
 #include "utils.hpp"
@@ -32,13 +33,12 @@ int main(int argc, char *argv[]) {
     logger->error(ex.what());
     return 1;
   }
-  logger->info(ptr_device->toString());
-  // divice info is ready - act
+  // device info is ready - act
   uid_t user_id = 1000;
   gid_t group_id = 1001;
-  CustomMount mounter{logger};
+  CustomMount mounter{ptr_device, logger};
   if (dev_params.action == "add") {
-    mounter.Mount(ptr_device, {user_id, group_id});
+    mounter.Mount({user_id, group_id});
   }
   // else if (dev_params.action=="remove"){
   // }

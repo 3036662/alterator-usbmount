@@ -5,6 +5,7 @@
 #include <exception>
 #include <filesystem>
 
+#include <spdlog/common.h>
 #include <sstream>
 #include <stdexcept>
 #include <sys/acl.h>
@@ -18,6 +19,7 @@ std::shared_ptr<spdlog::logger> InitLogFile(const std::string &path) noexcept {
   try {
     fs::path file_path(path);
     fs::create_directories(file_path.parent_path());
+    spdlog::set_level(spdlog::level::debug);
     return spdlog::basic_logger_mt("usb-automount", path);
   } catch (const std::exception &ex) {
     openlog("alterator-usb-automount", LOG_PID, LOG_USER);

@@ -25,6 +25,12 @@ public:
                 const std::shared_ptr<spdlog::logger> &logger);
 
   std::string toString() const noexcept;
+  inline const std::string &fs_label() const noexcept { return fs_label_; }
+  inline const std::string &fs_uid() const noexcept { return uid_; }
+  inline const std::string &filesystem() const noexcept { return filesystem_; }
+  inline const std::string &dev_type() const noexcept { return dev_type_; }
+  inline const std::string &block_name() const noexcept { return block_name_; }
+  inline int partition_number() const noexcept { return partitions_number_; }
 
 private:
   /**

@@ -2,6 +2,7 @@
 #include "utils.hpp"
 #include <acl/libacl.h>
 #include <cerrno>
+#include <cmath>
 #include <cstddef>
 #include <cstring>
 #include <exception>
@@ -13,15 +14,27 @@
 #include <sys/acl.h>
 #include <sys/stat.h>
 #include <sys/types.h>
+#include <utility>
 
-CustomMount::CustomMount(const std::shared_ptr<spdlog::logger> &logger) noexcept
-    : logger_(logger) {}
+CustomMount::CustomMount(std::shared_ptr<UsbUdevDevice> &ptr_device,
+                         const std::shared_ptr<spdlog::logger> &logger) noexcept
+    : logger_(logger), ptr_device_{ptr_device} {}
 
-bool CustomMount::Mount(std::shared_ptr<UsbUdevDevice> &ptr_device,
-                        const UidGid &uid_gid) noexcept {
+bool CustomMount::Mount(const UidGid &uid_gid) noexcept {
   uid_ = uid_gid.user_id;
   gid_ = uid_gid.group_id;
-  CreateAclMountPoint();
+  logger_->debug(ptr_device_->toString());
+  if (ptr_device_->dev_type() == "disk") {
+    logger_->debug("Skipped with device type disk");
+    return true;
+  }
+  if (!CreateAclMountPoint())
+    return false;
+  // create endpoint
+  if (!CreatMountEndpoint())
+    return false;
+  PerfomMount();
+
   return true;
 }
 
@@ -59,8 +72,7 @@ bool CustomMount::CreateAclMountPoint() noexcept {
     logger_->error(ex.what());
     return false;
   }
-  // create endpoint
-
+  base_mount_point_ = std::move(mount_point);
   return true;
 }
 
@@ -113,7 +125,7 @@ void CustomMount::SetAcl(const std::string &mount_point) {
     throw std::runtime_error("acl_set_tag_type failed");
   if (acl_set_permset(entry, permset) != 0)
     throw std::runtime_error("acl_set_permset failed");
-  logger_->info(ToString(acl));
+  logger_->debug(ToString(acl));
   if (acl_valid(acl) != 0) {
     logger_->warn("Acl is invalid");
     int last = 0;
@@ -127,5 +139,67 @@ void CustomMount::SetAcl(const std::string &mount_point) {
   // free ACL
   if (acl_free(acl) != 0)
     logger_->warn("acl_free failed");
-  logger_->info("ACL for {} successfully set", mount_point);
+  logger_->debug("ACL for {} successfully set", mount_point);
+}
+
+bool CustomMount::CreatMountEndpoint() noexcept {
+  namespace fs = std::filesystem;
+  std::string endpoint;
+  if (!base_mount_point_ || base_mount_point_->empty()) {
+    logger_->error("invalid base mount path");
+    return false;
+  }
+  endpoint += base_mount_point_.value();
+  endpoint += "/";
+  try {
+    if (!ptr_device_->fs_label().empty() &&
+        !fs::exists(endpoint + ptr_device_->fs_label())) {
+      endpoint += ptr_device_->fs_label();
+    } else if (!ptr_device_->fs_uid().empty()) {
+      endpoint += ptr_device_->fs_uid();
+    } else { // just in case
+      endpoint += "usb";
+    }
+    // check if it exists add some index in this case
+    uint index = 0;
+    // if exists and non empty -> change name
+    while (fs::exists(endpoint) && !fs::is_empty(endpoint)) {
+      if (index == 0) {
+        endpoint += "_0";
+        continue;
+      }
+      endpoint.erase(endpoint.size() - 1);
+      endpoint += std::to_string(index);
+      ++index;
+    }
+    if (!fs::exists(endpoint) && !fs::create_directory(endpoint)) {
+      logger_->error("Can't create directory {}", endpoint);
+      return false;
+    }
+    if (chown(endpoint.c_str(), uid_.value_or(0), gid_.value_or(0)) != 0) {
+      logger_->error("Chown for failed {} ", endpoint);
+      return false;
+    }
+    if (chmod(endpoint.c_str(), 0750) != 0) {
+      logger_->error("Chmod 0750 failed for {}", endpoint);
+      return false;
+    }
+    logger_->info("Created mount endpoint {}", endpoint);
+    end_mount_point_ = std::move(endpoint);
+  } catch (const std::exception &ex) {
+    logger_->error(ex.what());
+    return false;
+  }
+  return true;
+}
+
+bool CustomMount::PerfomMount() noexcept {
+  if (!end_mount_point_.has_value() ||
+      !std::filesystem::exists(end_mount_point_.value())) {
+    logger_->error("No endpoint for mount");
+    return false;
+  }
+  
+
+  return true;
 }
