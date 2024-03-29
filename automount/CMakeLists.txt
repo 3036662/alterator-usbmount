@@ -1,13 +1,23 @@
 add_executable(alterator_usb_automount
 #    mount_test.cpp
     main.cpp
+    utils.cpp
+    usb_udev_device.cpp
+    custom_mount.cpp
 )
 target_link_libraries(alterator_usb_automount PRIVATE PkgConfig::UDEV)
 
 
 find_package(spdlog REQUIRED)
 find_package(fmt REQUIRED)
+find_package(PkgConfig)
+pkg_check_modules(SYSTEMD REQUIRED libsystemd)
+pkg_check_modules(ACL REQUIRED IMPORTED_TARGET libacl)
+target_link_libraries(alterator_usb_automount PRIVATE ${SYSTEMD_LIBRARIES})
 target_link_libraries(alterator_usb_automount PRIVATE fmt)
+target_link_libraries(alterator_usb_automount PRIVATE PkgConfig::ACL)
+target_include_directories(alterator_usb_automount PUBLIC ${ACL_INCLUDE_DIRS})
+
 #target_link_libraries(alterator_usb_automount PRIVATE spdlog)
 
 
@@ -36,7 +46,7 @@ if(CMAKE_BUILD_TYPE STREQUAL "Debug")
     include(Format)
     Format(alterator_usb_automount .)
     include(ClangTidy)
-    #AddClangTidy(alterator_usb_automount)
+    AddClangTidy(alterator_usb_automount)
     add_dependencies(alterator_usb_automount run_cppcheck)
 endif()
 

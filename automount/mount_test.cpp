@@ -97,6 +97,7 @@ int main(int argc, char *argv[]) {
         udev_device_get_property_value(device.get(), "ID_FS_TYPE");
     if (p_fs != NULL)
       filesystem = p_fs;
+
     std::string mount_point = "/run/media/oleg/";
     if (!label.empty()) {
       mount_point += label;
