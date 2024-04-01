@@ -4,14 +4,17 @@
 #include <cerrno>
 #include <cmath>
 #include <cstddef>
+#include <cstdio>
 #include <cstring>
 #include <exception>
 #include <filesystem>
 #include <grp.h>
+#include <mntent.h>
 #include <pwd.h>
 #include <stdexcept>
 #include <string>
 #include <sys/acl.h>
+#include <sys/mount.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <utility>
@@ -24,7 +27,8 @@ bool CustomMount::Mount(const UidGid &uid_gid) noexcept {
   uid_ = uid_gid.user_id;
   gid_ = uid_gid.group_id;
   logger_->debug(ptr_device_->toString());
-  if (ptr_device_->dev_type() == "disk") {
+  if (ptr_device_->dev_type() == "disk" &&
+      ptr_device_->filesystem() != "ntfs") {
     logger_->debug("Skipped with device type disk");
     return true;
   }
@@ -199,7 +203,111 @@ bool CustomMount::PerfomMount() noexcept {
     logger_->error("No endpoint for mount");
     return false;
   }
-  
-
+  // setup mount options
+  MountOptions mount_opts{0, ptr_device_->filesystem(), ""};
+  SetMountOptions(mount_opts);
+  // perfom mount
+  int res = mount(ptr_device_->block_name().c_str(),
+                  end_mount_point_.value().c_str(), mount_opts.fs.c_str(),
+                  mount_opts.mount_flags, mount_opts.mount_data.c_str());
+  if (res == 0) {
+    logger_->info("Mounted {} to {}", ptr_device_->block_name(),
+                  end_mount_point_.value());
+  } else {
+    logger_->error(strerror(errno));
+    RemoveMountPoint(end_mount_point_.value());
+    return false;
+  }
+  // chown+chmod after mount if not read-only fs
+  if (!mount_opts.read_only) {
+    if (chown(end_mount_point_.value().c_str(), uid_.value_or(0),
+              gid_.value_or(0)) != 0) {
+      logger_->error("Chown for failed {} ", end_mount_point_.value());
+      logger_->error(strerror(errno));
+      return false;
+    }
+    if (chmod(end_mount_point_.value().c_str(), 0770) != 0) {
+      logger_->error("Chmod 0750 failed for {}", end_mount_point_.value());
+      return false;
+    }
+  }
   return true;
+}
+
+bool CustomMount::UnMount() noexcept {
+  // find mount point
+  FILE *p_file = setmntent("/etc/mtab", "r");
+  if (p_file == NULL) {
+    logger_->error("Error opening /etc/mtab");
+    return false;
+  }
+  mntent *entry;
+  std::string mount_point;
+  while ((entry = getmntent(p_file)) != NULL) {
+    if (std::string(entry->mnt_fsname) == ptr_device_->block_name()) {
+      mount_point = entry->mnt_dir;
+      break;
+    }
+  }
+  endmntent(p_file);
+  if (mount_point.empty()) {
+    logger_->info("{} is not mounted", ptr_device_->block_name());
+    return true;
+  }
+  int res = umount2(mount_point.c_str(), 0);
+  if (res != 0) {
+    logger_->error("Error unmounting {}", ptr_device_->block_name());
+    logger_->error(std::strerror(errno));
+    return false;
+  }
+  RemoveMountPoint(mount_point);
+  return true;
+}
+
+void CustomMount::RemoveMountPoint(const std::string &path) noexcept {
+  try {
+    if (std::filesystem::is_empty(path)) {
+      std::filesystem::remove(path);
+      logger_->info("Remove {} ", path);
+    }
+  } catch (const std::exception &ex) {
+    logger_->error("Can't remove {}", path);
+  }
+}
+
+void CustomMount::SetMountOptions(MountOptions &opts) const noexcept {
+  if (opts.fs.empty())
+    return;
+  opts.mount_flags = MS_NOSUID | MS_NODEV | MS_RELATIME;
+  std::string uid_gid = "uid=";
+  uid_gid += std::to_string(uid_.value_or(0));
+  uid_gid += ",gid=";
+  uid_gid += std::to_string(gid_.value_or(0));
+  if (ptr_device_->filesystem() == "iso9660") {
+    opts.mount_flags = opts.mount_flags | MS_RDONLY;
+    opts.mount_data += uid_gid;
+    opts.mount_data += ",iocharset=utf8";
+    opts.read_only = true;
+  } else if (ptr_device_->filesystem() == "vfat") {
+    opts.mount_data += uid_gid;
+    opts.mount_data += ",fmask=0007,dmask=0007,allow_utime=0020,"
+                       "codepage=866,shortname=mixed"
+                       ",utf8,flush,errors=remount-ro";
+  } else if (ptr_device_->filesystem() == "exfat") {
+    opts.mount_data += uid_gid;
+    opts.mount_data += ",fmask=0007,dmask=0007";
+  } else if (ptr_device_->filesystem() == "ntfs") {
+    opts.fs += "3";
+    opts.mount_data += uid_gid;
+    opts.mount_data += ",umask=007,iocharset=utf8";
+  } else if (ptr_device_->filesystem() == "udf") {
+    opts.mount_flags = opts.mount_flags | MS_RDONLY;
+    opts.mount_data += uid_gid;
+    opts.mount_data += ",umask=007,iocharset=utf8";
+    opts.read_only = true;
+  } else {
+    logger_->info("Filesystem {}, mounting with default parameters",
+                  ptr_device_->filesystem());
+  }
+  logger_->debug("Mount data = {}", opts.mount_data);
 }

@@ -39,9 +39,9 @@ int main(int argc, char *argv[]) {
   CustomMount mounter{ptr_device, logger};
   if (dev_params.action == "add") {
     mounter.Mount({user_id, group_id});
+  } else if (dev_params.action == "remove") {
+    mounter.UnMount();
   }
-  // else if (dev_params.action=="remove"){
-  // }
 
   return 0;
 }

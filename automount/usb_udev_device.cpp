@@ -65,7 +65,7 @@ void UsbUdevDevice::getUdevDeviceInfo() {
     fs_label_ = p_label;
   // uid
   const char *p_uid =
-      udev_device_get_property_value(ptr_device.get(), "ID_PART_ENTRY_UUID");
+      udev_device_get_property_value(ptr_device.get(), "ID_FS_UUID");
   if (p_uid != NULL)
     uid_ = p_uid;
   const char *p_fs =
@@ -100,8 +100,8 @@ std::string UsbUdevDevice::toString() const noexcept {
     break;
   }
   res << " block_name: " << block_name_ << " fs_label: " << fs_label_
-      << " parition_uid: " << uid_ << " file_system: " << filesystem_
-      << " device_type:" << dev_type_ << " number of partitions "
+      << " fs_uid: " << uid_ << " file_system: " << filesystem_
+      << " device_type:" << dev_type_ << " partition number "
       << std::to_string(partitions_number_);
   return res.str();
 }

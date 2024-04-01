@@ -39,11 +39,10 @@ private:
   void getUdevDeviceInfo();
 
   const std::shared_ptr<spdlog::logger> logger_;
-
   Action action_;
   std::string block_name_;
   std::string fs_label_;   /// ID_FS_LABEL
-  std::string uid_;        /// ID_PART_ENTRY_UUID
+  std::string uid_;        /// ID_FS_UUID
   std::string filesystem_; /// ID_FS_TYPE
   std::string dev_type_;   /// DEVTYPE e.g "partition"
   int partitions_number_;

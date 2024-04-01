@@ -3,11 +3,19 @@
 #include <memory>
 #include <optional>
 #include <spdlog/logger.h>
+#include <string>
 #include <sys/types.h>
 
 struct UidGid {
   uid_t user_id;
   gid_t group_id;
+};
+
+struct MountOptions {
+  unsigned long mount_flags = 0;
+  std::string fs;
+  std::string mount_data;
+  bool read_only = false;
 };
 
 class CustomMount {
@@ -22,12 +30,15 @@ public:
               const std::shared_ptr<spdlog::logger> &logger) noexcept;
 
   bool Mount(const UidGid &uid_gid) noexcept;
+  bool UnMount() noexcept;
 
 private:
   bool CreateAclMountPoint() noexcept;
   void SetAcl(const std::string &mount_point);
   bool CreatMountEndpoint() noexcept;
   bool PerfomMount() noexcept;
+  void RemoveMountPoint(const std::string &path) noexcept;
+  void SetMountOptions(MountOptions &opts) const noexcept;
 
   const char *mount_root = "/run/alt-usb-mount/";
   const std::shared_ptr<spdlog::logger> logger_;
