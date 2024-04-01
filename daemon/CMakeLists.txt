@@ -3,6 +3,7 @@ add_executable(altusbd
     daemon.cpp
     udev_monitor.cpp
     udisks_dbus.cpp
+    utils.cpp
 )
 
 if(CMAKE_BUILD_TYPE STREQUAL "Debug")
@@ -19,6 +20,16 @@ target_link_libraries(altusbd PRIVATE SDBusCpp::sdbus-c++)
 
 target_link_libraries(altusbd PRIVATE PkgConfig::UDEV)
 target_include_directories(altusbd PUBLIC ${UDEV_INCLUDE_DIRS})
+
+# acl 
+pkg_check_modules(ACL REQUIRED IMPORTED_TARGET libacl)
+target_link_libraries(altusbd PRIVATE PkgConfig::ACL)
+target_include_directories(altusbd PUBLIC ${ACL_INCLUDE_DIRS})
+
+# logger
+find_package(spdlog REQUIRED)
+find_package(fmt REQUIRED)
+target_link_libraries(altusbd PRIVATE fmt)
 
 
 install(TARGETS altusbd
