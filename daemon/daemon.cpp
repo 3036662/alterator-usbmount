@@ -2,6 +2,7 @@
 #include "udev_monitor.hpp"
 #include "udisks_dbus.hpp"
 #include "usb_udev_device.hpp"
+#include "utils.hpp"
 #include <csignal>
 #include <functional>
 #include <iostream>
@@ -12,13 +13,13 @@
 #include <sdbus-c++/StandardInterfaces.h>
 #include <sdbus-c++/sdbus-c++.h>
 
-Daemon::Daemon() : is_running_(true), reload_(false) {
-  signal(SIGINT, Daemon::SignalHandler);
-  signal(SIGTERM, Daemon::SignalHandler);
-  signal(SIGHUP, Daemon::SignalHandler);
+Daemon::Daemon()
+    : is_running_(true), reload_(false),
+      logger_(utils::InitLogFile("/var/log/alt-usb-automount/log.txt")) {
   ConnectToDBus();
   udev_ = std::make_unique<UdevMonitor>(UdevMonitor());
-  udisks_ = std::make_unique<UdisksDbus>(connection_);
+  // not needed yet
+  // udisks_ = std::make_unique<UdisksDbus>(connection_);
 }
 
 bool Daemon::IsRunning() {
@@ -62,7 +63,6 @@ void Daemon::ConnectToDBus() {
   dbus_object_ptr->registerMethod(interfaceName, "health", "", "s",
                                   health_func);
   dbus_object_ptr->finishRegistration();
-  connection_->enterEventLoopAsync();
 }
 
 void Daemon::CheckEvents() {
@@ -70,3 +70,19 @@ void Daemon::CheckEvents() {
   if (device.has_value())
     udisks_->ProcessDevice(*device);
 }
+
+void Daemon::Run() {
+  StartDbusLoop();
+  sigset_t signal_set;
+  int signal_number;
+  sigemptyset(&signal_set);
+  sigaddset(&signal_set, SIGINT);
+  sigaddset(&signal_set, SIGTERM);
+  sigaddset(&signal_set, SIGHUP);
+  sigprocmask(SIG_BLOCK, &signal_set, NULL);
+  while (IsRunning()) {
+    sigwait(&signal_set, &signal_number);
+    SignalHandler(signal_number);
+  }
+}
+void Daemon::StartDbusLoop() { connection_->enterEventLoopAsync(); }
