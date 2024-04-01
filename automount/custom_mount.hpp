@@ -29,15 +29,42 @@ public:
   CustomMount(std::shared_ptr<UsbUdevDevice> &ptr_device,
               const std::shared_ptr<spdlog::logger> &logger) noexcept;
 
+  /**
+   * @brief Mount a device for user and group
+   * @param uid_gid user and group struct
+   */
   bool Mount(const UidGid &uid_gid) noexcept;
+  
+  /**
+   * @brief Unmount a device
+   */
   bool UnMount() noexcept;
 
 private:
+  
+  /**
+   * @brief Create a Acl-controlled directory for mount points
+   */
   bool CreateAclMountPoint() noexcept;
+  
+  /**
+   * @brief Set the Acl for directory 
+   * @param mount_point 
+   */
   void SetAcl(const std::string &mount_point);
+  
+  /**
+   * @brief Create a subfolder in ACL-controlled dir for mounting
+   */
   bool CreatMountEndpoint() noexcept;
+
   bool PerfomMount() noexcept;
   void RemoveMountPoint(const std::string &path) noexcept;
+  
+  /**
+   * @brief Set the Mount Options object - paramterers for mount call
+   * @param[in][out] opts 
+   */
   void SetMountOptions(MountOptions &opts) const noexcept;
 
   const char *mount_root = "/run/alt-usb-mount/";
