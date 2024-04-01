@@ -1,7 +1,9 @@
 
 #include "daemon.hpp"
 #include <chrono>
+#include <exception>
 #include <iostream>
+#include <sdbus-c++/Error.h>
 #include <systemd/sd-daemon.h>
 #include <thread>
 
@@ -11,13 +13,13 @@
 // a D-Bus service activation configuration file
 
 int main() {
-  Daemon &daemon = Daemon::instance();
-  // Daemon main loop
-  while (daemon.IsRunning()) {
-    daemon.CheckEvents();
-    std::this_thread::sleep_for(std::chrono::milliseconds(500));
+  try {
+    Daemon &daemon = Daemon::instance();
+    daemon.Run();
+  } catch (const std::exception &ex) {
+    std::cerr << SD_ERR << "Can't start the daemon ";
+    std::cerr << SD_ERR << ex.what();
   }
-
   std::cerr << SD_DEBUG << "The daemon process ended gracefully.";
   return 0;
 }
