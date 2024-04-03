@@ -1,11 +1,16 @@
 #pragma once
+#include "custom_mount.hpp"
 #include "usb_udev_device.hpp"
 #include <acl/libacl.h>
+#include <memory>
+#include <spdlog/logger.h>
 #include <spdlog/sinks/basic_file_sink.h>
 #include <spdlog/spdlog.h>
+#include <sstream>
 #include <string>
 #include <sys/acl.h>
 #include <sys/syslog.h>
+#include <sys/types.h>
 
 namespace utils {
 
@@ -16,6 +21,9 @@ namespace utils {
  * @return std::shared_ptr<spdlog::logger>
  */
 std::shared_ptr<spdlog::logger> InitLogFile(const std::string &path) noexcept;
+
+void MountDevice(std::shared_ptr<UsbUdevDevice> ptr_device,
+                 const std::shared_ptr<spdlog::logger> &logger) noexcept;
 
 namespace acl {
 /**

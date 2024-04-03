@@ -12,14 +12,16 @@
 #include <sdbus-c++/Message.h>
 #include <sdbus-c++/StandardInterfaces.h>
 #include <sdbus-c++/sdbus-c++.h>
+#include <sstream>
+#include <thread>
 
 Daemon::Daemon()
     : is_running_(true), reload_(false),
       logger_(utils::InitLogFile("/var/log/alt-usb-automount/log.txt")) {
   ConnectToDBus();
-  udev_ = std::make_unique<UdevMonitor>(UdevMonitor());
-  // not needed yet
-  // udisks_ = std::make_unique<UdisksDbus>(connection_);
+  udev_ = std::make_unique<UdevMonitor>(UdevMonitor(logger_));
+  //  not needed yet
+  //  udisks_ = std::make_unique<UdisksDbus>(connection_);
 }
 
 bool Daemon::IsRunning() {
@@ -65,14 +67,9 @@ void Daemon::ConnectToDBus() {
   dbus_object_ptr->finishRegistration();
 }
 
-void Daemon::CheckEvents() {
-  std::optional<UsbUdevDevice> device = udev_->RecieveDevice();
-  if (device.has_value())
-    udisks_->ProcessDevice(*device);
-}
-
 void Daemon::Run() {
   StartDbusLoop();
+  std::thread thread_monitor(&UdevMonitor::Run, udev_.get());
   sigset_t signal_set;
   int signal_number;
   sigemptyset(&signal_set);
@@ -84,5 +81,15 @@ void Daemon::Run() {
     sigwait(&signal_set, &signal_number);
     SignalHandler(signal_number);
   }
+  udev_->Stop();
+  thread_monitor.join();
+  logger_->debug("stopped the Daemon loop");
 }
+
 void Daemon::StartDbusLoop() { connection_->enterEventLoopAsync(); }
+
+// void Daemon::CheckEvents() {
+//   std::optional<UsbUdevDevice> device = udev_->RecieveDevice();
+//   if (device.has_value())
+//     udisks_->ProcessDevice(*device);
+// }

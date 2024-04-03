@@ -4,6 +4,8 @@ add_executable(altusbd
     udev_monitor.cpp
     udisks_dbus.cpp
     utils.cpp
+    usb_udev_device.cpp
+    custom_mount.cpp
 )
 
 if(CMAKE_BUILD_TYPE STREQUAL "Debug")

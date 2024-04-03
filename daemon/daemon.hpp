@@ -7,7 +7,6 @@
 
 class Daemon {
 public:
-
   /**
    * @brief Create a daemon instance
    * @return Daemon&
@@ -19,18 +18,19 @@ public:
   }
 
   void Run();
-  bool IsRunning();
-  void StartDbusLoop();
-  void CheckEvents();
+
+  // void CheckEvents();
 
 private:
-
   Daemon();
   Daemon(Daemon const &) = delete;
   Daemon(Daemon const &&) = delete;
   void operator=(Daemon const &) = delete;
 
+  bool IsRunning();
   void ConnectToDBus();
+  void StartDbusLoop();
+
   static void SignalHandler(int signal);
   static void Reload(){};
 

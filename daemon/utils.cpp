@@ -1,10 +1,13 @@
 #include "utils.hpp"
+#include "usb_udev_device.hpp"
 #include <acl/libacl.h>
 #include <cerrno>
 #include <cstring>
 #include <exception>
 #include <filesystem>
 
+#include "spdlog/async.h"
+#include <iostream>
 #include <spdlog/common.h>
 #include <sstream>
 #include <stdexcept>
@@ -20,11 +23,37 @@ std::shared_ptr<spdlog::logger> InitLogFile(const std::string &path) noexcept {
     fs::path file_path(path);
     fs::create_directories(file_path.parent_path());
     spdlog::set_level(spdlog::level::debug);
-    return spdlog::basic_logger_mt("usb-automount", path);
+    // return spdlog::basic_logger_mt("usb-automount", path);
+    return spdlog::basic_logger_mt<spdlog::async_factory>("usb-automount",
+                                                          path);
   } catch (const std::exception &ex) {
     openlog("alterator-usb-automount", LOG_PID, LOG_USER);
     syslog(LOG_ERR, "Can't create a log file");
     return nullptr;
+  }
+}
+
+void MountDevice(std::shared_ptr<UsbUdevDevice> ptr_device,
+                 const std::shared_ptr<spdlog::logger> &logger) noexcept {
+  try {
+    // std::stringstream str_id;
+    // str_id << std::this_thread::get_id();
+    // logger->debug("Mount async is running in thread {}", str_id.str());
+    if (ptr_device->subsystem() != "block")
+      return;
+    CustomMount mounter(ptr_device, logger);
+    if (ptr_device->action() == Action::kAdd) {
+      logger->debug("Mount {} ", ptr_device->block_name());
+      if (!mounter.Mount({1000, 1001})) {
+        logger->error("Mount failed");
+      }
+    } else if (ptr_device->action() == Action::kRemove) {
+      logger->debug("Unmounting {}", ptr_device->block_name());
+      mounter.UnMount();
+    }
+    logger->flush();
+  } catch (const std::exception &ex) {
+    std::cerr << ex.what();
   }
 }
 
