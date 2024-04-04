@@ -17,7 +17,8 @@ private:
   /** @brief Health method for DBus returns "OK" to caller */
   static void Health(const sdbus::MethodCall &);
 
-  static void CanAnotherUserUnmount(const sdbus::MethodCall &);
+  static void CanAnotherUserUnmount(sdbus::MethodCall);
+  static void CanUserMount(sdbus::MethodCall);
 
   const std::string service_name = "ru.alterator.usbd";
   const std::string object_path = "/ru/alterator/altusbd";
