@@ -1,18 +1,13 @@
 #include "daemon.hpp"
 #include "udev_monitor.hpp"
-#include "udisks_dbus.hpp"
-#include "usb_udev_device.hpp"
+// #include "udisks_dbus.hpp"
 #include "utils.hpp"
 #include <csignal>
-#include <functional>
-#include <iostream>
 #include <memory>
-#include <optional>
 #include <sdbus-c++/IObject.h>
 #include <sdbus-c++/Message.h>
 #include <sdbus-c++/StandardInterfaces.h>
 #include <sdbus-c++/sdbus-c++.h>
-#include <sstream>
 #include <thread>
 
 Daemon::Daemon()
@@ -24,7 +19,7 @@ Daemon::Daemon()
   //  udisks_ = std::make_unique<UdisksDbus>(connection_);
 }
 
-bool Daemon::IsRunning() noexcept{
+bool Daemon::IsRunning() noexcept {
   if (reload_) {
     reload_ = false;
     Daemon::Reload();
@@ -49,19 +44,16 @@ void Daemon::SignalHandler(int signal) noexcept {
 }
 
 void Daemon::ConnectToDBus() {
-  const char *serviceName = "ru.alterator.usbd";
-  connection_ = sdbus::createSystemBusConnection(serviceName);
-  const char *objectPath = "/ru/alterator/altusbd";
-  auto dbus_object_ptr = sdbus::createObject(*connection_, objectPath);
-  // Register D-Bus methods and signals on the concatenator object, and exports
-  // the object.
+  const char *service_name = "ru.alterator.usbd";
+  connection_ = sdbus::createSystemBusConnection(service_name);
+  const char *object_path = "/ru/alterator/altusbd";
+  dbus_object_ptr = sdbus::createObject(*connection_, object_path);
   const char *interfaceName = "ru.alterator.Usbd";
-  std::function<void(sdbus::MethodCall)> health_func =
-      [](const sdbus::MethodCall &call) {
-        auto reply = call.createReply();
-        reply << "OK";
-        reply.send();
-      };
+  auto health_func = [](const sdbus::MethodCall &call) {
+    auto reply = call.createReply();
+    reply << "OK";
+    reply.send();
+  };
   dbus_object_ptr->registerMethod(interfaceName, "health", "", "s",
                                   health_func);
   dbus_object_ptr->finishRegistration();
@@ -87,4 +79,3 @@ void Daemon::Run() {
 }
 
 void Daemon::StartDbusLoop() { connection_->enterEventLoopAsync(); }
-

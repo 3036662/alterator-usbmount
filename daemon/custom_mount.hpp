@@ -10,7 +10,7 @@ struct UidGid {
   uid_t user_id;
   gid_t group_id;
 };
- 
+
 /**
  * @brief Options for mount() glibc call
  */
@@ -20,7 +20,6 @@ struct MountOptions {
   std::string mount_data;
   bool read_only = false;
 };
-
 
 class CustomMount {
 public:

@@ -1,6 +1,6 @@
 #pragma once
 #include "udev_monitor.hpp"
-#include "udisks_dbus.hpp"
+// #include "udisks_dbus.hpp"
 #include <memory>
 #include <sdbus-c++/sdbus-c++.h>
 #include <spdlog/logger.h>
@@ -25,20 +25,22 @@ private:
   Daemon();
   Daemon(Daemon const &) = delete;
   Daemon(Daemon const &&) = delete;
-  Daemon& operator=(const Daemon &) = delete;
-  Daemon& operator=(Daemon&&) =delete;
+  Daemon &operator=(const Daemon &) = delete;
+  Daemon &operator=(Daemon &&) = delete;
 
   bool IsRunning() noexcept;
   void ConnectToDBus();
   void StartDbusLoop();
 
   static void SignalHandler(int signal) noexcept;
-  static void Reload() noexcept{};
+  static void Reload() noexcept {};
 
   bool is_running_;
   bool reload_;
   std::shared_ptr<spdlog::logger> logger_;
   std::unique_ptr<sdbus::IConnection> connection_;
   std::unique_ptr<UdevMonitor> udev_;
-  //std::unique_ptr<UdisksDbus> udisks_;
+  std::unique_ptr<sdbus::IObject> dbus_object_ptr;
+
+  // std::unique_ptr<UdisksDbus> udisks_;
 };
