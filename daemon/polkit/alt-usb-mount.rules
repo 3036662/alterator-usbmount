@@ -1,0 +1,14 @@
+polkit.addRule(function(action, subject) {
+    if (action.id == "org.freedesktop.udisks2.filesystem-unmount-others"
+        && action.lookup("drive.removable.bus")==="usb") {
+        polkit.log("action=" + action);
+        polkit.log("subject=" + subject);  
+        polkit.log(action.lookup("device")); 
+        var response =polkit.spawn(["/usr/bin/altusbmount_askdbus",action.lookup("device")]);
+        polkit.log("dbus response="+ response);
+        if (response==="YES"){
+            return polkit.Result.YES;
+        }
+    }
+    return polkit.Result.NOT_HANDLED;
+});
