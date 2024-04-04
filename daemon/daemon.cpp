@@ -24,7 +24,7 @@ Daemon::Daemon()
   //  udisks_ = std::make_unique<UdisksDbus>(connection_);
 }
 
-bool Daemon::IsRunning() {
+bool Daemon::IsRunning() noexcept{
   if (reload_) {
     reload_ = false;
     Daemon::Reload();
@@ -32,7 +32,7 @@ bool Daemon::IsRunning() {
   return is_running_;
 }
 
-void Daemon::SignalHandler(int signal) {
+void Daemon::SignalHandler(int signal) noexcept {
   switch (signal) {
   case SIGINT:
   case SIGTERM: {
@@ -88,8 +88,3 @@ void Daemon::Run() {
 
 void Daemon::StartDbusLoop() { connection_->enterEventLoopAsync(); }
 
-// void Daemon::CheckEvents() {
-//   std::optional<UsbUdevDevice> device = udev_->RecieveDevice();
-//   if (device.has_value())
-//     udisks_->ProcessDevice(*device);
-// }

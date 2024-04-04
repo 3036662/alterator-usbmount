@@ -2,7 +2,6 @@
 #include "utils.hpp"
 #include <acl/libacl.h>
 #include <cerrno>
-#include <cmath>
 #include <cstddef>
 #include <cstdio>
 #include <cstring>

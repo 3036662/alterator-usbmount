@@ -25,20 +25,20 @@ private:
   Daemon();
   Daemon(Daemon const &) = delete;
   Daemon(Daemon const &&) = delete;
-  void operator=(Daemon const &) = delete;
+  Daemon& operator=(const Daemon &) = delete;
+  Daemon& operator=(Daemon&&) =delete;
 
-  bool IsRunning();
+  bool IsRunning() noexcept;
   void ConnectToDBus();
   void StartDbusLoop();
 
-  static void SignalHandler(int signal);
-  static void Reload(){};
+  static void SignalHandler(int signal) noexcept;
+  static void Reload() noexcept{};
 
   bool is_running_;
   bool reload_;
   std::shared_ptr<spdlog::logger> logger_;
-
   std::unique_ptr<sdbus::IConnection> connection_;
   std::unique_ptr<UdevMonitor> udev_;
-  std::unique_ptr<UdisksDbus> udisks_;
+  //std::unique_ptr<UdisksDbus> udisks_;
 };

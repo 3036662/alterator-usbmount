@@ -9,8 +9,9 @@ class UsbUdevDevice {
 public:
   UsbUdevDevice(
       std::unique_ptr<udev_device, decltype(&udev_device_unref)> &&device);
-
   std::string toString() const noexcept;
+
+  // getters
   inline Action action() const noexcept { return action_; }
   inline const std::string &subsystem() const noexcept { return subsystem_; }
   inline const std::string &fs_label() const noexcept { return fs_label_; }
