@@ -6,6 +6,7 @@ add_executable(altusbd
     utils.cpp
     usb_udev_device.cpp
     custom_mount.cpp
+    dbus_methods.cpp
 )
 
 if(CMAKE_BUILD_TYPE STREQUAL "Debug")
@@ -47,3 +48,5 @@ install(FILES
     ${CMAKE_SOURCE_DIR}/daemon/ru.alterator.usbd.conf
     DESTINATION "/usr/share/dbus-1/system.d/"
 )
+
+add_subdirectory(polkit)

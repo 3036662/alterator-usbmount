@@ -1,4 +1,5 @@
 #include "daemon.hpp"
+#include "dbus_methods.hpp"
 #include "udev_monitor.hpp"
 // #include "udisks_dbus.hpp"
 #include "utils.hpp"
@@ -12,11 +13,9 @@
 
 Daemon::Daemon()
     : is_running_(true), reload_(false),
-      logger_(utils::InitLogFile("/var/log/alt-usb-automount/log.txt")) {
-  ConnectToDBus();
-  udev_ = std::make_unique<UdevMonitor>(UdevMonitor(logger_));
-  //  not needed yet
-  //  udisks_ = std::make_unique<UdisksDbus>(connection_);
+      logger_(utils::InitLogFile("/var/log/alt-usb-automount/log.txt")),
+      udev_(std::make_unique<UdevMonitor>(UdevMonitor(logger_))) {
+  // DbusMethods  dbus_methods_ is construted with default constructor
 }
 
 bool Daemon::IsRunning() noexcept {
@@ -43,24 +42,8 @@ void Daemon::SignalHandler(int signal) noexcept {
   }
 }
 
-void Daemon::ConnectToDBus() {
-  const char *service_name = "ru.alterator.usbd";
-  connection_ = sdbus::createSystemBusConnection(service_name);
-  const char *object_path = "/ru/alterator/altusbd";
-  dbus_object_ptr = sdbus::createObject(*connection_, object_path);
-  const char *interfaceName = "ru.alterator.Usbd";
-  auto health_func = [](const sdbus::MethodCall &call) {
-    auto reply = call.createReply();
-    reply << "OK";
-    reply.send();
-  };
-  dbus_object_ptr->registerMethod(interfaceName, "health", "", "s",
-                                  health_func);
-  dbus_object_ptr->finishRegistration();
-}
-
 void Daemon::Run() {
-  StartDbusLoop();
+  dbus_methods_.Run(); // non blocking - Async
   std::thread thread_monitor(&UdevMonitor::Run, udev_.get());
   sigset_t signal_set;
   int signal_number;
@@ -77,5 +60,3 @@ void Daemon::Run() {
   thread_monitor.join();
   logger_->debug("stopped the Daemon loop");
 }
-
-void Daemon::StartDbusLoop() { connection_->enterEventLoopAsync(); }
