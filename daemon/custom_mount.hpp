@@ -6,6 +6,8 @@
 #include <string>
 #include <sys/types.h>
 
+namespace usbmount {
+
 struct UidGid {
   uid_t user_id;
   gid_t group_id;
@@ -78,3 +80,5 @@ private:
   std::optional<std::string> base_mount_point_; // base mount point with acl
   std::optional<std::string> end_mount_point_;  // child dir for mounting
 };
+
+} // namespace usbmount

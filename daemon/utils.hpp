@@ -12,7 +12,7 @@
 #include <sys/syslog.h>
 #include <sys/types.h>
 
-namespace utils {
+namespace usbmount::utils {
 
 /**
  * @brief Logger initialization
@@ -41,4 +41,4 @@ void DeleteACLUserGroupMask(acl_t &acl);
 
 } // namespace acl
 
-} // namespace utils
+} // namespace usbmount::utils

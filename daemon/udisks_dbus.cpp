@@ -10,6 +10,8 @@
 #include <thread>
 #include <vector>
 
+namespace usbmount {
+
 UdisksDbus::UdisksDbus(std::unique_ptr<sdbus::IConnection> &conn)
     : dbus_(conn),
       proxy_udisks_(sdbus::createProxy(*dbus_, "org.freedesktop.UDisks2",
@@ -129,3 +131,5 @@ bool UdisksDbus::ProcessDevice(const UsbUdevDevice &dev) {
 
   return obj_path.empty();
 }
+
+} // namespace usbmount

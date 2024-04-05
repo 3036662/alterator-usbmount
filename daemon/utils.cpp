@@ -15,7 +15,7 @@
 #include <sys/types.h>
 #include <syslog.h>
 
-namespace utils {
+namespace usbmount::utils {
 
 std::shared_ptr<spdlog::logger> InitLogFile(const std::string &path) noexcept {
   namespace fs = std::filesystem;
@@ -143,4 +143,4 @@ void DeleteACLUserGroupMask(acl_t &acl) {
 
 } // namespace acl
 
-} // namespace utils
+} // namespace usbmount::utils

@@ -1,6 +1,8 @@
 #include "dbus_methods.hpp"
 #include <string>
 
+namespace usbmount {
+
 DbusMethods::DbusMethods()
     : connection_(sdbus::createSystemBusConnection(service_name)),
       dbus_object_ptr(sdbus::createObject(*connection_, object_path)) {
@@ -42,3 +44,5 @@ void DbusMethods::CanUserMount(sdbus::MethodCall call) {
   reply << "NO";
   reply.send();
 }
+
+} // namespace usbmount

@@ -11,6 +11,8 @@
 #include <sdbus-c++/sdbus-c++.h>
 #include <thread>
 
+namespace usbmount {
+
 Daemon::Daemon()
     : is_running_(true), reload_(false),
       logger_(utils::InitLogFile("/var/log/alt-usb-automount/log.txt")),
@@ -60,3 +62,5 @@ void Daemon::Run() {
   thread_monitor.join();
   logger_->debug("stopped the Daemon loop");
 }
+
+} // namespace usbmount

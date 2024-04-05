@@ -7,6 +7,8 @@
 #include <optional>
 #include <spdlog/logger.h>
 
+namespace usbmount {
+
 class UdevMonitor {
 public:
   UdevMonitor(std::shared_ptr<spdlog::logger> &logger);
@@ -26,3 +28,5 @@ private:
   std::unique_ptr<udev_monitor, decltype(&udev_monitor_unref)> monitor_;
   int udef_fd_;
 };
+
+} // namespace usbmount

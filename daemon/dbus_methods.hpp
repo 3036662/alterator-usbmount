@@ -3,6 +3,8 @@
 #include <sdbus-c++/sdbus-c++.h>
 #include <string>
 
+namespace usbmount {
+
 class DbusMethods {
 public:
   DbusMethods(const DbusMethods &) = delete;
@@ -26,3 +28,5 @@ private:
   std::unique_ptr<sdbus::IConnection> connection_;
   std::unique_ptr<sdbus::IObject> dbus_object_ptr;
 };
+
+} // namespace usbmount

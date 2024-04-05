@@ -3,6 +3,8 @@
 #include <sstream>
 #include <stdexcept>
 
+namespace usbmount {
+
 UsbUdevDevice::UsbUdevDevice(
     std::unique_ptr<udev_device, decltype(&udev_device_unref)> &&device) {
   // action
@@ -95,3 +97,5 @@ std::string UsbUdevDevice::toString() const noexcept {
       << pid_ << " subsystem " << subsystem_;
   return res.str();
 }
+
+} // namespace usbmount

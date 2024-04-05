@@ -2,12 +2,14 @@ add_executable(altusbd
     main.cpp
     daemon.cpp
     udev_monitor.cpp
-    udisks_dbus.cpp
+   # udisks_dbus.cpp 
     utils.cpp
     usb_udev_device.cpp
     custom_mount.cpp
     dbus_methods.cpp
+    local_storage.cpp
 )
+
 
 if(CMAKE_BUILD_TYPE STREQUAL "Debug")
     include(Format)

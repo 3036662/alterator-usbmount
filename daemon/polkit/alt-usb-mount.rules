@@ -5,7 +5,7 @@ polkit.addRule(function(action, subject) {
         //polkit.log("subject=" + subject);  
         //polkit.log(action.lookup("device")); 
         var response =polkit.spawn(["/usr/bin/altusbmount_askdbus",action.lookup("device"),"unmount"]);
-        //polkit.log("dbus response="+ response);
+        polkit.log("dbus response="+ response);
         if (response==="YES"){
             return polkit.Result.YES;
         }

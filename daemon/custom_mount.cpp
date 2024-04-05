@@ -19,6 +19,8 @@
 #include <sys/types.h>
 #include <utility>
 
+namespace usbmount {
+
 CustomMount::CustomMount(std::shared_ptr<UsbUdevDevice> &ptr_device,
                          const std::shared_ptr<spdlog::logger> &logger) noexcept
     : logger_(logger), ptr_device_{ptr_device} {}
@@ -325,3 +327,5 @@ void CustomMount::SetMountOptions(MountOptions &opts) const noexcept {
   }
   logger_->debug("Mount data = {}", opts.mount_data);
 }
+
+} // namespace usbmount

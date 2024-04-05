@@ -6,6 +6,8 @@
 #include <sdbus-c++/sdbus-c++.h>
 #include <spdlog/logger.h>
 
+namespace usbmount {
+
 class Daemon {
 public:
   /**
@@ -42,3 +44,5 @@ private:
 
   // std::unique_ptr<UdisksDbus> udisks_;
 };
+
+} // namespace usbmount

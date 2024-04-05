@@ -14,7 +14,7 @@
 
 int main() {
   try {
-    Daemon &daemon = Daemon::instance();
+    usbmount::Daemon &daemon = usbmount::Daemon::instance();
     daemon.Run();
   } catch (const std::exception &ex) {
     std::cerr << SD_ERR << "Can't start the daemon ";

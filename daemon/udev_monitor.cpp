@@ -19,6 +19,8 @@
 #include <thread>
 #include <vector>
 
+namespace usbmount {
+
 UdevMonitor::UdevMonitor(std::shared_ptr<spdlog::logger> &logger)
     : logger_(logger), future_obj_(stop_signal_.get_future()),
       udev_(udev_new(), udev_unref),
@@ -116,3 +118,5 @@ std::shared_ptr<UsbUdevDevice> UdevMonitor::RecieveDevice() noexcept {
   }
   return std::shared_ptr<UsbUdevDevice>();
 }
+
+} // namespace usbmount

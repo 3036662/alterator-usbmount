@@ -3,6 +3,8 @@
 #include <memory>
 #include <string>
 
+namespace usbmount {
+
 enum class Action { kRemove, kAdd, kUndefined };
 
 class UsbUdevDevice {
@@ -36,3 +38,5 @@ private:
   std::string vid_;
   std::string pid_;
 };
+
+} // namespace usbmount
