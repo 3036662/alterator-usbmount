@@ -40,12 +40,12 @@ install(TARGETS altusbd
 )
 
 install(FILES 
-    ${CMAKE_SOURCE_DIR}/daemon/altusbd.service
+    ${CMAKE_SOURCE_DIR}/daemon/service_files/altusbd.service
     DESTINATION "/lib/systemd/system/"
 )
 
 install(FILES 
-    ${CMAKE_SOURCE_DIR}/daemon/ru.alterator.usbd.conf
+    ${CMAKE_SOURCE_DIR}/daemon/service_files/ru.alterator.usbd.conf
     DESTINATION "/usr/share/dbus-1/system.d/"
 )
 
