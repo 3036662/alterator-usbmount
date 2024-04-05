@@ -6,10 +6,12 @@ add_executable(altusbd
     utils.cpp
     usb_udev_device.cpp
     custom_mount.cpp
-    dbus_methods.cpp
-    local_storage.cpp
+    dbus_methods.cpp#
 )
 
+add_subdirectory(dal)
+target_link_libraries(altusbd PRIVATE DAL)
+target_link_libraries(altusbd PRIVATE boost_json)
 
 if(CMAKE_BUILD_TYPE STREQUAL "Debug")
     include(Format)
@@ -52,3 +54,4 @@ install(FILES
 )
 
 add_subdirectory(polkit)
+

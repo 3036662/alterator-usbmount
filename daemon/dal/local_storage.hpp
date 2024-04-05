@@ -2,7 +2,7 @@
 #include <memory>
 #include <mutex>
 
-namespace usbmount::dao {
+namespace usbmount::dal {
 
 /**
  * @brief Local storage holds data about known devices and mountpoints.
@@ -29,4 +29,6 @@ private:
   static std::mutex mutex_;
 };
 
-} // namespace usbmount::dao
+} // namespace usbmount::dal
+
+// dao.mountpoints().add();

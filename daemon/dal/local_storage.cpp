@@ -2,7 +2,7 @@
 #include <memory>
 #include <mutex>
 
-namespace usbmount::dao {
+namespace usbmount::dal {
 
 std::shared_ptr<LocalStorage> LocalStorage::p_instance_{nullptr};
 std::mutex LocalStorage::mutex_;
@@ -17,4 +17,4 @@ std::shared_ptr<LocalStorage> LocalStorage::GetStorage() {
 
 LocalStorage::LocalStorage() {}
 
-} // namespace usbmount::dao
+} // namespace usbmount::dal
