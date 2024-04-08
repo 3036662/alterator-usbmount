@@ -1,6 +1,9 @@
 add_library(DAL OBJECT
     local_storage.cpp
     dto.cpp
+    table.cpp
+    device_permissions.cpp
+    mount_points.cpp
 )
 
 
@@ -12,3 +15,8 @@ if(CMAKE_BUILD_TYPE STREQUAL "Debug")
     AddClangTidy(DAL)
     add_dependencies(DAL run_cppcheck)
 endif()
+
+IF (DEFINED UNIT_TEST)
+    message("Building tests...")
+    add_subdirectory(test)
+ENDIF (DEFINED UNIT_TEST)

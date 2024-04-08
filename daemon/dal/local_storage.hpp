@@ -1,4 +1,8 @@
 #pragma once
+#include "device_permissions.hpp"
+#include "dto.hpp"
+#include "mount_points.hpp"
+#include "table.hpp"
 #include <memory>
 #include <mutex>
 
@@ -21,6 +25,9 @@ public:
    * @return LocalStorage
    */
   static std::shared_ptr<LocalStorage> GetStorage();
+
+  DevicePermissions permissions;
+  Mountpoints mount_points;
 
 private:
   LocalStorage();

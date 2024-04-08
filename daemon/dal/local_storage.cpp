@@ -1,4 +1,5 @@
 #include "local_storage.hpp"
+#include "mount_points.hpp"
 #include <memory>
 #include <mutex>
 
@@ -15,6 +16,7 @@ std::shared_ptr<LocalStorage> LocalStorage::GetStorage() {
   return p_instance_;
 }
 
-LocalStorage::LocalStorage() {}
-
+LocalStorage::LocalStorage()
+    : permissions("/var/lib/alt-usb-mount/permissions.json"),
+      mount_points("/var/lib/alt-usb-mount/mount_points.json") {}
 } // namespace usbmount::dal
