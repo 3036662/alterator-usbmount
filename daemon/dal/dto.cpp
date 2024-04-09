@@ -50,6 +50,10 @@ json::value Device::ToJson() const noexcept {
   return obj;
 }
 
+bool Device::operator==(const Device &other) const noexcept {
+  return vid_ == other.vid_ && pid_ == other.pid_ && serial_ == other.serial_;
+}
+
 // User
 User::User(const json::object &obj) {
   if (!obj.contains("uid") || !obj.contains("name") ||

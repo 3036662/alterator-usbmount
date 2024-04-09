@@ -39,6 +39,7 @@ public:
   Device &operator=(Device &&) noexcept = default;
   Device &operator=(const Device &) noexcept = default;
   Device(const DeviceParams &params);
+  bool operator==(const Device &) const noexcept;
 
   json::value ToJson() const noexcept override;
 
@@ -117,6 +118,8 @@ public:
                   std::vector<Group> &&groups);
 
   json::value ToJson() const noexcept override;
+
+  inline const Device &getDevice() const noexcept { return device_; }
 
 private:
   Device device_;

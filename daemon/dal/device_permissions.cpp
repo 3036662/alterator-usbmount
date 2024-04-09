@@ -1,12 +1,15 @@
 #include "device_permissions.hpp"
 #include "dto.hpp"
+#include <algorithm>
 #include <boost/json/serialize.hpp>
 #include <cstdint>
 #include <iostream>
 #include <memory>
 #include <mutex>
+#include <optional>
 #include <shared_mutex>
 #include <stdexcept>
+#include <utility>
 
 namespace usbmount::dal {
 
@@ -55,6 +58,19 @@ const PermissionEntry &DevicePermissions::Read(uint64_t index) const {
   auto entry = std::dynamic_pointer_cast<PermissionEntry>(data_.at(index));
   return *entry;
 };
+
+std::optional<uint64_t>
+DevicePermissions::Find(const Device &dev) const noexcept {
+  std::shared_lock<std::shared_mutex> lock(data_mutex_);
+  auto it_found = std::find_if(
+      data_.cbegin(), data_.cend(),
+      [&dev](const std::pair<const uint64_t, std::shared_ptr<Dto>> &entry) {
+        return std::dynamic_pointer_cast<PermissionEntry>(entry.second)
+                   ->getDevice() == dev;
+      });
+  return it_found != data_.cend() ? std::make_optional(it_found->first)
+                                  : std::nullopt;
+}
 
 void DevicePermissions::Update(uint64_t index, const Dto &dto) {
   const PermissionEntry &entry = dynamic_cast<const PermissionEntry &>(dto);

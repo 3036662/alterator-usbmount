@@ -283,6 +283,13 @@ TEST_CASE("Write from threads"){
     fut1.wait();
     fut2.wait();
     REQUIRE(LocalStorage::GetStorage()->permissions.size()==40);
+    REQUIRE(LocalStorage::GetStorage()->permissions.Find(
+       Device({"00","0000","234958098"})
+    ));
+    REQUIRE(!LocalStorage::GetStorage()->permissions.Find(
+       Device({"00","0000","zzz234958098"})
+    ));
+
   }
 
   SECTION ("CreateMountpoints"){
@@ -307,9 +314,12 @@ TEST_CASE("Write from threads"){
     fut1.wait();
     fut2.wait();
     REQUIRE(LocalStorage::GetStorage()->mount_points.size()==40);
+
     LocalStorage::GetStorage()->permissions.Clear();
     LocalStorage::GetStorage()->mount_points.Clear();
   }
+
+
 }
 
 TEST_CASE("CreateInitialDb"){

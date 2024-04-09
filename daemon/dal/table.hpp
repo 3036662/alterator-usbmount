@@ -14,8 +14,8 @@ public:
   Table(const std::string &data_file_path);
   json::value ToJson() const noexcept override;
   void Delete(uint64_t);
-  uint64_t size() const noexcept;
   void Clear();
+  uint64_t size() const noexcept;
 
   virtual void Create(const Dto &) = 0;
   virtual const Dto &Read(uint64_t) const = 0;
