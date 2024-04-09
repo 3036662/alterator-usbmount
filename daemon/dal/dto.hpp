@@ -61,7 +61,7 @@ public:
   json::value ToJson() const noexcept override;
 
 private:
-  uid_t uid_;
+  uid_t uid_ = 0;
   std::string name_;
 };
 
@@ -73,12 +73,19 @@ public:
   Group() = default;
   Group &operator=(const Group &) noexcept = default;
   Group &operator=(Group &&) noexcept = default;
+  Group(gid_t gid, const std::string &name);
 
   json::value ToJson() const noexcept override;
 
 private:
-  gid_t gid_;
+  gid_t gid_ = 0;
   std::string name_;
+};
+
+struct MountEntryParams {
+  const std::string &dev_name;
+  const std::string &mount_point;
+  const std::string &fs;
 };
 
 class MountEntry : public Dto {
@@ -89,6 +96,7 @@ public:
   MountEntry(MountEntry &&) = default;
   MountEntry &operator=(MountEntry &&) noexcept = default;
   MountEntry &operator=(const MountEntry &) noexcept = default;
+  MountEntry(const MountEntryParams &params);
 
   json::value ToJson() const noexcept override;
 
@@ -105,6 +113,9 @@ public:
   PermissionEntry(PermissionEntry &&) = default;
   PermissionEntry &operator=(PermissionEntry &) = default;
   PermissionEntry &operator=(PermissionEntry &&) = default;
+  PermissionEntry(Device &&dev, std::vector<User> &&users,
+                  std::vector<Group> &&groups);
+
   json::value ToJson() const noexcept override;
 
 private:

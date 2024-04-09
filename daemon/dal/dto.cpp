@@ -74,10 +74,15 @@ json::value User::ToJson() const noexcept {
 // Group
 Group::Group(const json::object &obj) {
   if (!obj.contains("gid") || !obj.contains("name") ||
-      !obj.at("gid").is_uint64() || !obj.at("name").is_string())
+      !obj.at("gid").is_number() || !obj.at("name").is_string())
     throw std::invalid_argument("Ill-formed User JSON object");
-  gid_ = obj.at("gid").as_uint64();
+  gid_ = obj.at("gid").to_number<uint64_t>();
   name_ = obj.at("name").as_string();
+}
+
+Group::Group(gid_t gid, const std::string &name) : gid_(gid), name_(name) {
+  if (name.empty())
+    throw std::invalid_argument("empty name");
 }
 
 json::value Group::ToJson() const noexcept {
@@ -94,8 +99,15 @@ MountEntry::MountEntry(const json::object &obj) {
       !obj.at("mount_point").is_string() || !obj.at("fs_type").is_string())
     throw std::invalid_argument("Ill-formed MounEntry object");
   dev_name_ = obj.at("dev_name").as_string();
-  mount_point_ = obj.at("mount_point_").as_string();
+  mount_point_ = obj.at("mount_point").as_string();
   fs_type_ = obj.at("fs_type").as_string();
+}
+
+MountEntry::MountEntry(const MountEntryParams &params)
+    : dev_name_(params.dev_name), mount_point_(params.mount_point),
+      fs_type_(params.fs) {
+  if (dev_name_.empty() || mount_point_.empty())
+    throw std::invalid_argument("empty params");
 }
 
 json::value MountEntry::ToJson() const noexcept {
@@ -127,6 +139,16 @@ PermissionEntry::PermissionEntry(const json::object &obj) {
     groups_.emplace_back(group.as_object());
   }
   device_ = Device(obj.at("device").as_object());
+}
+
+PermissionEntry::PermissionEntry(Device &&dev, std::vector<User> &&users,
+                                 std::vector<Group> &&groups)
+    :
+
+      device_(std::move(dev)), users_(std::move(users)),
+      groups_(std::move(groups)) {
+  if (users_.empty() && groups_.empty())
+    throw std::invalid_argument("Users and groups are empty");
 }
 
 json::value PermissionEntry::ToJson() const noexcept {

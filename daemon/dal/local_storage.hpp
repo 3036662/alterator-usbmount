@@ -5,6 +5,7 @@
 #include "table.hpp"
 #include <memory>
 #include <mutex>
+#include <shared_mutex>
 
 namespace usbmount::dal {
 
