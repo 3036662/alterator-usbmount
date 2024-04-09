@@ -2,6 +2,7 @@
 #include <boost/json/object.hpp>
 #include <boost/json/parse.hpp>
 #include <boost/json/value.hpp>
+#include <climits>
 #include <cstddef>
 #include <fstream>
 #include <future>
@@ -309,6 +310,20 @@ TEST_CASE("Write from threads"){
     LocalStorage::GetStorage()->permissions.Clear();
     LocalStorage::GetStorage()->mount_points.Clear();
   }
+}
+
+TEST_CASE("CreateInitialDb"){
+  auto dbase=LocalStorage::GetStorage();
+  dbase->permissions.Create(
+    PermissionEntry(DeviceParams{"048d","1234","\xd0\x89"},
+                              {{1000,"test"}},{{1001,"usb_flash1"}})
+  );
+
+  dbase->permissions.Create(
+    PermissionEntry(DeviceParams{"346d","5678","4102101253919586827"},
+                              {{1000,"test"}},{{1001,"usb_flash1"}})
+  );
+
 }
 
 
