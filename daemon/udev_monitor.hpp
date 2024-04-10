@@ -1,4 +1,5 @@
 #pragma once
+#include "dal/local_storage.hpp"
 #include "usb_udev_device.hpp"
 #include <future>
 #include <libudev.h>
@@ -26,6 +27,7 @@ private:
   std::future<void> future_obj_;
   std::unique_ptr<udev, decltype(&udev_unref)> udev_;
   std::unique_ptr<udev_monitor, decltype(&udev_monitor_unref)> monitor_;
+  std::shared_ptr<dal::LocalStorage> dbase_;
   int udef_fd_;
 };
 

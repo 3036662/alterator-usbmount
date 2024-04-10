@@ -1,12 +1,18 @@
 #include "usb_udev_device.hpp"
-#include <iostream>
+#include <cstddef>
+#include <libudev.h>
 #include <sstream>
 #include <stdexcept>
 
 namespace usbmount {
 
+void UdevDeviceFree(udev_device *dev) noexcept {
+  if (dev != NULL)
+    udev_device_unref(dev);
+}
+
 UsbUdevDevice::UsbUdevDevice(
-    std::unique_ptr<udev_device, decltype(&udev_device_unref)> &&device) {
+    std::unique_ptr<udev_device, decltype(&UdevDeviceFree)> &&device) {
   // action
   const char *p_action = udev_device_get_property_value(device.get(), "ACTION");
   SetAction(p_action);
@@ -59,6 +65,48 @@ UsbUdevDevice::UsbUdevDevice(
       udev_device_get_property_value(device.get(), "ID_MODEL_ID");
   if (p_pid != NULL)
     pid_ = p_pid;
+  // serial number is needed only for "add" action
+  if (action_ == Action::kAdd)
+    FindSerial(device);
+}
+
+/*
+ * This function is a workaround for some cases when the Udev has no
+ * ID_SERIAL_SHORT value. It traverses the Udev devices tree to find a serial
+ * number for a parent device.
+ */
+void UsbUdevDevice::FindSerial(
+    std::unique_ptr<udev_device, decltype(&UdevDeviceFree)> &device) noexcept {
+  // First, try to find it the usual way.
+  const char *p_serial_udev =
+      udev_device_get_property_value(device.get(), "ID_SERIAL_SHORT");
+  if (p_serial_udev != NULL) {
+    serial_ = p_serial_udev;
+    return;
+  }
+  // Then read a system attribute.
+  const char *p_serial = udev_device_get_sysattr_value(device.get(), "serial");
+  if (p_serial != NULL) {
+    serial_ = p_serial;
+    return;
+  }
+  // Finally, traverse a Udev tree (maximum = 3 steps).
+  size_t it_counter = 0;
+  size_t max_iterations = 3;
+  udev_device *parent_device = device.get();
+  while (serial_.empty() && it_counter < max_iterations) {
+    ++it_counter;
+    parent_device = udev_device_get_parent_with_subsystem_devtype(parent_device,
+                                                                  "usb", NULL);
+    if (parent_device != NULL) {
+      const char *p_parent_serial =
+          udev_device_get_sysattr_value(parent_device, "serial");
+      if (p_parent_serial != NULL)
+        serial_ = p_parent_serial;
+    } else {
+      break;
+    }
+  }
 }
 
 void UsbUdevDevice::SetAction(const char *p_action) {
@@ -94,7 +142,7 @@ std::string UsbUdevDevice::toString() const noexcept {
       << " fs_uid: " << uid_ << " file_system: " << filesystem_
       << " device_type:" << dev_type_ << " partition number "
       << std::to_string(partitions_number_) << " vid " << vid_ << " pid "
-      << pid_ << " subsystem " << subsystem_;
+      << pid_ << " subsystem " << subsystem_ << " serial " << serial_;
   return res.str();
 }
 

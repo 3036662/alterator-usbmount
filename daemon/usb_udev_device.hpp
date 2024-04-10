@@ -7,10 +7,13 @@ namespace usbmount {
 
 enum class Action { kRemove, kAdd, kUndefined };
 
+/// a  custom deleter for shared_ptr<udev_device>
+void UdevDeviceFree(udev_device *dev) noexcept;
+
 class UsbUdevDevice {
 public:
   UsbUdevDevice(
-      std::unique_ptr<udev_device, decltype(&udev_device_unref)> &&device);
+      std::unique_ptr<udev_device, decltype(&UdevDeviceFree)> &&device);
   std::string toString() const noexcept;
 
   // getters
@@ -22,9 +25,22 @@ public:
   inline const std::string &dev_type() const noexcept { return dev_type_; }
   inline const std::string &block_name() const noexcept { return block_name_; }
   inline int partition_number() const noexcept { return partitions_number_; }
+  inline const std::string &vid() const noexcept { return vid_; }
+  inline const std::string &pid() const noexcept { return pid_; }
+  inline const std::string &serial() const noexcept { return serial_; }
 
 private:
   void SetAction(const char *p_action);
+
+  /**
+   * @brief This function is a workaround for some cases when the Udev has no
+   * ID_SERIAL_SHORT value. It traverses the Udev devices tree to find a serial
+   * number for a parent device.
+   *
+   * @param device
+   */
+  void FindSerial(
+      std::unique_ptr<udev_device, decltype(&UdevDeviceFree)> &device) noexcept;
 
   Action action_ = Action::kUndefined;
   std::string subsystem_;
@@ -37,6 +53,7 @@ private:
   int partitions_number_ = 0;
   std::string vid_;
   std::string pid_;
+  std::string serial_;
 };
 
 } // namespace usbmount

@@ -1,14 +1,14 @@
 #include "udev_monitor.hpp"
+#include "dal/dto.hpp"
+#include "dal/local_storage.hpp"
 #include "usb_udev_device.hpp"
 #include "utils.hpp"
 #include <cerrno>
 #include <chrono>
-#include <cmath>
 #include <cstring>
 #include <exception>
 #include <future>
 #include <iostream>
-#include <iterator>
 #include <libudev.h>
 #include <list>
 #include <memory>
@@ -17,7 +17,6 @@
 #include <stdexcept>
 #include <string>
 #include <thread>
-#include <vector>
 
 namespace usbmount {
 
@@ -26,7 +25,7 @@ UdevMonitor::UdevMonitor(std::shared_ptr<spdlog::logger> &logger)
       udev_(udev_new(), udev_unref),
       monitor_(udev_monitor_new_from_netlink(udev_.get(), "udev"),
                udev_monitor_unref),
-      udef_fd_{0} {
+      dbase_(dal::LocalStorage::GetStorage()), udef_fd_{0} {
   if (!udev_ || !monitor_)
     throw std::runtime_error("Can't connect to udev");
   int res = udev_monitor_filter_add_match_subsystem_devtype(monitor_.get(),
@@ -50,7 +49,6 @@ void UdevMonitor::Run() noexcept {
   std::stringstream str_id;
   str_id << std::this_thread::get_id();
   logger_->debug("Udev monitor is running in thread {}", str_id.str());
-
   std::list<std::future<void>> futures;
   while (!StopRequested()) {
     // wait for new device
@@ -79,8 +77,13 @@ void UdevMonitor::Run() noexcept {
 
 void UdevMonitor::ProcessDevice() noexcept {
   auto device = RecieveDevice();
-  if (device &&
-      (device->action() == Action::kAdd ||
+  if (!device)
+    return;
+  bool device_known =
+      dbase_->permissions
+          .Find(dal::Device({device->vid(), device->pid(), device->serial()}))
+          .has_value();
+  if (((device->action() == Action::kAdd && device_known) ||
        device->action() == Action::kRemove) &&
       !device->filesystem().empty() && device->filesystem() != "jfs" &&
       device->filesystem() != "LVM2_member") {
@@ -105,14 +108,14 @@ bool UdevMonitor::StopRequested() noexcept {
 }
 
 std::shared_ptr<UsbUdevDevice> UdevMonitor::RecieveDevice() noexcept {
-  std::unique_ptr<udev_device, decltype(&udev_device_unref)> device(
-      udev_monitor_receive_device(monitor_.get()), udev_device_unref);
+  std::unique_ptr<udev_device, decltype(&UdevDeviceFree)> device(
+      udev_monitor_receive_device(monitor_.get()), UdevDeviceFree);
   if (device) {
     try {
       return std::make_shared<UsbUdevDevice>(std::move(device));
     } catch (const std::exception &ex) {
-      // logger_->debug("Constructor of UsbUdevDevice failed");
-      // logger_->debug(ex.what());
+      logger_->debug("Constructor of UsbUdevDevice failed");
+      logger_->debug(ex.what());
       return std::shared_ptr<UsbUdevDevice>();
     }
   }

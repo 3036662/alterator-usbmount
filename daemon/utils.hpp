@@ -2,6 +2,7 @@
 #include "custom_mount.hpp"
 #include "usb_udev_device.hpp"
 #include <acl/libacl.h>
+#include <libudev.h>
 #include <memory>
 #include <spdlog/logger.h>
 #include <spdlog/sinks/basic_file_sink.h>
