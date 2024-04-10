@@ -1,4 +1,5 @@
 #include "dbus_methods.hpp"
+#include "dal/local_storage.hpp"
 #include <string>
 
 namespace usbmount {
