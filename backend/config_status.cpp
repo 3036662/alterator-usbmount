@@ -420,11 +420,11 @@ bool ConfigStatus::OverwriteRulesFile(const std::string &new_content,
   // temporary change the policy to "allow all"
   // The purpose is to launch USBGuard without blocking anything
   // to make sure it can parse new rules
-  bool initial_policy = implicit_policy_target_ == "block";
-  if (!ChangeImplicitPolicy(false)) {
-    Log::Error() << "Can't change usbguard policy";
-    return false;
-  }
+  // bool initial_policy = implicit_policy_target_ == "block";
+  // if (!ChangeImplicitPolicy(false)) {
+  //   Log::Error() << "Can't change usbguard policy";
+  //   return false;
+  // }
   if (rules_files_exists_) {
     // read old rules
     std::ifstream old_file(daemon_rules_file_path);
@@ -475,12 +475,12 @@ bool ConfigStatus::OverwriteRulesFile(const std::string &new_content,
   }
 
   // restore the policy
-  if (!ChangeImplicitPolicy(initial_policy)) {
-    Log::Error() << "Can't change usbguard policy";
-    return false;
-  }
-  if (run_daemon)
-    TryToRun(run_daemon);
+  // if (!ChangeImplicitPolicy(initial_policy)) {
+  //   Log::Error() << "Can't change usbguard policy";
+  //   return false;
+  // // }
+  // if (run_daemon)
+  //   TryToRun(run_daemon);
   return true;
 }
 
