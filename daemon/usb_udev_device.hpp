@@ -6,14 +6,28 @@
 namespace usbmount {
 
 enum class Action { kRemove, kAdd, kUndefined };
-
 /// a  custom deleter for shared_ptr<udev_device>
 void UdevDeviceFree(udev_device *dev) noexcept;
 
+/// A structure to store Device constructor parameters - dev_path and action
+struct DevParams {
+  std::string dev_path;
+  std::string action;
+};
+
 class UsbUdevDevice {
 public:
+  /// construct with Udev device object
   UsbUdevDevice(
       std::unique_ptr<udev_device, decltype(&UdevDeviceFree)> &&device);
+
+  /**
+   * @brief Construct a new Usb Udev Device object with path and action
+   * @param params DevParams struct {dev_path,action}
+   * @throws std::runtime_error
+   */
+  UsbUdevDevice(const DevParams &params);
+
   std::string toString() const noexcept;
 
   // getters
