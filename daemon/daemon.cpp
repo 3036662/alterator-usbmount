@@ -16,9 +16,8 @@ namespace usbmount {
 Daemon::Daemon()
     : is_running_(true), reload_(false),
       logger_(utils::InitLogFile("/var/log/alt-usb-automount/log.txt")),
-      udev_(std::make_unique<UdevMonitor>(UdevMonitor(logger_))) {
-  // DbusMethods  dbus_methods_ is construted with default constructor
-}
+      udev_(std::make_unique<UdevMonitor>(UdevMonitor(logger_))),
+      dbus_methods_(logger_) {}
 
 bool Daemon::IsRunning() noexcept {
   if (reload_) {
