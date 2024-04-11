@@ -1,4 +1,5 @@
 #include "usb_udev_device.hpp"
+#include "utils.hpp"
 #include <cstddef>
 #include <libudev.h>
 #include <sstream>
@@ -16,6 +17,63 @@ UsbUdevDevice::UsbUdevDevice(
   // action
   const char *p_action = udev_device_get_property_value(device.get(), "ACTION");
   SetAction(p_action);
+  getUdevDeviceInfo(device);
+}
+
+UsbUdevDevice::UsbUdevDevice(const DevParams &params)
+    : action_(Action::kUndefined), block_name_(params.dev_path),
+      partitions_number_(0) {
+  if (params.dev_path.empty())
+    throw std::runtime_error("Empty device name");
+  if (params.action.empty())
+    throw std::runtime_error("Empty action");
+  if (params.action == "add")
+    action_ = Action::kAdd;
+  else if (params.action == "remove")
+    action_ = Action::kRemove;
+  // Information about the device is not needed for actions other than "add"
+  if (action_ != Action::kAdd)
+    return;
+  // udev object
+  std::unique_ptr<udev, decltype(&udev_unref)> udev{udev_new(), udev_unref};
+  if (!udev)
+    throw std::runtime_error("Failed to create udev object");
+  // udev enumerate
+  std::unique_ptr<udev_enumerate, decltype(&udev_enumerate_unref)> enumerate{
+      udev_enumerate_new(udev.get()), udev_enumerate_unref};
+  if (!enumerate)
+    throw std::runtime_error("Failed to create udev enumerate");
+  udev_enumerate_add_match_subsystem(enumerate.get(), "block");
+  udev_enumerate_scan_devices(enumerate.get());
+  udev_list_entry *entry = udev_enumerate_get_list_entry(enumerate.get());
+  std::unique_ptr<udev_device, decltype(&UdevDeviceFree)> ptr_device(
+      nullptr, UdevDeviceFree);
+  while (entry != NULL) {
+    // logger_->debug("ITERATION LOOP");
+    const char *p_path = udev_list_entry_get_name(entry);
+    std::unique_ptr<udev_device, decltype(&UdevDeviceFree)> device(
+        udev_device_new_from_syspath(udev.get(), p_path), UdevDeviceFree);
+    if (!device) {
+      // TODO log error
+      continue;
+    }
+    const char *devnode = udev_device_get_devnode(device.get());
+    if (devnode == NULL)
+      continue;
+    // a device found
+    if (block_name_ == std::string(devnode)) {
+      ptr_device = std::move(device);
+    }
+    entry = udev_list_entry_get_next(entry);
+  }
+  // device found
+  getUdevDeviceInfo(ptr_device);
+  // TODO find udev device by name
+  // collect info about device
+}
+
+void UsbUdevDevice::getUdevDeviceInfo(
+    std::unique_ptr<udev_device, decltype(&UdevDeviceFree)> &device) {
   // subsystem
   const char *p_subsystem =
       udev_device_get_property_value(device.get(), "SUBSYSTEM");
@@ -23,7 +81,7 @@ UsbUdevDevice::UsbUdevDevice(
     subsystem_ = p_subsystem;
   if (subsystem_ != "block")
     throw std::logic_error("wrong subsystem");
-  // subsystem
+  // bus
   const char *p_idbus = udev_device_get_property_value(device.get(), "ID_BUS");
   if (p_idbus != NULL)
     id_bus_ = p_idbus;

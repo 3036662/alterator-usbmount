@@ -56,6 +56,10 @@ private:
   void FindSerial(
       std::unique_ptr<udev_device, decltype(&UdevDeviceFree)> &device) noexcept;
 
+  /// find an info about device and fill the member fields
+  void getUdevDeviceInfo(
+      std::unique_ptr<udev_device, decltype(&UdevDeviceFree)> &device);
+
   Action action_ = Action::kUndefined;
   std::string subsystem_;
   std::string block_name_; /// /dev/sdX
