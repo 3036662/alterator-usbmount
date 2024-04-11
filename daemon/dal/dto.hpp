@@ -102,6 +102,9 @@ public:
 
   json::value ToJson() const noexcept override;
   inline const std::string &dev_name() const noexcept { return dev_name_; }
+  inline const std::string &mount_point() const noexcept {
+    return mount_point_;
+  }
 
 private:
   std::string dev_name_;
