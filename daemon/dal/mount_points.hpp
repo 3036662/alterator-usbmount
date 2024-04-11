@@ -44,6 +44,14 @@ public:
    */
   std::optional<uint64_t> Find(const MountEntry &entry) const noexcept;
 
+  /**
+   * @brief Find entry by block device name
+   *
+   * @param block_dev e.g. "/dev/sda1"
+   * @return std::optional<uint64_t> index or empry if nothing was found
+   */
+  std::optional<uint64_t> Find(const std::string &block_dev) const noexcept;
+
 private:
   /**
    * @brief Read raw_json_ and fill the fields with data

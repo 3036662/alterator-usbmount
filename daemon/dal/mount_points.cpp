@@ -1,6 +1,7 @@
 #include "mount_points.hpp"
 #include "dto.hpp"
 #include <cstdint>
+#include <iostream>
 #include <memory>
 #include <mutex>
 #include <optional>
@@ -14,7 +15,6 @@ Mountpoints::Mountpoints(const std::string &path) : Table(path) {
 void Mountpoints::DataFromRawJson() {
   if (raw_json_.empty())
     return;
-
   json::value val = json::parse(raw_json_);
   if (!val.is_array())
     throw std::runtime_error("Mountpoints JSON must contain array");
@@ -33,16 +33,19 @@ void Mountpoints::DataFromRawJson() {
                   std::make_shared<MountEntry>(obj));
   }
   lock.unlock();
-  WriteRaw();
 }
 
 void Mountpoints::Create(const Dto &dto) {
   const MountEntry &entry = dynamic_cast<const MountEntry &>(dto);
-  std::unique_lock<std::shared_mutex> lock(data_mutex_);
-  uint64_t index = data_.empty() ? 0 : (data_.rbegin()->first) + 1;
-  data_.emplace(index, std::make_shared<MountEntry>(entry));
-  lock.unlock();
-  WriteRaw();
+  // check an index to guarantee there is no such entry in the database.
+  auto index = Find(entry);
+  if (!index) {
+    std::unique_lock<std::shared_mutex> lock(data_mutex_);
+    uint64_t index = data_.empty() ? 0 : (data_.rbegin()->first) + 1;
+    data_.emplace(index, std::make_shared<MountEntry>(entry));
+    lock.unlock();
+    WriteRaw();
+  }
 }
 
 const MountEntry &Mountpoints::Read(uint64_t index) const {
@@ -69,6 +72,20 @@ Mountpoints::Find(const MountEntry &entry) const noexcept {
       [&entry](const std::pair<const uint64_t, std::shared_ptr<Dto>> &element) {
         auto db_entry = std::dynamic_pointer_cast<MountEntry>(element.second);
         return *db_entry == entry;
+      });
+  return it_found != data_.cend() ? std::make_optional(it_found->first)
+                                  : std::nullopt;
+}
+
+std::optional<uint64_t>
+Mountpoints::Find(const std::string &block_dev) const noexcept {
+  std::shared_lock<std::shared_mutex> lock(data_mutex_);
+  auto it_found = std::find_if(
+      data_.cbegin(), data_.cend(),
+      [&block_dev](
+          const std::pair<const uint64_t, std::shared_ptr<Dto>> &element) {
+        auto db_entry = std::dynamic_pointer_cast<MountEntry>(element.second);
+        return db_entry->dev_name() == block_dev;
       });
   return it_found != data_.cend() ? std::make_optional(it_found->first)
                                   : std::nullopt;
