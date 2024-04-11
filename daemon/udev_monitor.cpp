@@ -110,8 +110,8 @@ std::shared_ptr<UsbUdevDevice> UdevMonitor::RecieveDevice() noexcept {
     try {
       return std::make_shared<UsbUdevDevice>(std::move(device));
     } catch (const std::exception &ex) {
-      logger_->debug("Constructor of UsbUdevDevice failed");
-      logger_->debug(ex.what());
+      // logger_->debug("Constructor of UsbUdevDevice failed");
+      // logger_->debug(ex.what());
       return std::shared_ptr<UsbUdevDevice>();
     }
   }
