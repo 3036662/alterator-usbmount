@@ -33,13 +33,23 @@ void DbusMethods::Health(const sdbus::MethodCall &call) {
 void DbusMethods::CanAnotherUserUnmount(sdbus::MethodCall call) {
   std::string dev;
   call >> dev;
-  auto reply = call.createReply();
-  /*
-  TODO query local db if drive is in db (is mounted by daemon)  - reply YES
-  */
   logger_->debug("Polkit request for device (CanUserUnMount)" + dev);
+  auto reply = call.createReply();
+  // if this device was mounted by this program - reply YES
+  try {
+    auto index = dbase_->mount_points.Find(dev);
+    if (index) {
+      reply << "YES";
+      logger_->debug("Daemon response to polkit = YES");
+    } else {
+      reply << "UNKNOWN_MOUNTPOINT";
+      logger_->debug("Daemon response to polkit = UNKNOWN_MOUNTPOINT");
+    }
+  } catch (const std::exception &ex) {
+    logger_->error("Dbus::CanUserUnmount Can't query the dbase for device + {}",
+                   dev);
+  }
   logger_->flush();
-  reply << "YES";
   reply.send();
 }
 
@@ -47,7 +57,7 @@ void DbusMethods::CanUserMount(sdbus::MethodCall call) {
   std::string dev;
   call >> dev;
   /*
-  TODO read local db define is this user is allowed to mount this drive
+  Read local db define is this user is allowed to mount this drive
   (if drive is in db - reply NO - automount will mount it )
   */
   logger_->debug("Polkit request for device (CanUserMount)" + dev);
