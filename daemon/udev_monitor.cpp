@@ -79,16 +79,27 @@ void UdevMonitor::ProcessDevice() noexcept {
   auto device = RecieveDevice();
   if (!device)
     return;
-  bool device_known =
+  // there are some rules in db for this device
+  bool device_is_known =
       dbase_->permissions
           .Find(dal::Device({device->vid(), device->pid(), device->serial()}))
           .has_value();
-  if (((device->action() == Action::kAdd && device_known) ||
-       device->action() == Action::kRemove) &&
-      !device->filesystem().empty() && device->filesystem() != "jfs" &&
-      device->filesystem() != "LVM2_member") {
+  // the device is added
+  bool device_was_added = device->action() == Action::kAdd;
+  // the device is added + known
+  bool known_device_was_added = device_is_known && device_was_added;
+  // the device was mounted by this app
+  bool device_was_mounted =
+      dbase_->mount_points.Find(device->block_name()).has_value();
+  // device is removed + was mounted by this app
+  bool device_removed_and_was_mounted =
+      device_was_mounted && device->action() == Action::kRemove;  
+  bool fs_is_unsupported = device->filesystem().empty() ||
+                           device->filesystem() == "jfs" ||
+                           device->filesystem() == "LVM2_member";                           
+  if ((known_device_was_added || device_removed_and_was_mounted) &&
+      !fs_is_unsupported) {
     auto begin = std::chrono::high_resolution_clock::now();
-    // logger_->debug(device->block_name());
     std::string filesystem = device->filesystem();
     utils::MountDevice(std::move(device), logger_);
     std::cout << "Mount device time = " << filesystem << " "
