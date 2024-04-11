@@ -3,6 +3,7 @@
 #include <cstdint>
 #include <memory>
 #include <mutex>
+#include <optional>
 #include <stdexcept>
 
 namespace usbmount::dal {
@@ -58,6 +59,19 @@ void Mountpoints::Update(uint64_t index, const Dto &dto) {
   data_.at(index) = std::make_shared<MountEntry>(entry);
   lock.unlock();
   WriteRaw();
+}
+
+std::optional<uint64_t>
+Mountpoints::Find(const MountEntry &entry) const noexcept {
+  std::shared_lock<std::shared_mutex> lock(data_mutex_);
+  auto it_found = std::find_if(
+      data_.cbegin(), data_.cend(),
+      [&entry](const std::pair<const uint64_t, std::shared_ptr<Dto>> &element) {
+        auto db_entry = std::dynamic_pointer_cast<MountEntry>(element.second);
+        return *db_entry == entry;
+      });
+  return it_found != data_.cend() ? std::make_optional(it_found->first)
+                                  : std::nullopt;
 }
 
 } // namespace usbmount::dal
