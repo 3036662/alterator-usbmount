@@ -122,6 +122,11 @@ json::value MountEntry::ToJson() const noexcept {
   return obj;
 }
 
+bool MountEntry::operator==(const MountEntry &other) const noexcept {
+  return dev_name_ == other.dev_name_ && mount_point_ == other.mount_point_ &&
+         fs_type_ == other.fs_type_;
+}
+
 // PermissionEntry
 PermissionEntry::PermissionEntry(const json::object &obj) {
   if (!obj.contains("device") || !obj.at("device").is_object() ||

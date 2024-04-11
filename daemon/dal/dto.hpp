@@ -98,6 +98,7 @@ public:
   MountEntry &operator=(MountEntry &&) noexcept = default;
   MountEntry &operator=(const MountEntry &) noexcept = default;
   MountEntry(const MountEntryParams &params);
+  bool operator==(const MountEntry &other) const noexcept;
 
   json::value ToJson() const noexcept override;
 
