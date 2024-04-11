@@ -42,6 +42,7 @@ bool CustomMount::Mount(const UidGid &uid_gid) noexcept {
   // create endpoint
   if (!CreatMountEndpoint())
     return false;
+  // mount and save to local storage
   if (PerfomMount()) {
     try {
       dal::MountEntry entry(dal::MountEntryParams(
@@ -284,19 +285,19 @@ bool CustomMount::UnMount() noexcept {
   if (fs_type == "ntfs3")
     fs_type.pop_back();
   endmntent(p_file);
-  if (mount_point.empty()) {
-    logger_->info("[UnMount] {} is not mounted", ptr_device_->block_name());
-    return true;
-  }
   // perfom unmount
-  int res = umount2(mount_point.c_str(), 0);
-  if (res != 0) {
-    logger_->error("[UnMount] Error unmounting {}", ptr_device_->block_name());
-    logger_->error(std::strerror(errno));
-    return false;
+  if (!mount_point.empty()) {
+    int res = umount2(mount_point.c_str(), 0);
+    if (res != 0) {
+      logger_->error("[UnMount] Error unmounting {}",
+                     ptr_device_->block_name());
+      logger_->error(std::strerror(errno));
+      return false;
+    }
+  } else {
+    logger_->info("[UnMount] {} is not mounted", ptr_device_->block_name());
   }
-  // remount mount directory
-  RemoveMountPoint(mount_point);
+
   // remove from the database
   try {
     dal::MountEntry entry(dal::MountEntryParams(
@@ -304,6 +305,9 @@ bool CustomMount::UnMount() noexcept {
     // TODO find mount point
     auto index = dbase_->mount_points.Find(entry);
     if (index) {
+      // remove mount directory
+      RemoveMountPoint(mount_point);
+      // remove from db
       dbase_->mount_points.Delete(index.value());
       logger_->debug("[UnMount] Deleted {} from mountpoints table",
                      ptr_device_->block_name());
