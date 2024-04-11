@@ -1,4 +1,6 @@
 #include "custom_mount.hpp"
+#include "dal/dto.hpp"
+#include "dal/local_storage.hpp"
 #include "utils.hpp"
 #include <acl/libacl.h>
 #include <cerrno>
@@ -23,7 +25,8 @@ namespace usbmount {
 
 CustomMount::CustomMount(std::shared_ptr<UsbUdevDevice> &ptr_device,
                          const std::shared_ptr<spdlog::logger> &logger) noexcept
-    : logger_(logger), ptr_device_{ptr_device} {}
+    : logger_(logger), ptr_device_{ptr_device},
+      dbase_(dal::LocalStorage::GetStorage()) {}
 
 bool CustomMount::Mount(const UidGid &uid_gid) noexcept {
   uid_ = uid_gid.user_id;
@@ -39,8 +42,19 @@ bool CustomMount::Mount(const UidGid &uid_gid) noexcept {
   // create endpoint
   if (!CreatMountEndpoint())
     return false;
-  PerfomMount();
-
+  if (PerfomMount()) {
+    try {
+      dal::MountEntry entry(dal::MountEntryParams(
+          {ptr_device_->block_name(), end_mount_point_.value_or(""),
+           ptr_device_->filesystem()}));
+      dbase_->mount_points.Create(entry);
+      logger_->debug("Created mountpouint for {} in the db",
+                     ptr_device_->block_name());
+    } catch (const std::exception &ex) {
+      logger_->error("Can't  add {} device mountpoint to database",
+                     ptr_device_->block_name());
+    }
+  }
   return true;
 }
 
@@ -253,29 +267,51 @@ bool CustomMount::UnMount() noexcept {
   // find mount point
   FILE *p_file = setmntent("/etc/mtab", "r");
   if (p_file == NULL) {
-    logger_->error("Error opening /etc/mtab");
+    logger_->error("[UnMount] Error opening /etc/mtab");
     return false;
   }
   mntent *entry;
   std::string mount_point;
+  std::string fs_type;
   while ((entry = getmntent(p_file)) != NULL) {
     if (std::string(entry->mnt_fsname) == ptr_device_->block_name()) {
       mount_point = entry->mnt_dir;
+      fs_type = entry->mnt_type;
       break;
     }
   }
+  // just "ntfs" for ntfs3
+  if (fs_type == "ntfs3")
+    fs_type.pop_back();
   endmntent(p_file);
   if (mount_point.empty()) {
-    logger_->info("{} is not mounted", ptr_device_->block_name());
+    logger_->info("[UnMount] {} is not mounted", ptr_device_->block_name());
     return true;
   }
+  // perfom unmount
   int res = umount2(mount_point.c_str(), 0);
   if (res != 0) {
-    logger_->error("Error unmounting {}", ptr_device_->block_name());
+    logger_->error("[UnMount] Error unmounting {}", ptr_device_->block_name());
     logger_->error(std::strerror(errno));
     return false;
   }
+  // remount mount directory
   RemoveMountPoint(mount_point);
+  // remove from the database
+  try {
+    dal::MountEntry entry(dal::MountEntryParams(
+        {ptr_device_->block_name(), mount_point, fs_type}));
+    // TODO find mount point
+    auto index = dbase_->mount_points.Find(entry);
+    if (index) {
+      dbase_->mount_points.Delete(index.value());
+      logger_->debug("[UnMount] Deleted {} from mountpoints table",
+                     ptr_device_->block_name());
+    }
+  } catch (const std::exception &ex) {
+    logger_->error("[UnMount] Can't  remove {} device mountpoint to database",
+                   ptr_device_->block_name());
+  }
   return true;
 }
 
@@ -283,10 +319,10 @@ void CustomMount::RemoveMountPoint(const std::string &path) noexcept {
   try {
     if (std::filesystem::is_empty(path)) {
       std::filesystem::remove(path);
-      logger_->info("Remove {} ", path);
+      logger_->info("[UnMount] Remove {} ", path);
     }
   } catch (const std::exception &ex) {
-    logger_->error("Can't remove {}", path);
+    logger_->error("[UnMount] Can't remove {}", path);
   }
 }
 

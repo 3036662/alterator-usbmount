@@ -1,4 +1,5 @@
 #pragma once
+#include "dal/local_storage.hpp"
 #include "usb_udev_device.hpp"
 #include <memory>
 #include <optional>
@@ -31,8 +32,8 @@ public:
   CustomMount &operator=(const CustomMount &) = delete;
   CustomMount &&operator=(CustomMount &&) = delete;
 
-  CustomMount(std::shared_ptr<UsbUdevDevice> &ptr_device,
-              const std::shared_ptr<spdlog::logger> &logger) noexcept;
+  explicit CustomMount(std::shared_ptr<UsbUdevDevice> &ptr_device,
+                       const std::shared_ptr<spdlog::logger> &logger) noexcept;
 
   /**
    * @brief Mount a device for user and group
@@ -74,6 +75,7 @@ private:
   const char *mount_root = "/run/alt-usb-mount/";
   const std::shared_ptr<spdlog::logger> logger_;
   std::shared_ptr<UsbUdevDevice> ptr_device_;
+  std::shared_ptr<dal::LocalStorage> dbase_;
 
   std::optional<uid_t> uid_;
   std::optional<gid_t> gid_;
