@@ -1,6 +1,7 @@
 #include "device_permissions.hpp"
 #include <boost/json/object.hpp>
 #include <boost/json/parse.hpp>
+#include <boost/json/serialize.hpp>
 #include <boost/json/value.hpp>
 #include <climits>
 #include <cstddef>
@@ -28,6 +29,9 @@ TEST_CASE("Test DTO objects"){
     }
     {
       Device dev({"aa10","bb10","saodik"});
+      Device dev2({"aa10","bb10","saodikaaa"});
+      REQUIRE(dev==dev);
+      REQUIRE(!(dev==dev2));
       REQUIRE(dev.Serialize()=="{\"vid\":\"aa10\",\"pid\":\"bb10\",\"serial\":\"saodik\"}");      
     }
     {
@@ -94,15 +98,19 @@ TEST_CASE("Test DTO objects"){
   SECTION("MountEntry"){
     REQUIRE(MountEntry().Serialize() =="{\"dev_name\":\"\",\"mount_point\":\"\",\"fs_type\":\"\"}");
     MountEntry entry({"/dev/sda","/mount","ntfs"});
+    MountEntry entry2({"/dev/sda","/mount","fat"});
+    REQUIRE (entry==entry);
+    REQUIRE (!(entry==entry2));
     boost::json::object obj=entry.ToJson().as_object();
     REQUIRE(MountEntry(obj).Serialize()=="{\"dev_name\":\"/dev/sda\",\"mount_point\":\"/mount\",\"fs_type\":\"ntfs\"}");
     REQUIRE_THROWS(MountEntry({"","",""}));
+   
   }
 
   SECTION("PermissionEntry"){
      std::string js_string=  "{\"device\":{\"vid\":\"00\",\"pid\":\"0000\",\"serial\":\"234958098\"},"
                             "\"users\":[{\"uid\":0,\"name\":\"root\"}],"
-                            "\"groups\":[{\"gid\":500,\"name\":\"groupName\"}]}";
+                            "\"groups\":[{\"gid\":500,\"name\":\"groupName\"}]}";                            
      REQUIRE(PermissionEntry(DeviceParams{"00","0000","234958098"},
                             {{0,"root"}},{{500,"groupName"}}).Serialize()==js_string);  
      REQUIRE(PermissionEntry(json::parse(js_string).as_object()).Serialize()==js_string);                                            
