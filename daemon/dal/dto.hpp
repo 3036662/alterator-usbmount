@@ -101,6 +101,7 @@ public:
   bool operator==(const MountEntry &other) const noexcept;
 
   json::value ToJson() const noexcept override;
+  inline const std::string &dev_name() const noexcept { return dev_name_; }
 
 private:
   std::string dev_name_;
