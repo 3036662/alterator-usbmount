@@ -2,6 +2,7 @@
 #include "custom_mount.hpp"
 #include "usb_udev_device.hpp"
 #include <acl/libacl.h>
+#include <chrono>
 #include <libudev.h>
 #include <memory>
 #include <spdlog/logger.h>
@@ -25,6 +26,16 @@ std::shared_ptr<spdlog::logger> InitLogFile(const std::string &path) noexcept;
 
 void MountDevice(std::shared_ptr<UsbUdevDevice> ptr_device,
                  const std::shared_ptr<spdlog::logger> &logger) noexcept;
+
+/**
+ * @brief Utility function for timing
+ */
+template <class result_t = std::chrono::milliseconds,
+          class clock_t = std::chrono::high_resolution_clock,
+          class duration_t = std::chrono::milliseconds>
+auto since(std::chrono::time_point<clock_t, duration_t> const &start) {
+  return std::chrono::duration_cast<result_t>(clock_t::now() - start);
+}
 
 namespace acl {
 /**

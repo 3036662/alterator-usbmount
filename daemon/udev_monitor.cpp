@@ -91,12 +91,8 @@ void UdevMonitor::ProcessDevice() noexcept {
     // logger_->debug(device->block_name());
     std::string filesystem = device->filesystem();
     utils::MountDevice(std::move(device), logger_);
-    auto end = std::chrono::high_resolution_clock::now();
-    long mount_time =
-        std::chrono::duration_cast<std::chrono::milliseconds>(end - begin)
-            .count();
-    std::cout << "Mount device time = " << filesystem << " " << mount_time
-              << "[ms]\n";
+    std::cout << "Mount device time = " << filesystem << " "
+              << utils::since(begin).count() << "[ms]\n";
   }
 }
 
