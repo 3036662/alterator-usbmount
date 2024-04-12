@@ -1,11 +1,14 @@
 #include "mount_points.hpp"
 #include "dto.hpp"
+#include <algorithm>
 #include <cstdint>
 #include <iostream>
 #include <memory>
 #include <mutex>
 #include <optional>
+#include <shared_mutex>
 #include <stdexcept>
+#include <utility>
 
 namespace usbmount::dal {
 Mountpoints::Mountpoints(const std::string &path) : Table(path) {
@@ -95,6 +98,21 @@ Mountpoints::Find(const std::string &block_dev) const noexcept {
       });
   return it_found != data_.cend() ? std::make_optional(it_found->first)
                                   : std::nullopt;
+}
+
+void Mountpoints::RemoveExpired(
+    const std::unordered_set<std::string> &valid_set) noexcept {
+  std::unique_lock<std::shared_mutex> lock(data_mutex_);
+  for (auto it = data_.cbegin(); it != data_.cend();) {
+    auto mnt_entry = std::dynamic_pointer_cast<MountEntry>(it->second);
+    if (mnt_entry && valid_set.count(mnt_entry->mount_point()) == 0) {
+      it = data_.erase(it);
+    } else {
+      ++it;
+    }
+  }
+  lock.unlock();
+  WriteRaw();
 }
 
 } // namespace usbmount::dal

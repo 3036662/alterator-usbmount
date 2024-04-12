@@ -3,6 +3,7 @@
 #include "table.hpp"
 #include <cstdint>
 #include <optional>
+#include <unordered_set>
 
 namespace usbmount::dal {
 
@@ -51,6 +52,13 @@ public:
    * @return std::optional<uint64_t> index or empry if nothing was found
    */
   std::optional<uint64_t> Find(const std::string &block_dev) const noexcept;
+
+  /**
+   * @brief Remove expired values from the mount_points table
+   * @param valid_set The set of valid mountpoints
+   * @details Valid set is supposed to be a /etc/mtab set.
+   */
+  void RemoveExpired(const std::unordered_set<std::string> &valid_set) noexcept;
 
 private:
   /**
