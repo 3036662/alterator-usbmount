@@ -33,6 +33,11 @@ void MountDevice(std::shared_ptr<UsbUdevDevice> ptr_device,
                  const std::shared_ptr<spdlog::logger> &logger) noexcept;
 
 /**
+ * @brief Check for expired mountpoints in local table
+ */
+bool ReviewMountPoints(const std::shared_ptr<spdlog::logger> &logger) noexcept;
+
+/**
  * @brief Utility function for timing
  */
 template <class result_t = std::chrono::milliseconds,

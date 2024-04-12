@@ -6,6 +6,8 @@
 #include "utils.hpp"
 #include <cerrno>
 #include <chrono>
+#include <cstddef>
+#include <cstdint>
 #include <cstring>
 #include <exception>
 #include <future>
@@ -47,10 +49,10 @@ UdevMonitor::UdevMonitor(std::shared_ptr<spdlog::logger> &logger)
 }
 
 void UdevMonitor::Run() noexcept {
-  std::stringstream str_id;
-  str_id << std::this_thread::get_id();
-  logger_->debug("Udev monitor is running in thread {}", str_id.str());
-  std::list<std::future<void>> futures;
+  // review local mounts
+  utils::ReviewMountPoints(logger_);
+  uint64_t iteration_counter = 0;
+  std::future<bool> fut_review_db;
   while (!StopRequested()) {
     // wait for new device
     fd_set fds;
@@ -58,7 +60,7 @@ void UdevMonitor::Run() noexcept {
     FD_SET(udef_fd_, &fds);
     struct timeval timeout;
     timeout.tv_sec = 0;
-    timeout.tv_usec = 100000;
+    timeout.tv_usec = 1000000; // 1sec
     int ret = select(udef_fd_ + 1, &fds, NULL, NULL, &timeout);
     if (ret == -1) {
       logger_->error("select() systemcall returned error");
@@ -66,8 +68,16 @@ void UdevMonitor::Run() noexcept {
       continue;
     }
     // timeout
-    if (ret == 0)
+    if (ret == 0) {
+      // review table every 10min
+      ++iteration_counter;
+      if (iteration_counter >= 600) {
+        iteration_counter = 0;
+        fut_review_db =
+            std::async(std::launch::async, utils::ReviewMountPoints, logger_);
+      }
       continue;
+    }
     // new device found
     if (ret > 0 && FD_ISSET(udef_fd_, &fds)) {
       ProcessDevice();
@@ -110,8 +120,7 @@ void UdevMonitor::ProcessDevice() noexcept {
   // else - on device change - check the /etc/mtab and compare it with  db
   // maybe local mount table is not valid
   if (device->action() == Action::kChange && device_was_mounted) {
-    CustomMount mount(device, logger_);
-    mount.ReviewLocalMountTable();
+    utils::ReviewMountPoints(logger_);
   }
 }
 

@@ -46,11 +46,7 @@ public:
    */
   bool UnMount() noexcept;
 
-  /**
-   * @brief Compare local mount table with system, delete expired values
-   *
-   */
-  bool ReviewLocalMountTable() noexcept;
+  static constexpr const char *mount_root = "/run/alt-usb-mount/";
 
 private:
   /**
@@ -78,7 +74,6 @@ private:
    */
   void SetMountOptions(MountOptions &opts) const noexcept;
 
-  const char *mount_root = "/run/alt-usb-mount/";
   const std::shared_ptr<spdlog::logger> logger_;
   std::shared_ptr<UsbUdevDevice> ptr_device_;
   std::shared_ptr<dal::LocalStorage> dbase_;

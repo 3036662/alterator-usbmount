@@ -1,6 +1,9 @@
 #include "utils.hpp"
+#include "custom_mount.hpp"
+#include "dal/local_storage.hpp"
 #include "usb_udev_device.hpp"
 #include <acl/libacl.h>
+#include <boost/algorithm/string/predicate.hpp>
 #include <cerrno>
 #include <cstring>
 #include <exception>
@@ -8,12 +11,15 @@
 
 #include "spdlog/async.h"
 #include <iostream>
+#include <mntent.h>
 #include <spdlog/common.h>
 #include <sstream>
 #include <stdexcept>
+#include <string>
 #include <sys/acl.h>
 #include <sys/types.h>
 #include <syslog.h>
+#include <thread>
 
 namespace usbmount::utils {
 
@@ -52,6 +58,27 @@ void MountDevice(std::shared_ptr<UsbUdevDevice> ptr_device,
   } catch (const std::exception &ex) {
     std::cerr << ex.what();
   }
+}
+
+bool ReviewMountPoints(const std::shared_ptr<spdlog::logger> &logger) noexcept {
+  auto dbase = dal::LocalStorage::GetStorage();
+  // get all system mountpoints
+  FILE *p_file = setmntent("/etc/mtab", "r");
+  if (p_file == NULL) {
+    logger->error("[UnMount] Error opening /etc/mtab");
+    logger->flush();
+    return false;
+  }
+  mntent *entry;
+  std::unordered_set<std::string> mtab_mountpoints;
+  while ((entry = getmntent(p_file)) != NULL) {
+    if (boost::contains(entry->mnt_dir, CustomMount::mount_root)) {
+      mtab_mountpoints.emplace(entry->mnt_dir);
+    }
+  }
+  endmntent(p_file);
+  dbase->mount_points.RemoveExpired(mtab_mountpoints);
+  return true;
 }
 
 namespace acl {
