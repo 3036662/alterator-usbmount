@@ -174,6 +174,8 @@ void UsbUdevDevice::SetAction(const char *p_action) {
       action_ = Action::kAdd;
     else if (tmp == "remove")
       action_ = Action::kRemove;
+    else if (tmp =="change")
+      action_ =Action::kChange;
     else
       action_ = Action::kUndefined;
     if (action_ == Action::kUndefined)
@@ -191,6 +193,9 @@ std::string UsbUdevDevice::toString() const noexcept {
     break;
   case Action::kRemove:
     res << "remove";
+    break;
+  case Action::kChange:
+    res<< "change";
     break;
   case Action::kUndefined:
     res << "undefined";
