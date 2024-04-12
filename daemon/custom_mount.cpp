@@ -3,8 +3,10 @@
 #include "dal/local_storage.hpp"
 #include "utils.hpp"
 #include <acl/libacl.h>
+#include <boost/algorithm/string/predicate.hpp>
 #include <cerrno>
 #include <cstddef>
+#include <cstdint>
 #include <cstdio>
 #include <cstring>
 #include <exception>
@@ -19,6 +21,8 @@
 #include <sys/mount.h>
 #include <sys/stat.h>
 #include <sys/types.h>
+#include <unordered_map>
+#include <unordered_set>
 #include <utility>
 
 namespace usbmount {
@@ -366,6 +370,30 @@ void CustomMount::SetMountOptions(MountOptions &opts) const noexcept {
                   ptr_device_->filesystem());
   }
   logger_->debug("Mount data = {}", opts.mount_data);
+}
+
+bool CustomMount::ReviewLocalMountTable() noexcept {
+  // get all system mountpoints
+  FILE *p_file = setmntent("/etc/mtab", "r");
+  if (p_file == NULL) {
+    logger_->error("[UnMount] Error opening /etc/mtab");
+    return false;
+  }
+  mntent *entry;
+  std::unordered_set<std::string> mtab_mountpoints;
+  while ((entry = getmntent(p_file)) != NULL) {
+    if (boost::contains(entry->mnt_dir, mount_root)) {
+      mtab_mountpoints.emplace(entry->mnt_dir);
+    }
+  }
+  endmntent(p_file);
+  logger_->debug("Mount table size before a review {}",
+                 dbase_->mount_points.size());
+  dbase_->mount_points.RemoveExpired(mtab_mountpoints);
+  logger_->debug("Mount table size after the review {}",
+                 dbase_->mount_points.size());
+  logger_->flush();
+  return true;
 }
 
 } // namespace usbmount

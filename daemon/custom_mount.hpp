@@ -46,6 +46,12 @@ public:
    */
   bool UnMount() noexcept;
 
+  /**
+   * @brief Compare local mount table with system, delete expired values
+   *
+   */
+  bool ReviewLocalMountTable() noexcept;
+
 private:
   /**
    * @brief Create a Acl-controlled directory for mount points
