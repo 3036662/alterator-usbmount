@@ -1,4 +1,5 @@
 #include "udev_monitor.hpp"
+#include "custom_mount.hpp"
 #include "dal/dto.hpp"
 #include "dal/local_storage.hpp"
 #include "usb_udev_device.hpp"
@@ -104,6 +105,13 @@ void UdevMonitor::ProcessDevice() noexcept {
     utils::MountDevice(std::move(device), logger_);
     std::cout << "Mount device time = " << filesystem << " "
               << utils::since(begin).count() << "[ms]\n";
+    return;
+  }
+  // else - on device change - check the /etc/mtab and compare it with  db
+  // maybe local mount table is not valid
+  if (device->action() == Action::kChange && device_was_mounted) {
+    CustomMount mount(device, logger_);
+    mount.ReviewLocalMountTable();
   }
 }
 
