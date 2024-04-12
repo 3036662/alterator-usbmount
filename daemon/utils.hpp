@@ -24,6 +24,11 @@ namespace usbmount::utils {
  */
 std::shared_ptr<spdlog::logger> InitLogFile(const std::string &path) noexcept;
 
+/**
+ * @brief Mount or unmount device (depends on UsbUdevDevice action value )
+ * @param ptr_device Device to process
+ * @param logger
+ */
 void MountDevice(std::shared_ptr<UsbUdevDevice> ptr_device,
                  const std::shared_ptr<spdlog::logger> &logger) noexcept;
 

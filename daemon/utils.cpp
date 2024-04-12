@@ -36,9 +36,6 @@ std::shared_ptr<spdlog::logger> InitLogFile(const std::string &path) noexcept {
 void MountDevice(std::shared_ptr<UsbUdevDevice> ptr_device,
                  const std::shared_ptr<spdlog::logger> &logger) noexcept {
   try {
-    // std::stringstream str_id;
-    // str_id << std::this_thread::get_id();
-    // logger->debug("Mount async is running in thread {}", str_id.str());
     if (ptr_device->subsystem() != "block")
       return;
     CustomMount mounter(ptr_device, logger);
