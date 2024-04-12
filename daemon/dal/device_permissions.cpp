@@ -56,6 +56,8 @@ const PermissionEntry &DevicePermissions::Read(uint64_t index) const {
   CheckIndex(index);
   std::shared_lock<std::shared_mutex> lock(data_mutex_);
   auto entry = std::dynamic_pointer_cast<PermissionEntry>(data_.at(index));
+  if (!entry)
+    throw std::runtime_error("Pointer cast PermissionEntry failed");
   return *entry;
 };
 

@@ -93,10 +93,10 @@ void UdevMonitor::ProcessDevice() noexcept {
       dbase_->mount_points.Find(device->block_name()).has_value();
   // device is removed + was mounted by this app
   bool device_removed_and_was_mounted =
-      device_was_mounted && device->action() == Action::kRemove;  
+      device_was_mounted && device->action() == Action::kRemove;
   bool fs_is_unsupported = device->filesystem().empty() ||
                            device->filesystem() == "jfs" ||
-                           device->filesystem() == "LVM2_member";                           
+                           device->filesystem() == "LVM2_member";
   if ((known_device_was_added || device_removed_and_was_mounted) &&
       !fs_is_unsupported) {
     auto begin = std::chrono::high_resolution_clock::now();
