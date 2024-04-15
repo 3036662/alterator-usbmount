@@ -44,13 +44,15 @@ UsbUdevDevice::UsbUdevDevice(const DevParams &params)
   if (!enumerate)
     throw std::runtime_error("Failed to create udev enumerate");
   udev_enumerate_add_match_subsystem(enumerate.get(), "block");
+  udev_enumerate_add_match_property(enumerate.get(), "ID_BUS", "usb");
   udev_enumerate_scan_devices(enumerate.get());
   udev_list_entry *entry = udev_enumerate_get_list_entry(enumerate.get());
   std::unique_ptr<udev_device, decltype(&UdevDeviceFree)> ptr_device(
       nullptr, UdevDeviceFree);
   while (entry != NULL) {
-    // logger_->debug("ITERATION LOOP");
     const char *p_path = udev_list_entry_get_name(entry);
+    if (p_path == NULL)
+      continue;
     std::unique_ptr<udev_device, decltype(&UdevDeviceFree)> device(
         udev_device_new_from_syspath(udev.get(), p_path), UdevDeviceFree);
     if (!device) {
