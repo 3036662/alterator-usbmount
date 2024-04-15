@@ -34,44 +34,10 @@ UsbUdevDevice::UsbUdevDevice(const DevParams &params)
   // Information about the device is not needed for actions other than "add"
   if (action_ != Action::kAdd)
     return;
-  // udev object
-  std::unique_ptr<udev, decltype(&udev_unref)> udev{udev_new(), udev_unref};
-  if (!udev)
-    throw std::runtime_error("Failed to create udev object");
-  // udev enumerate
-  std::unique_ptr<udev_enumerate, decltype(&udev_enumerate_unref)> enumerate{
-      udev_enumerate_new(udev.get()), udev_enumerate_unref};
-  if (!enumerate)
-    throw std::runtime_error("Failed to create udev enumerate");
-  udev_enumerate_add_match_subsystem(enumerate.get(), "block");
-  udev_enumerate_add_match_property(enumerate.get(), "ID_BUS", "usb");
-  udev_enumerate_scan_devices(enumerate.get());
-  udev_list_entry *entry = udev_enumerate_get_list_entry(enumerate.get());
-  std::unique_ptr<udev_device, decltype(&UdevDeviceFree)> ptr_device(
-      nullptr, UdevDeviceFree);
-  while (entry != NULL) {
-    const char *p_path = udev_list_entry_get_name(entry);
-    if (p_path == NULL)
-      continue;
-    std::unique_ptr<udev_device, decltype(&UdevDeviceFree)> device(
-        udev_device_new_from_syspath(udev.get(), p_path), UdevDeviceFree);
-    if (!device) {
-      // TODO log error
-      continue;
-    }
-    const char *devnode = udev_device_get_devnode(device.get());
-    if (devnode == NULL)
-      continue;
-    // a device found
-    if (block_name_ == std::string(devnode)) {
-      ptr_device = std::move(device);
-    }
-    entry = udev_list_entry_get_next(entry);
-  }
+  auto ptr_device = FindUdevDeviceByBlockName();
   // device found
-  getUdevDeviceInfo(ptr_device);
-  // TODO find udev device by name
-  // collect info about device
+  if (ptr_device)
+    getUdevDeviceInfo(ptr_device);
 }
 
 void UsbUdevDevice::getUdevDeviceInfo(
@@ -209,6 +175,44 @@ std::string UsbUdevDevice::toString() const noexcept {
       << std::to_string(partitions_number_) << " vid " << vid_ << " pid "
       << pid_ << " subsystem " << subsystem_ << " serial " << serial_;
   return res.str();
+}
+
+UniquePtrUdevDeviceStruct UsbUdevDevice::FindUdevDeviceByBlockName() const {
+  using utils::udev::UdevEnumerateFree;
+  // udev object
+  std::unique_ptr<udev, decltype(&udev_unref)> udev{udev_new(), udev_unref};
+  if (!udev)
+    throw std::runtime_error("Failed to create udev object");
+  // udev enumerate
+  std::unique_ptr<udev_enumerate, decltype(&UdevEnumerateFree)> enumerate{
+      udev_enumerate_new(udev.get()), UdevEnumerateFree};
+  if (!enumerate)
+    throw std::runtime_error("Failed to create udev enumerate");
+  udev_enumerate_add_match_subsystem(enumerate.get(), "block");
+  udev_enumerate_add_match_property(enumerate.get(), "ID_BUS", "usb");
+  udev_enumerate_scan_devices(enumerate.get());
+  udev_list_entry *entry = udev_enumerate_get_list_entry(enumerate.get());
+  while (entry != NULL) {
+    const char *p_path = udev_list_entry_get_name(entry);
+    if (p_path == NULL)
+      continue;
+    std::unique_ptr<udev_device, decltype(&UdevDeviceFree)> device(
+        udev_device_new_from_syspath(udev.get(), p_path), UdevDeviceFree);
+    if (!device) {
+      // TODO log error
+      continue;
+    }
+    const char *devnode = udev_device_get_devnode(device.get());
+    if (devnode == NULL)
+      continue;
+    // a device found
+    if (block_name_ == std::string(devnode)) {
+      // ptr_device = std::move(device);
+      return device;
+    }
+    entry = udev_list_entry_get_next(entry);
+  }
+  return UniquePtrUdevDeviceStruct(nullptr, UdevDeviceFree);
 }
 
 } // namespace usbmount

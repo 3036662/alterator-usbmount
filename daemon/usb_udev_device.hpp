@@ -15,6 +15,9 @@ struct DevParams {
   std::string action;
 };
 
+using UniquePtrUdevDeviceStruct =
+    std::unique_ptr<udev_device, decltype(&UdevDeviceFree)>;
+
 class UsbUdevDevice {
 public:
   /// construct with Udev device object
@@ -53,12 +56,13 @@ private:
    *
    * @param device
    */
-  void FindSerial(
-      std::unique_ptr<udev_device, decltype(&UdevDeviceFree)> &device) noexcept;
+  void FindSerial(UniquePtrUdevDeviceStruct &device) noexcept;
 
-  /// find an info about device and fill the member fields
-  void getUdevDeviceInfo(
-      std::unique_ptr<udev_device, decltype(&UdevDeviceFree)> &device);
+  /// @brief find an info about device and fill the member fields
+  void getUdevDeviceInfo(UniquePtrUdevDeviceStruct &device);
+
+  /// @brief find an udev device struct by it's block-name.
+  UniquePtrUdevDeviceStruct FindUdevDeviceByBlockName() const;
 
   Action action_ = Action::kUndefined;
   std::string subsystem_;
