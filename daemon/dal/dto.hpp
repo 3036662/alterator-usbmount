@@ -61,6 +61,8 @@ public:
 
   json::value ToJson() const noexcept override;
 
+  inline uid_t uid() const noexcept { return uid_; }
+
 private:
   uid_t uid_ = 0;
   std::string name_;
@@ -77,6 +79,7 @@ public:
   Group(gid_t gid, const std::string &name);
 
   json::value ToJson() const noexcept override;
+  inline gid_t gid() const noexcept { return gid_; }
 
 private:
   gid_t gid_ = 0;
@@ -125,6 +128,10 @@ public:
   json::value ToJson() const noexcept override;
 
   inline const Device &getDevice() const noexcept { return device_; }
+  inline const std::vector<User> &getUsers() const noexcept { return users_; }
+  inline const std::vector<Group> &getGroups() const noexcept {
+    return groups_;
+  }
 
 private:
   Device device_;
