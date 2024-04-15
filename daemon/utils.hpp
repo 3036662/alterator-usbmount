@@ -48,13 +48,16 @@ auto since(std::chrono::time_point<clock_t, duration_t> const &start) {
 }
 
 namespace udev {
+/**
+ * @brief A custom deleter for udev_enumerate struct
+ */
 void UdevEnumerateFree(udev_enumerate *) noexcept;
 } // namespace udev
 
 namespace acl {
+
 /**
  * @brief convert ACL to sting
- *
  * @return std::string
  */
 std::string ToString(const acl_t &) noexcept;
@@ -64,6 +67,9 @@ std::string ToString(const acl_t &) noexcept;
  * @param acl
  */
 void DeleteACLUserGroupMask(acl_t &acl);
+
+void CreateUserAclEntry(acl_t &acl, uid_t uid);
+void CreateGroupAclEntry(acl_t &acl, gid_t gid);
 
 } // namespace acl
 

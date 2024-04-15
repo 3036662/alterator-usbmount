@@ -48,12 +48,8 @@ void MountDevice(std::shared_ptr<UsbUdevDevice> ptr_device,
     CustomMount mounter(ptr_device, logger);
     if (ptr_device->action() == Action::kAdd) {
       logger->debug("Mount {} ", ptr_device->block_name());
-      if (!mounter.Mount({1000, 1001})) {
+      if (!mounter.Mount())
         logger->error("Mount failed");
-      }
-      else{
-        // TODO set UDISKS_IGNORE to 0
-      }
     } else if (ptr_device->action() == Action::kRemove) {
       logger->debug("Unmounting {}", ptr_device->block_name());
       mounter.UnMount();
@@ -174,6 +170,40 @@ void DeleteACLUserGroupMask(acl_t &acl) {
       if (acl_delete_entry(acl, entry) == -1)
         throw std::runtime_error(strerror(errno));
   }
+}
+
+void CreateUserAclEntry(acl_t &acl, uid_t uid) {
+  acl_entry_t entry;
+  acl_permset_t permset;
+  if (acl_create_entry(&acl, &entry) != 0)
+    throw std::runtime_error("Can't create ACL entry");
+  if (acl_get_permset(entry, &permset) != 0)
+    throw std::runtime_error("acl_get_permset failed");
+  if (acl_add_perm(permset, ACL_READ | ACL_EXECUTE) != 0)
+    throw std::runtime_error("acl_add_perm failed");
+  if (acl_set_tag_type(entry, ACL_USER) != 0)
+    throw std::runtime_error("acl_set_tag_type failed");
+  if (acl_set_qualifier(entry, &uid) != 0)
+    throw std::runtime_error("acl_set_qualifier failed");
+  if (acl_set_permset(entry, permset) != 0)
+    throw std::runtime_error("acl_set_permset failed");
+}
+
+void CreateGroupAclEntry(acl_t &acl, gid_t gid) {
+  acl_entry_t entry;
+  acl_permset_t permset;
+  if (acl_create_entry(&acl, &entry) != 0)
+    throw std::runtime_error("Can't create ACL entry for group");
+  if (acl_get_permset(entry, &permset) != 0)
+    throw std::runtime_error("acl_get_permset failed");
+  if (acl_add_perm(permset, ACL_READ | ACL_EXECUTE) != 0)
+    throw std::runtime_error("acl_add_perm failed");
+  if (acl_set_tag_type(entry, ACL_GROUP) != 0)
+    throw std::runtime_error("acl_set_tag_type failed");
+  if (acl_set_qualifier(entry, &gid) != 0)
+    throw std::runtime_error("acl_set_qualifier failed");
+  if (acl_set_permset(entry, permset) != 0)
+    throw std::runtime_error("acl_set_permset failed");
 }
 
 } // namespace acl
