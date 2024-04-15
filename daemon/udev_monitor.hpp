@@ -21,7 +21,9 @@ private:
   bool StopRequested() noexcept;
   void ProcessDevice() noexcept;
 
+  void ReviewConnectedDevices() noexcept;
   std::shared_ptr<UsbUdevDevice> RecieveDevice() noexcept;
+
   std::shared_ptr<spdlog::logger> &logger_;
   std::promise<void> stop_signal_;
   std::future<void> future_obj_;

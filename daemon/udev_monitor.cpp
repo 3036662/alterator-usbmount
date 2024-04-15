@@ -20,6 +20,7 @@
 #include <stdexcept>
 #include <string>
 #include <thread>
+#include <unordered_set>
 
 namespace usbmount {
 
@@ -50,9 +51,9 @@ UdevMonitor::UdevMonitor(std::shared_ptr<spdlog::logger> &logger)
 
 void UdevMonitor::Run() noexcept {
   // review local mounts
-  utils::ReviewMountPoints(logger_);
+  ReviewConnectedDevices();
   uint64_t iteration_counter = 0;
-  std::future<bool> fut_review_db;
+  std::future<void> fut_review_mounts;
   while (!StopRequested()) {
     // wait for new device
     fd_set fds;
@@ -73,8 +74,9 @@ void UdevMonitor::Run() noexcept {
       ++iteration_counter;
       if (iteration_counter >= 600) {
         iteration_counter = 0;
-        fut_review_db =
-            std::async(std::launch::async, utils::ReviewMountPoints, logger_);
+        fut_review_mounts = std::async(
+            std::launch::async, &UdevMonitor::ReviewConnectedDevices, this);
+        // std::async(std::launch::async, utils::ReviewMountPoints, logger_);
       }
       continue;
     }
@@ -110,13 +112,7 @@ void UdevMonitor::ProcessDevice() noexcept {
                            device->filesystem() == "LVM2_member";
   if ((known_device_was_added || device_removed_and_was_mounted) &&
       !fs_is_unsupported) {
-    auto begin = std::chrono::high_resolution_clock::now();
-    std::string filesystem = device->filesystem();
     utils::MountDevice(std::move(device), logger_);
-    std::cout << "Mount device time = " << filesystem << " "
-              << utils::since(begin).count() << "[ms]\n";
-    return;
-  }
   // else - on device change - check the /etc/mtab and compare it with  db
   // maybe local mount table is not valid
   if (device->action() == Action::kChange && device_was_mounted) {
@@ -144,6 +140,72 @@ std::shared_ptr<UsbUdevDevice> UdevMonitor::RecieveDevice() noexcept {
     }
   }
   return std::shared_ptr<UsbUdevDevice>();
+}
+
+void UdevMonitor::ReviewConnectedDevices() noexcept {
+  // first review mountpoints
+  utils::ReviewMountPoints(logger_);
+  // get a list of connected block devices
+  using utils::udev::UdevEnumerateFree;
+  std::unique_ptr<udev_enumerate, decltype(&UdevEnumerateFree)> enumerate(
+      udev_enumerate_new(udev_.get()), UdevEnumerateFree);
+  if (!enumerate) {
+    logger_->error("[ReviewDevices] Can't enumerate devices");
+    return;
+  }
+  if (udev_enumerate_add_match_subsystem(enumerate.get(), "block") < 0) {
+    logger_->error("udev_enumerate_add_match_subsystem error");
+    return;
+  }
+  udev_enumerate_add_match_property(enumerate.get(), "ID_BUS", "usb");
+  udev_enumerate_scan_devices(enumerate.get());
+  udev_list_entry *entry = udev_enumerate_get_list_entry(enumerate.get());
+  std::unordered_set<std::string> present_devices;
+  while (entry != NULL) {
+    const char *p_path = udev_list_entry_get_name(entry);
+    if (p_path == NULL) {
+      logger_->error("[ReviewDevices] udev_list_entry_get_name error ");
+      continue;
+    }
+    std::unique_ptr<udev_device, decltype(&UdevDeviceFree)> device(
+        udev_device_new_from_syspath(udev_.get(), p_path), UdevDeviceFree);
+    if (!device) {
+      logger_->error("[ReviewDevices] udev_device_new_from_syspath error ");
+      continue;
+    }
+    const char *devnode = udev_device_get_devnode(device.get());
+    if (devnode == NULL)
+      continue;
+    present_devices.emplace(devnode);
+    logger_->debug(devnode);
+    logger_->flush();
+    entry = udev_list_entry_get_next(entry);
+  }
+  // get all mounted from db
+  auto mountpoints = dbase_->mount_points.GetAll();
+  // if a mounted device is not present,unmount it.
+  for (const auto &mountpoint : mountpoints) {
+    if (present_devices.count(mountpoint.dev_name()) == 0) {
+      try {
+        auto device = std::make_shared<UsbUdevDevice>(
+            DevParams{mountpoint.dev_name(), "remove"});
+        CustomMount mounter(device, logger_);
+        if (mounter.UnMount()) {
+          logger_->info("Unmounted expired {},no such device",
+                        device->block_name());
+        } else {
+          logger_->error("Error unmountiong expired device {}",
+                         device->block_name());
+        }
+      } catch (const std::exception &ex) {
+        logger_->error("Can't construnct UsbUdevDeivice for {}",
+                       mountpoint.dev_name());
+        logger_->error(ex.what());
+      }
+    }
+  }
+  logger_->flush();
+  // unmount expired devices
 }
 
 } // namespace usbmount
