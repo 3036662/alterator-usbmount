@@ -11,6 +11,7 @@
 
 #include "spdlog/async.h"
 #include <iostream>
+#include <libudev.h>
 #include <mntent.h>
 #include <spdlog/common.h>
 #include <sstream>
@@ -50,6 +51,9 @@ void MountDevice(std::shared_ptr<UsbUdevDevice> ptr_device,
       if (!mounter.Mount({1000, 1001})) {
         logger->error("Mount failed");
       }
+      else{
+        // TODO set UDISKS_IGNORE to 0
+      }
     } else if (ptr_device->action() == Action::kRemove) {
       logger->debug("Unmounting {}", ptr_device->block_name());
       mounter.UnMount();
@@ -80,6 +84,13 @@ bool ReviewMountPoints(const std::shared_ptr<spdlog::logger> &logger) noexcept {
   dbase->mount_points.RemoveExpired(mtab_mountpoints);
   return true;
 }
+
+namespace udev {
+void UdevEnumerateFree(udev_enumerate *udev_en) noexcept {
+  if (udev_en != NULL)
+    udev_enumerate_unref(udev_en);
+}
+} // namespace udev
 
 namespace acl {
 

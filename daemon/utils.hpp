@@ -47,6 +47,10 @@ auto since(std::chrono::time_point<clock_t, duration_t> const &start) {
   return std::chrono::duration_cast<result_t>(clock_t::now() - start);
 }
 
+namespace udev {
+void UdevEnumerateFree(udev_enumerate *) noexcept;
+} // namespace udev
+
 namespace acl {
 /**
  * @brief convert ACL to sting
