@@ -113,6 +113,8 @@ void UdevMonitor::ProcessDevice() noexcept {
   if ((known_device_was_added || device_removed_and_was_mounted) &&
       !fs_is_unsupported) {
     utils::MountDevice(std::move(device), logger_);
+    return;
+  }
   // else - on device change - check the /etc/mtab and compare it with  db
   // maybe local mount table is not valid
   if (device->action() == Action::kChange && device_was_mounted) {
