@@ -1,4 +1,5 @@
 #pragma once
+#include "dal/dto.hpp"
 #include "dal/local_storage.hpp"
 #include "usb_udev_device.hpp"
 #include <memory>
@@ -8,11 +9,6 @@
 #include <sys/types.h>
 
 namespace usbmount {
-
-struct UidGid {
-  uid_t user_id;
-  gid_t group_id;
-};
 
 /**
  * @brief Options for mount() glibc call
@@ -36,10 +32,10 @@ public:
                        const std::shared_ptr<spdlog::logger> &logger) noexcept;
 
   /**
-   * @brief Mount a device for user and group
+   * @brief Mount a device
    * @param uid_gid user and group struct
    */
-  bool Mount(const UidGid &uid_gid) noexcept;
+  bool Mount() noexcept;
 
   /**
    * @brief Unmount a device
@@ -63,7 +59,7 @@ private:
   /**
    * @brief Create a subfolder in ACL-controlled dir for mounting
    */
-  bool CreatMountEndpoint() noexcept;
+  bool CreateMountEndpoint() noexcept;
 
   bool PerfomMount() noexcept;
   void RemoveMountPoint(const std::string &path) noexcept;

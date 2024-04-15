@@ -11,6 +11,7 @@
 #include <cstring>
 #include <exception>
 #include <filesystem>
+#include <functional>
 #include <grp.h>
 #include <memory>
 #include <mntent.h>
@@ -32,9 +33,25 @@ CustomMount::CustomMount(std::shared_ptr<UsbUdevDevice> &ptr_device,
     : logger_(logger), ptr_device_{ptr_device},
       dbase_(dal::LocalStorage::GetStorage()) {}
 
-bool CustomMount::Mount(const UidGid &uid_gid) noexcept {
-  uid_ = uid_gid.user_id;
-  gid_ = uid_gid.group_id;
+bool CustomMount::Mount() noexcept {
+  // get permissions for this device
+  dal::Device dto_device(
+      {ptr_device_->vid(), ptr_device_->pid(), ptr_device_->serial()});
+  auto db_index = dbase_->permissions.Find(dto_device);
+  if (!db_index.has_value())
+    return false;
+  auto perms = dbase_->permissions.Read(db_index.value());
+  // for now, only one user and group is allowed, though db stores users and
+  // groups as array
+  const auto &users = perms.getUsers();
+  const auto &groups = perms.getGroups();
+  if (users.empty() || groups.empty()) {
+    logger_->error("Empty user or group in permissions for device {}",
+                   ptr_device_->block_name());
+    return false;
+  }
+  uid_ = users[0].uid();
+  gid_ = groups[0].gid();
   logger_->debug(ptr_device_->toString());
   if (ptr_device_->dev_type() == "disk" &&
       ptr_device_->filesystem() != "ntfs") {
@@ -44,7 +61,7 @@ bool CustomMount::Mount(const UidGid &uid_gid) noexcept {
   if (!CreateAclMountPoint())
     return false;
   // create endpoint
-  if (!CreatMountEndpoint())
+  if (!CreateMountEndpoint())
     return false;
   // mount and save to local storage
   if (PerfomMount()) {
@@ -70,20 +87,14 @@ bool CustomMount::CreateAclMountPoint() noexcept {
   passwd *pwd = getpwuid(uid_.value_or(0));
   if (pwd->pw_name != NULL)
     user_name = pwd->pw_name;
-  if (user_name.has_value())
-    mount_point += user_name.value();
-  else
-    mount_point += std::to_string(uid_.value_or(0));
+  mount_point += user_name.value_or(std::to_string(uid_.value_or(0)));
   mount_point += '_';
   // get group name
   std::optional<std::string> group_name;
   group *grp = getgrgid(gid_.value_or(0));
   if (grp->gr_name != NULL)
     group_name = grp->gr_name;
-  if (group_name.has_value())
-    mount_point += group_name.value();
-  else
-    mount_point += std::to_string(gid_.value_or(0));
+  mount_point += group_name.value_or(std::to_string(gid_.value_or(0)));
   // create acl dir if no exists
   try {
     std::filesystem::create_directories(mount_point);
@@ -114,33 +125,9 @@ void CustomMount::SetAcl(const std::string &mount_point) {
   acl_permset_t permset;
   try {
     // add ACL_USER
-    if (acl_create_entry(&acl, &entry) != 0)
-      throw std::runtime_error("Can't create ACL entry");
-    if (acl_get_permset(entry, &permset) != 0)
-      throw std::runtime_error("acl_get_permset failed");
-    if (acl_add_perm(permset, ACL_READ | ACL_EXECUTE) != 0)
-      throw std::runtime_error("acl_add_perm failed");
-    if (acl_set_tag_type(entry, ACL_USER) != 0)
-      throw std::runtime_error("acl_set_tag_type failed");
-    uid_t uid = uid_.value_or(0);
-    if (acl_set_qualifier(entry, &uid) != 0)
-      throw std::runtime_error("acl_set_qualifier failed");
-    if (acl_set_permset(entry, permset) != 0)
-      throw std::runtime_error("acl_set_permset failed");
+    CreateUserAclEntry(acl, uid_.value_or(0));
     // Add ACL_GROUP
-    if (acl_create_entry(&acl, &entry) != 0)
-      throw std::runtime_error("Can't create ACL entry for group");
-    if (acl_get_permset(entry, &permset) != 0)
-      throw std::runtime_error("acl_get_permset failed");
-    if (acl_add_perm(permset, ACL_READ | ACL_EXECUTE) != 0)
-      throw std::runtime_error("acl_add_perm failed");
-    if (acl_set_tag_type(entry, ACL_GROUP) != 0)
-      throw std::runtime_error("acl_set_tag_type failed");
-    gid_t gid = gid_.value_or(0);
-    if (acl_set_qualifier(entry, &gid) != 0)
-      throw std::runtime_error("acl_set_qualifier failed");
-    if (acl_set_permset(entry, permset) != 0)
-      throw std::runtime_error("acl_set_permset failed");
+    CreateGroupAclEntry(acl, gid_.value_or(0));
     // Add ACL_MASK
     if (acl_create_entry(&acl, &entry) != 0)
       throw std::runtime_error("Can't create ACL entry for mask");
@@ -167,7 +154,6 @@ void CustomMount::SetAcl(const std::string &mount_point) {
       logger_->error(strerror(errno));
       throw std::runtime_error("acl_set_file failed");
     }
-
   } catch (const std::exception &ex) {
     // free acl and rethrow
     acl_free(acl);
@@ -180,7 +166,7 @@ void CustomMount::SetAcl(const std::string &mount_point) {
   logger_->debug("ACL for {} successfully set", mount_point);
 }
 
-bool CustomMount::CreatMountEndpoint() noexcept {
+bool CustomMount::CreateMountEndpoint() noexcept {
   namespace fs = std::filesystem;
   std::string endpoint;
   if (!base_mount_point_ || base_mount_point_->empty()) {
