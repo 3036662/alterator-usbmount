@@ -4,6 +4,7 @@
 #include <cstdint>
 #include <optional>
 #include <unordered_set>
+#include <vector>
 
 namespace usbmount::dal {
 
@@ -59,6 +60,12 @@ public:
    * @details Valid set is supposed to be a /etc/mtab set.
    */
   void RemoveExpired(const std::unordered_set<std::string> &valid_set) noexcept;
+
+  /**
+   * @brief Get the All MountEnries
+   * @return std::vector<MountEntry>
+   */
+  std::vector<MountEntry> GetAll() const noexcept;
 
 private:
   /**

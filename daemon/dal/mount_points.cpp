@@ -3,12 +3,14 @@
 #include <algorithm>
 #include <cstdint>
 #include <iostream>
+#include <iterator>
 #include <memory>
 #include <mutex>
 #include <optional>
 #include <shared_mutex>
 #include <stdexcept>
 #include <utility>
+#include <vector>
 
 namespace usbmount::dal {
 Mountpoints::Mountpoints(const std::string &path) : Table(path) {
@@ -113,6 +115,17 @@ void Mountpoints::RemoveExpired(
   }
   lock.unlock();
   WriteRaw();
+}
+
+std::vector<MountEntry> Mountpoints::GetAll() const noexcept {
+  std::shared_lock<std::shared_mutex> lock(data_mutex_);
+  std::vector<MountEntry> res;
+  for (const auto &element : data_) {
+    auto mnt_entry = std::dynamic_pointer_cast<MountEntry>(element.second);
+    if (mnt_entry)
+      res.emplace_back(*mnt_entry);
+  }
+  return res;
 }
 
 } // namespace usbmount::dal
