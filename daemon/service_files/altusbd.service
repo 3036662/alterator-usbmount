@@ -8,6 +8,8 @@ ExecStart=/usr/bin/altusbd
 ExecReload=/bin/kill -HUP $MAINPID
 User=root
 SyslogIdentifier=alt_usb_guard
+Restart=always
+RestartSec=1
 
 [Install]
 WantedBy=multi-user.target
