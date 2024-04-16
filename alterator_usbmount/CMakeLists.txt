@@ -1,0 +1,13 @@
+add_subdirectory(backend)
+
+
+install(FILES
+    ${CMAKE_CURRENT_SOURCE_DIR}/usbmount_ui/USBGuard.desktop
+    DESTINATION "/usr/share/alterator/applications/"
+)
+
+install(FILES 
+    ${CMAKE_CURRENT_SOURCE_DIR}/usbmount_ui/ajax.scm 
+    ${CMAKE_CURRENT_SOURCE_DIR}/usbmount_ui/index.html 
+    DESTINATION "/usr/share/alterator/ui/usbmount"
+)
