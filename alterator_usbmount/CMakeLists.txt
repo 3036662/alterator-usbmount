@@ -2,7 +2,7 @@ add_subdirectory(backend)
 
 
 install(FILES
-    ${CMAKE_CURRENT_SOURCE_DIR}/usbmount_ui/USBGuard.desktop
+    ${CMAKE_CURRENT_SOURCE_DIR}/usbmount_ui/USBMount.desktop
     DESTINATION "/usr/share/alterator/applications/"
 )
 
