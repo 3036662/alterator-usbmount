@@ -29,8 +29,8 @@ include(ClangTidy)
 AddClangTidy(usbguard)
 
 include(CppCheck)
-AddCppCheck(${CMAKE_CURRENT_SOURCE_DIR})
-add_dependencies(usbguard run_cppcheck)
+AddCppCheck(usbguard_cppcheck)
+add_dependencies(usbguard usbguard_cppcheck)
 
 endif()
 

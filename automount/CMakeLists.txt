@@ -47,7 +47,8 @@ if(CMAKE_BUILD_TYPE STREQUAL "Debug")
     Format(alterator_usb_automount .)
     include(ClangTidy)
     AddClangTidy(alterator_usb_automount)
-    add_dependencies(alterator_usb_automount run_cppcheck)
+    AddCppCheck(automount_cppcheck)
+    add_dependencies(alterator_usb_automount automount_cppcheck)
 endif()
 
 
