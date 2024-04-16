@@ -168,7 +168,7 @@ bool ConfigStatus::ExtractUsers(const std::string &line) noexcept {
     if (pos != std::string::npos && ++pos < line.size()) {
       std::string users_string(line, pos);
       users_string = boost::trim_copy(users_string);
-       // Log::Info() << "Found users in conf file " << line;
+      // Log::Info() << "Found users in conf file " << line;
       // split by space and add to set
       std::vector<std::string> splitted_string;
       try {
