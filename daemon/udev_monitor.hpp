@@ -12,7 +12,7 @@ namespace usbmount {
 
 class UdevMonitor {
 public:
-  UdevMonitor(std::shared_ptr<spdlog::logger> &logger);
+  explicit UdevMonitor(std::shared_ptr<spdlog::logger> &logger);
 
   void Run() noexcept;
   void Stop() noexcept;

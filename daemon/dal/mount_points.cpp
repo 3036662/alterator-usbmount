@@ -14,7 +14,7 @@
 
 namespace usbmount::dal {
 Mountpoints::Mountpoints(const std::string &path) : Table(path) {
-  DataFromRawJson();
+  Mountpoints::DataFromRawJson();
 }
 
 void Mountpoints::DataFromRawJson() {
@@ -46,8 +46,8 @@ void Mountpoints::Create(const Dto &dto) {
   auto index = Find(entry);
   if (!index) {
     std::unique_lock<std::shared_mutex> lock(data_mutex_);
-    uint64_t index = data_.empty() ? 0 : (data_.rbegin()->first) + 1;
-    data_.emplace(index, std::make_shared<MountEntry>(entry));
+    index = data_.empty() ? 0 : (data_.rbegin()->first) + 1;
+    data_.emplace(*index, std::make_shared<MountEntry>(entry));
     lock.unlock();
     WriteRaw();
   }

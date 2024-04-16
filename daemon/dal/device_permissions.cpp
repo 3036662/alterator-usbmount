@@ -16,7 +16,7 @@ namespace usbmount::dal {
 // DevicePermissions
 
 DevicePermissions::DevicePermissions(const std::string &path) : Table(path) {
-  DataFromRawJson();
+  DevicePermissions::DataFromRawJson();
 }
 
 void DevicePermissions::DataFromRawJson() {

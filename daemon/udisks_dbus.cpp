@@ -21,9 +21,11 @@ bool UdisksDbus::ProcessDevice(const UsbUdevDevice &dev) {
   std::cerr << dev.block_name() << "\n";
   auto method = proxy_udisks_->createMethodCall(
       "org.freedesktop.UDisks2.Manager", "ResolveDevice");
-  std::map<std::string, sdbus::Variant> param;
-  param.emplace("path", dev.block_name());
-  method << param << std::map<std::string, sdbus::Variant>();
+  {
+    std::map<std::string, sdbus::Variant> param;
+    param.emplace("path", dev.block_name());
+    method << param << std::map<std::string, sdbus::Variant>();
+  }
   std::vector<sdbus::ObjectPath> obj_path;
   for (uint attempt = 0; attempt < 10; ++attempt) {
     sdbus::MethodReply reply = proxy_udisks_->callMethod(method);

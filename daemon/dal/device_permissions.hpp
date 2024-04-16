@@ -11,7 +11,7 @@ public:
    * @param path Path to a file to store data
    * @throws runtime_error
    */
-  DevicePermissions(const std::string &);
+  explicit DevicePermissions(const std::string &);
 
   // CRUD
 

@@ -4,7 +4,7 @@
 #include <sdbus-c++/sdbus-c++.h>
 #include <string>
 
-int main(int argc, char *argv[]) {
+int main(int argc, const char *argv[]) {
   if (argc < 3) {
     std::cout << "EMPTY params";
     return 0;

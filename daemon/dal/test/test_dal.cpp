@@ -111,18 +111,18 @@ TEST_CASE("Test DTO objects"){
      std::string js_string=  "{\"device\":{\"vid\":\"00\",\"pid\":\"0000\",\"serial\":\"234958098\"},"
                             "\"users\":[{\"uid\":0,\"name\":\"root\"}],"
                             "\"groups\":[{\"gid\":500,\"name\":\"groupName\"}]}";                            
-     REQUIRE(PermissionEntry(DeviceParams{"00","0000","234958098"},
+     REQUIRE(PermissionEntry(Device({"00","0000","234958098"}),
                             {{0,"root"}},{{500,"groupName"}}).Serialize()==js_string);  
      REQUIRE(PermissionEntry(json::parse(js_string).as_object()).Serialize()==js_string);                                            
-     REQUIRE_THROWS(PermissionEntry(DeviceParams{"0z0","0000","234958098"},
+     REQUIRE_THROWS(PermissionEntry(Device({"0z0","0000","234958098"}),
                             {{0,"root"}},{{500,"groupName"}}));
-     REQUIRE_THROWS(PermissionEntry(DeviceParams{"00","00z00","234958098"},
+     REQUIRE_THROWS(PermissionEntry(Device({"00","00z00","234958098"}),
                             {{0,"root"}},{{500,"groupName"}}));
-     REQUIRE_THROWS(PermissionEntry(DeviceParams{"00","0000","234958098"},
+     REQUIRE_THROWS(PermissionEntry(Device({"00","0000","234958098"}),
                             {{0,""}},{{500,"groupName"}}));     
-     REQUIRE_THROWS(PermissionEntry(DeviceParams{"00","0000","234958098"},
+     REQUIRE_THROWS(PermissionEntry(Device({"00","0000","234958098"}),
                             {{0,"root"}},{{500,""}}));
-     REQUIRE_THROWS(PermissionEntry(DeviceParams{"00","0000","234958098"},
+     REQUIRE_THROWS(PermissionEntry(Device({"00","0000","234958098"}),
                             {},{}));                                                      
   }
 }
@@ -164,11 +164,11 @@ TEST_CASE("Test local storage") {
     REQUIRE(dbase->permissions.Serialize()=="[]");
 
      dbase->permissions.Create(
-       PermissionEntry(DeviceParams{"00","0000","234958098"},
+       PermissionEntry(Device({"00","0000","234958098"}),
                              {{0,"root"}},{{500,"groupName"}})
      );
     dbase->permissions.Create(
-      PermissionEntry(DeviceParams{"00d","00da","0000"},
+      PermissionEntry(Device({"00d","00da","0000"}),
                             {{1,"test"}},{{501,"groupName2"}})
     );  
     REQUIRE(dbase->permissions.size()==2);
@@ -274,7 +274,7 @@ TEST_CASE("Write from threads"){
 
       for (size_t i=0;i<20;++i){
       dbase->permissions.Create(
-          PermissionEntry(DeviceParams{"00","0000","234958098"},
+          PermissionEntry(Device({"00","0000","234958098"}),
                               {{0,"root"}},{{500,"groupName"}})
       );
       }
@@ -283,7 +283,7 @@ TEST_CASE("Write from threads"){
       auto dbase= LocalStorage::GetStorage(); 
       for (size_t i=0;i<20;++i){
       dbase->permissions.Create(
-          PermissionEntry(DeviceParams{"00","0000","234958098"},
+          PermissionEntry(Device({"00","0000","234958098"}),
                               {{0,"root"}},{{500,"groupName"}})
       );
       }
@@ -333,12 +333,12 @@ TEST_CASE("Write from threads"){
 TEST_CASE("CreateInitialDb"){
   auto dbase=LocalStorage::GetStorage();
   dbase->permissions.Create(
-    PermissionEntry(DeviceParams{"048d","1234","\xd0\x89"},
+    PermissionEntry(Device({"048d","1234","\xd0\x89"}),
                               {{1000,"test"}},{{1001,"usb_flash1"}})
   );
 
   dbase->permissions.Create(
-    PermissionEntry(DeviceParams{"346d","5678","4102101253919586827"},
+    PermissionEntry(Device({"346d","5678","4102101253919586827"}),
                               {{1000,"test"}},{{1001,"usb_flash1"}})
   );
 

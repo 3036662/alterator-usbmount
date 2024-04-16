@@ -33,12 +33,12 @@ struct DeviceParams {
 class Device : public Dto {
 public:
   explicit Device(const boost::json::object &);
+  explicit Device(const DeviceParams &params);
   Device(Device &&) = default;
   Device(const Device &) = default;
   Device() = default;
   Device &operator=(Device &&) noexcept = default;
   Device &operator=(const Device &) noexcept = default;
-  Device(const DeviceParams &params);
   bool operator==(const Device &) const noexcept;
 
   json::value ToJson() const noexcept override;
@@ -60,7 +60,6 @@ public:
   User(uid_t uid, const std::string &name);
 
   json::value ToJson() const noexcept override;
-
   inline uid_t uid() const noexcept { return uid_; }
 
 private:
@@ -95,12 +94,12 @@ struct MountEntryParams {
 class MountEntry : public Dto {
 public:
   explicit MountEntry(const json::object &);
+  explicit MountEntry(const MountEntryParams &params);
   MountEntry() = default;
   MountEntry(const MountEntry &) = default;
   MountEntry(MountEntry &&) = default;
   MountEntry &operator=(MountEntry &&) noexcept = default;
   MountEntry &operator=(const MountEntry &) noexcept = default;
-  MountEntry(const MountEntryParams &params);
   bool operator==(const MountEntry &other) const noexcept;
 
   json::value ToJson() const noexcept override;

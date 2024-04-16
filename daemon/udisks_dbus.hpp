@@ -8,7 +8,7 @@ namespace usbmount {
 class UdisksDbus {
 public:
   UdisksDbus() = delete;
-  UdisksDbus(std::unique_ptr<sdbus::IConnection> &conn);
+  explicit UdisksDbus(std::unique_ptr<sdbus::IConnection> &conn);
 
   bool ProcessDevice(const UsbUdevDevice &dev);
 

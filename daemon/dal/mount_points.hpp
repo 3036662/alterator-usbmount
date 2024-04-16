@@ -15,7 +15,7 @@ public:
    * @param path Path to a file to store data
    * @throws runtime_error
    */
-  Mountpoints(const std::string &path);
+  explicit Mountpoints(const std::string &path);
 
   // CRUD
 

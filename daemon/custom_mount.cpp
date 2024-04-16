@@ -84,14 +84,14 @@ bool CustomMount::CreateAclMountPoint() noexcept {
   std::string mount_point = mount_root;
   // get user name
   std::optional<std::string> user_name;
-  passwd *pwd = getpwuid(uid_.value_or(0));
+  const passwd *pwd = getpwuid(uid_.value_or(0));
   if (pwd->pw_name != NULL)
     user_name = pwd->pw_name;
   mount_point += user_name.value_or(std::to_string(uid_.value_or(0)));
   mount_point += '_';
   // get group name
   std::optional<std::string> group_name;
-  group *grp = getgrgid(gid_.value_or(0));
+  const group *grp = getgrgid(gid_.value_or(0));
   if (grp->gr_name != NULL)
     group_name = grp->gr_name;
   mount_point += group_name.value_or(std::to_string(gid_.value_or(0)));
@@ -261,14 +261,16 @@ bool CustomMount::UnMount() noexcept {
     logger_->error("[UnMount] Error opening /etc/mtab");
     return false;
   }
-  mntent *entry;
   std::string mount_point;
   std::string fs_type;
-  while ((entry = getmntent(p_file)) != NULL) {
-    if (std::string(entry->mnt_fsname) == ptr_device_->block_name()) {
-      mount_point = entry->mnt_dir;
-      fs_type = entry->mnt_type;
-      break;
+  {
+    mntent *entry;
+    while ((entry = getmntent(p_file)) != NULL) {
+      if (std::string(entry->mnt_fsname) == ptr_device_->block_name()) {
+        mount_point = entry->mnt_dir;
+        fs_type = entry->mnt_type;
+        break;
+      }
     }
   }
   // just "ntfs" for ntfs3

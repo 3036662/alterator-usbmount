@@ -141,7 +141,6 @@ PermissionEntry::PermissionEntry(const json::object &obj) {
     users_.emplace_back(user.as_object());
   }
   // array of groups
-  std::vector<Group> vec_groups;
   for (const json::value &group : obj.at("groups").as_array()) {
     if (!group.is_object())
       throw exc;

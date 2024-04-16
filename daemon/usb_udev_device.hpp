@@ -21,15 +21,14 @@ using UniquePtrUdevDeviceStruct =
 class UsbUdevDevice {
 public:
   /// construct with Udev device object
-  UsbUdevDevice(
-      std::unique_ptr<udev_device, decltype(&UdevDeviceFree)> &&device);
+  explicit UsbUdevDevice(UniquePtrUdevDeviceStruct &&);
 
   /**
    * @brief Construct a new Usb Udev Device object with path and action
    * @param params DevParams struct {dev_path,action}
    * @throws std::runtime_error
    */
-  UsbUdevDevice(const DevParams &params);
+  explicit UsbUdevDevice(const DevParams &params);
 
   std::string toString() const noexcept;
 

@@ -46,7 +46,7 @@ bool CustomMount::CreateAclMountPoint() noexcept {
   std::string mount_point = mount_root;
   // get user name
   std::optional<std::string> user_name;
-  passwd *pwd = getpwuid(uid_.value_or(0));
+  const passwd *pwd = getpwuid(uid_.value_or(0));
   if (pwd->pw_name != NULL)
     user_name = pwd->pw_name;
   if (user_name.has_value())
@@ -56,7 +56,7 @@ bool CustomMount::CreateAclMountPoint() noexcept {
   mount_point += '_';
   // get group name
   std::optional<std::string> group_name;
-  group *grp = getgrgid(gid_.value_or(0));
+  const group *grp = getgrgid(gid_.value_or(0));
   if (grp->gr_name != NULL)
     group_name = grp->gr_name;
   if (group_name.has_value())

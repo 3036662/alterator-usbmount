@@ -18,9 +18,9 @@
 #include <thread>
 #include <unistd.h>
 
-bool Remove(const std::string &device, std::ofstream &log);
+bool Remove(const std::string &dev, std::ofstream &log);
 
-int main(int argc, char *argv[]) {
+int main(int argc, const char *argv[]) {
   std::ofstream log("/home/oleg/mount_log.txt", std::ios_base::app);
   if (argc < 3)
     return 1;

@@ -15,7 +15,7 @@ public:
   DbusMethods &operator=(const DbusMethods &) = delete;
   DbusMethods &&operator=(DbusMethods &&) = delete;
   DbusMethods() = delete;
-  DbusMethods(std::shared_ptr<spdlog::logger> logger);
+  explicit DbusMethods(std::shared_ptr<spdlog::logger> logger);
 
   void Run();
 

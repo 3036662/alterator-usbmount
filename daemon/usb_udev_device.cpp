@@ -12,8 +12,7 @@ void UdevDeviceFree(udev_device *dev) noexcept {
     udev_device_unref(dev);
 }
 
-UsbUdevDevice::UsbUdevDevice(
-    std::unique_ptr<udev_device, decltype(&UdevDeviceFree)> &&device) {
+UsbUdevDevice::UsbUdevDevice(UniquePtrUdevDeviceStruct &&device) {
   // action
   const char *p_action = udev_device_get_property_value(device.get(), "ACTION");
   SetAction(p_action);
