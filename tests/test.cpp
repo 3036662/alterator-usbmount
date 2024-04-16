@@ -18,11 +18,11 @@
 #include <unordered_map>
 #include <unordered_set>
 #include <vector>
-#include "utils.hpp"
+#include "common_utils.hpp"
 #include "guard_utils.hpp"
 
-using guard::utils::Log;
-using utils::WrapWithQuotes;
+using common_utils::Log;
+using common_utils::WrapWithQuotes;
 using namespace guard::utils;
 
 

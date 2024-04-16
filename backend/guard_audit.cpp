@@ -15,7 +15,7 @@
 
 namespace guard {
 
-using guard::utils::Log;
+using common_utils::Log;
 
 GuardAudit::GuardAudit(AuditType type, const std::string &path)
     : audit_type_(type), audit_file_path_(path) {

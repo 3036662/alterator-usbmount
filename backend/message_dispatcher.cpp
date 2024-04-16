@@ -1,9 +1,9 @@
 #include "message_dispatcher.hpp"
+#include "common_utils.hpp"
 #include "guard_rule.hpp"
 #include "guard_utils.hpp"
 #include "log.hpp"
 #include "types.hpp"
-#include "utils.hpp"
 #include <boost/algorithm/algorithm.hpp>
 #include <boost/algorithm/string.hpp>
 #include <boost/algorithm/string/join.hpp>
@@ -12,8 +12,7 @@
 #include <utility>
 #include <vector>
 
-using guard::utils::Log;
-using namespace utils;
+using namespace common_utils;
 
 MessageDispatcher::MessageDispatcher(guard::Guard &guard) noexcept
     : guard_(guard) {}
@@ -76,7 +75,7 @@ bool MessageDispatcher::ReadUsbGuardLogs(
     Log::Error() << "Wrong parameters for log reading";
     return false;
   }
-  uint page_number = utils::StrToUint(msg.params.at("page")).value_or(0);
+  uint page_number = StrToUint(msg.params.at("page")).value_or(0);
   std::string filter = msg.params.at("filter");
   auto audit = guard_.GetConfigStatus().GetAudit();
   std::vector<std::string> log_lines;
@@ -88,7 +87,7 @@ bool MessageDispatcher::ReadUsbGuardLogs(
   if (!log_lines.empty()) {
     res = boost::join(log_lines, "\n\n");
   }
-  std::cout << ToLisp({"log_data", utils::EscapeQuotes(res)});
+  std::cout << ToLisp({"log_data", EscapeQuotes(res)});
   return true;
 }
 

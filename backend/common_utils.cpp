@@ -1,6 +1,5 @@
-#include "utils.hpp"
+#include "common_utils.hpp"
 #include "log.hpp"
-#include "usb_device.hpp"
 #include <cstddef>
 #include <exception>
 #include <filesystem>
@@ -10,7 +9,7 @@
 #include <string>
 #include <utility>
 
-namespace utils {
+namespace common_utils {
 
 std::string UnUtf8(const std::string &str) noexcept {
   std::string res;
@@ -48,7 +47,7 @@ std::string UnUtf8(const std::string &str) noexcept {
       throw std::runtime_error("Bad utf-8 string");
     }
   } catch (const std::exception &ex) {
-    guard::utils::Log::Error() << ex.what();
+    Log::Error() << ex.what();
   }
   return res;
 }
@@ -68,7 +67,7 @@ std::string UnQuote(const std::string &str) noexcept {
       res = std::string(str, 1, str.size() - 2);
     }
   } catch (const std::exception &ex) {
-    guard::utils::Log::Debug() << "Error Unquoting string(UnQoute)";
+    Log::Debug() << "Error Unquoting string(UnQoute)";
     return str;
   }
   return res;
@@ -149,23 +148,4 @@ std::string EscapeAll(const std::string &str) noexcept {
   return res;
 }
 
-std::vector<guard::UsbDevice> fakeLibGetUsbList() noexcept {
-  std::vector<guard::UsbDevice> res;
-  for (uint i = 0; i < 10; ++i) {
-    std::string str_num = std::to_string(i);
-    guard::UsbDevice::DeviceData dev_data{i,
-                                          "allowed",
-                                          "name" + str_num,
-                                          "vid" + str_num,
-                                          "pid" + str_num,
-                                          "port" + str_num,
-                                          "conn" + str_num,
-                                          "00::00::00",
-                                          "serial" + str_num,
-                                          "hash" + str_num};
-    res.emplace_back(dev_data);
-  }
-  return res;
-}
-
-} // namespace utils
+} // namespace common_utils

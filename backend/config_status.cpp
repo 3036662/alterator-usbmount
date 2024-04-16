@@ -1,9 +1,9 @@
 #include "config_status.hpp"
+#include "common_utils.hpp"
 #include "guard_audit.hpp"
 #include "guard_utils.hpp"
 #include "log.hpp"
 #include "systemd_dbus.hpp"
-#include "utils.hpp"
 #include <algorithm>
 #include <boost/algorithm/string.hpp>
 #include <boost/algorithm/string/trim.hpp>
@@ -18,8 +18,8 @@
 #include <utility>
 
 namespace guard {
-using guard::utils::Log;
-using ::utils::FindAllFilesInDirRecursive;
+using common_utils::FindAllFilesInDirRecursive;
+using common_utils::Log;
 
 ConfigStatus::ConfigStatus() noexcept
     : udev_warnings_{utils::InspectUdevRules()},
@@ -101,7 +101,7 @@ std::string ConfigStatus::GetDaemonConfigPath() const noexcept {
 
 std::optional<std::string>
 ConfigStatus::ExtractConfigFileName(const std::string &line) const noexcept {
-  using utils::Log;
+  using common_utils::Log;
   std::string res;
   if (!boost::algorithm::contains(line, "ExecStart"))
     return std::nullopt;

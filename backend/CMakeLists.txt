@@ -1,11 +1,14 @@
 
 add_library(boost_json OBJECT boost_json.cpp)
 
+add_library(lisp_bindigs OBJECT 
+    lisp_message.cpp
+    common_utils.cpp
+)
+
 add_executable(usbguard main.cpp
-    lisp_message.hpp lisp_message.cpp
     message_reader.hpp message_reader.cpp
     message_dispatcher.cpp message_dispatcher.hpp
-    utils.cpp utils.hpp
     usb_device.cpp usb_device.hpp
     guard.cpp guard.hpp
     config_status.cpp config_status.hpp
@@ -37,12 +40,12 @@ endif()
 
 
 include_directories(usbguard PUBLIC ${USBGUARD_INCLUDE_DIRS})
-include_directories(usbguard PUBLIC $CMAKE_SOURCE_DIR/tests)
 target_include_directories(usbguard PUBLIC  ${CMAKE_SOURCE_DIR}/thirdparty/cppcodec/cppcodec)
 target_include_directories(usbguard PUBLIC  ${CMAKE_SOURCE_DIR}/thirdparty/rapidcsv/src)
 
 
 target_link_libraries(usbguard PRIVATE boost_json)
+target_link_libraries(usbguard PRIVATE lisp_bindigs)
 target_link_libraries(usbguard PRIVATE PkgConfig::USBGUARD)
 target_link_libraries(usbguard PRIVATE SDBusCpp::sdbus-c++)
 
