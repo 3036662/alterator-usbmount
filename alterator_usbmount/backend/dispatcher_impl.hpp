@@ -2,21 +2,21 @@
 #include "message_dispatcher.hpp"
 #include "usb_mount.hpp"
 
-namespace guard {
+namespace alterator::usbmount {
 
 class DispatcherImpl {
 public:
-  explicit DispatcherImpl(Guard &guard);
+  explicit DispatcherImpl(UsbMount &guard);
 
   bool Dispatch(const LispMessage &msg) const noexcept;
 
 private:
-
+  bool ListBlockDevices() const noexcept;
 
   static constexpr const char *kMessBeg = "(";
   static constexpr const char *kMessEnd = ")";
 
-   //&guard_;
+  UsbMount &usbmount_;
 };
 
-} // namespace guard
+} // namespace alterator::usbmount
