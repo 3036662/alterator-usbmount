@@ -1,23 +1,16 @@
-#include "message_dispatcher.hpp"
+#include "dispatcher_impl.hpp"
 #include "common_utils.hpp"
-#include "guard_rule.hpp"
+#include "guard.hpp"
 #include "guard_utils.hpp"
 #include "log.hpp"
-#include "types.hpp"
-#include <boost/algorithm/algorithm.hpp>
-#include <boost/algorithm/string.hpp>
-#include <boost/algorithm/string/join.hpp>
-#include <iostream>
-#include <unordered_set>
-#include <utility>
-#include <vector>
+
+namespace guard {
 
 using namespace common_utils;
 
-MessageDispatcher::MessageDispatcher(guard::Guard &guard) noexcept
-    : guard_(guard) {}
+DispatcherImpl::DispatcherImpl(Guard &guard) : guard_(guard) {}
 
-bool MessageDispatcher::Dispatch(const LispMessage &msg) const noexcept {
+bool DispatcherImpl::Dispatch(const LispMessage &msg) const noexcept {
   // list usbs
   if (msg.action == "list" && msg.objects == "list_curr_usbs") {
     return ListUsbDevices();
@@ -69,8 +62,7 @@ bool MessageDispatcher::Dispatch(const LispMessage &msg) const noexcept {
   return true;
 }
 
-bool MessageDispatcher::ReadUsbGuardLogs(
-    const LispMessage &msg) const noexcept {
+bool DispatcherImpl::ReadUsbGuardLogs(const LispMessage &msg) const noexcept {
   if (msg.params.count("page") == 0 || msg.params.count("filter") == 0) {
     Log::Error() << "Wrong parameters for log reading";
     return false;
@@ -91,7 +83,7 @@ bool MessageDispatcher::ReadUsbGuardLogs(
   return true;
 }
 
-bool MessageDispatcher::UploadRulesFile(const LispMessage &msg) noexcept {
+bool DispatcherImpl::UploadRulesFile(const LispMessage &msg) noexcept {
   auto start = std::chrono::steady_clock::now();
   Log::Debug() << "Uploading file started";
   if (msg.params.count("upload_rules") == 0 ||
@@ -104,7 +96,7 @@ bool MessageDispatcher::UploadRulesFile(const LispMessage &msg) noexcept {
     return true;
   }
   std::optional<std::vector<guard::GuardRule>> vec_rules =
-      guard::utils::UploadRulesCsv(msg.params.at("upload_rules"));
+      utils::UploadRulesCsv(msg.params.at("upload_rules"));
   Log::Debug() << "Rules parsed";
   if (vec_rules.has_value() && !vec_rules->empty()) {
     std::optional<std::string> js_arr = guard::utils::BuildJsonArrayOfUpploaded(
@@ -136,8 +128,8 @@ bool MessageDispatcher::UploadRulesFile(const LispMessage &msg) noexcept {
   return true;
 }
 
-bool MessageDispatcher::SaveChangeRules(const LispMessage &msg,
-                                        bool apply_rules) const noexcept {
+bool DispatcherImpl::SaveChangeRules(const LispMessage &msg,
+                                     bool apply_rules) const noexcept {
   auto start = std::chrono::steady_clock::now();
   // Log::Debug() << "Time measurement has started";
   if (msg.params.count("changes_json") == 0 ||
@@ -166,8 +158,7 @@ bool MessageDispatcher::SaveChangeRules(const LispMessage &msg,
   return true;
 }
 
-bool MessageDispatcher::ListUsbGuardRules(
-    const LispMessage &msg) const noexcept {
+bool DispatcherImpl::ListUsbGuardRules(const LispMessage &msg) const noexcept {
   guard::StrictnessLevel level =
       guard::GuardRule::StrToStrictnessLevel(msg.params.at("level"));
   auto start = std::chrono::steady_clock::now();
@@ -201,7 +192,7 @@ bool MessageDispatcher::ListUsbGuardRules(
   return true;
 }
 
-bool MessageDispatcher::ListUsbDevices() const noexcept {
+bool DispatcherImpl::ListUsbDevices() const noexcept {
   // Log::Debug() << "Time measurement has started";
   std::vector<guard::UsbDevice> vec_usb = guard_.ListCurrentUsbDevices();
   std::cout << kMessBeg;
@@ -212,7 +203,7 @@ bool MessageDispatcher::ListUsbDevices() const noexcept {
   return true;
 }
 
-bool MessageDispatcher::AllowDevice(const LispMessage &msg) const noexcept {
+bool DispatcherImpl::AllowDevice(const LispMessage &msg) const noexcept {
   if (msg.params.count("usb_id") == 0 ||
       msg.params.find("usb_id")->second.empty()) {
     std::cout << kMessBeg << kMessEnd;
@@ -227,7 +218,7 @@ bool MessageDispatcher::AllowDevice(const LispMessage &msg) const noexcept {
   return true;
 }
 
-bool MessageDispatcher::BlockDevice(const LispMessage &msg) const noexcept {
+bool DispatcherImpl::BlockDevice(const LispMessage &msg) const noexcept {
   if (msg.params.count("usb_id") == 0 ||
       msg.params.find("usb_id")->second.empty()) {
     std::cout << kMessBeg << kMessEnd;
@@ -242,7 +233,7 @@ bool MessageDispatcher::BlockDevice(const LispMessage &msg) const noexcept {
   return true;
 }
 
-bool MessageDispatcher::CheckConfig() const noexcept {
+bool DispatcherImpl::CheckConfig() const noexcept {
   Log::Info() << "Check config";
   std::string str = kMessBeg;
   for (const auto &pair : guard_.GetConfigStatus().udev_warnings()) {
@@ -252,3 +243,5 @@ bool MessageDispatcher::CheckConfig() const noexcept {
   std::cout << str;
   return true;
 }
+
+} // namespace guard

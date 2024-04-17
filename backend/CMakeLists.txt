@@ -1,19 +1,15 @@
 
 add_library(boost_json OBJECT boost_json.cpp)
 
-add_library(lisp_bindigs OBJECT 
-    lisp_message.cpp
-    common_utils.cpp
-)
 
-add_executable(usbguard main.cpp
-    message_reader.hpp message_reader.cpp
-    message_dispatcher.cpp message_dispatcher.hpp
-    usb_device.cpp usb_device.hpp
-    guard.cpp guard.hpp
-    config_status.cpp config_status.hpp
-    systemd_dbus.cpp systemd_dbus.hpp
-    guard_rule.cpp guard_rule.cpp
+add_executable(usbguard 
+    main.cpp
+    dispatcher_impl.cpp
+    usb_device.cpp 
+    guard.cpp 
+    config_status.cpp 
+    systemd_dbus.cpp 
+    guard_rule.cpp 
     json_rule.cpp
     guard_utils.cpp
     csv_rule.cpp
@@ -42,10 +38,11 @@ endif()
 include_directories(usbguard PUBLIC ${USBGUARD_INCLUDE_DIRS})
 target_include_directories(usbguard PUBLIC  ${CMAKE_SOURCE_DIR}/thirdparty/cppcodec/cppcodec)
 target_include_directories(usbguard PUBLIC  ${CMAKE_SOURCE_DIR}/thirdparty/rapidcsv/src)
+target_include_directories(usbguard PUBLIC  ${CMAKE_SOURCE_DIR}/alterator_bindings)
 
 
 target_link_libraries(usbguard PRIVATE boost_json)
-target_link_libraries(usbguard PRIVATE lisp_bindigs)
+target_link_libraries(usbguard PRIVATE lisp_bindings)
 target_link_libraries(usbguard PRIVATE PkgConfig::USBGUARD)
 target_link_libraries(usbguard PRIVATE SDBusCpp::sdbus-c++)
 

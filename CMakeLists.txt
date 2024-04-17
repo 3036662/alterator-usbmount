@@ -20,6 +20,9 @@ find_package(sdbus-c++ REQUIRED)
 pkg_check_modules(SYSTEMD REQUIRED IMPORTED_TARGET systemd)
 
 
+# alterator lisp bingings
+add_subdirectory(alterator_bindings)
+
 # backend for alterator-usbguard
 add_subdirectory(backend)
 

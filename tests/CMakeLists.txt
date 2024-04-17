@@ -2,7 +2,7 @@
 add_executable(test
                run.cpp 
                test.cpp 
-               ../backend/common_utils.cpp
+               ${CMAKE_SOURCE_DIR}/alterator_bindings/common_utils.cpp
                ../backend/usb_device.cpp
                ../backend/config_status.cpp
                ../backend/guard.cpp
@@ -15,6 +15,8 @@ add_executable(test
                ../backend/json_changes.cpp
                ../backend/guard_audit.cpp
                )
+
+target_include_directories(test PRIVATE ${CMAKE_SOURCE_DIR}/alterator_bindings)               
 target_include_directories(test PRIVATE ../backend)
 target_include_directories(test PRIVATE .)
 include_directories(test PUBLIC ${USBGUARD_INCLUDE_DIRS})
