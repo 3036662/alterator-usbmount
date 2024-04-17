@@ -1,9 +1,11 @@
 add_executable(usbmount
     main.cpp
     usb_mount.cpp
+    dispatcher_impl.cpp
 )
 
 target_link_libraries(usbmount PRIVATE lisp_bindings)
+target_link_libraries(usbmount PRIVATE SDBusCpp::sdbus-c++)
 target_include_directories(usbmount PUBLIC ${CMAKE_SOURCE_DIR}/alterator_bindings)
 
 if(CMAKE_BUILD_TYPE STREQUAL "Debug")
