@@ -1,6 +1,10 @@
 add_executable(usbmount
     main.cpp
+    usb_mount.cpp
 )
+
+target_link_libraries(usbmount PRIVATE lisp_bindings)
+target_include_directories(usbmount PUBLIC ${CMAKE_SOURCE_DIR}/alterator_bindings)
 
 if(CMAKE_BUILD_TYPE STREQUAL "Debug")
 include(Format)
@@ -10,3 +14,7 @@ AddClangTidy(usbmount)
 AddCppCheck(usbmount_backend_cppcheck)
 add_dependencies(usbmount usbmount_backend_cppcheck)
 endif()
+
+install (TARGETS usbmount 
+    RUNTIME DESTINATION "/usr/lib/alterator/backend3"
+)
