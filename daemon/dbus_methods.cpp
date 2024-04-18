@@ -7,6 +7,7 @@
 #include <boost/json/array.hpp>
 #include <boost/json/object.hpp>
 #include <boost/json/serialize.hpp>
+#include <cstdint>
 #include <exception>
 #include <sdbus-c++/Message.h>
 #include <string>
@@ -26,6 +27,10 @@ DbusMethods::DbusMethods(std::shared_ptr<UdevMonitor> udev_monitor,
   dbus_object_ptr->registerMethod(
       interface_name, "ListDevices", "", "s",
       [this](const sdbus::MethodCall &call) { ListActiveDevices(call); });
+  // ListRules
+  dbus_object_ptr->registerMethod(
+      interface_name, "ListRules", "", "s",
+      [this](const sdbus::MethodCall &call) { ListActiveRules(call); });
   // CanAnotherUserUnmount("/dev/sd..")
   dbus_object_ptr->registerMethod(interface_name, "CanAnotherUserUnmount", "s",
                                   "s", [this](sdbus::MethodCall call) {
@@ -125,7 +130,23 @@ void DbusMethods::ListActiveDevices(const sdbus::MethodCall &call) {
     response_array.emplace_back(std::move(obj));
   }
   sdbus::MethodReply reply = call.createReply();
-  logger_->debug("[DBUS] Response = {}", json::serialize(response_array));
+  // logger_->debug("[DBUS] Response = {}", json::serialize(response_array));
+  reply << json::serialize(response_array);
+  reply.send();
+}
+
+void DbusMethods::ListActiveRules(const sdbus::MethodCall &call) {
+  namespace json = boost::json;
+  logger_->debug("[DBUS][ListActiveRules]");
+  json::array response_array;
+  auto rules = dbase_->permissions.getAll();
+  for (auto &rule : rules) {
+    json::object obj;
+    obj["id"] = std::to_string(rule.first);
+    obj["perm"] = rule.second->ToJson();
+    response_array.emplace_back(std::move(obj));
+  }
+  sdbus::MethodReply reply = call.createReply();
   reply << json::serialize(response_array);
   reply.send();
 }
