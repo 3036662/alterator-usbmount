@@ -39,7 +39,7 @@ private:
   bool is_running_;
   bool reload_;
   std::shared_ptr<spdlog::logger> logger_;
-  std::unique_ptr<UdevMonitor> udev_;
+  std::shared_ptr<UdevMonitor> udev_;
   DbusMethods dbus_methods_; // default construction
 
   // std::unique_ptr<UdisksDbus> udisks_;

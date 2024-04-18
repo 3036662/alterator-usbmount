@@ -1,5 +1,6 @@
 #pragma once
 #include "dal/local_storage.hpp"
+#include "udev_monitor.hpp"
 #include <memory>
 #include <sdbus-c++/Message.h>
 #include <sdbus-c++/sdbus-c++.h>
@@ -15,7 +16,8 @@ public:
   DbusMethods &operator=(const DbusMethods &) = delete;
   DbusMethods &&operator=(DbusMethods &&) = delete;
   DbusMethods() = delete;
-  explicit DbusMethods(std::shared_ptr<spdlog::logger> logger);
+  explicit DbusMethods(std::shared_ptr<UdevMonitor> udev_monitor,
+                       std::shared_ptr<spdlog::logger> logger);
 
   void Run();
 
@@ -25,6 +27,7 @@ private:
 
   void CanAnotherUserUnmount(sdbus::MethodCall);
   void CanUserMount(sdbus::MethodCall);
+  void ListActiveDevices(const sdbus::MethodCall &);
 
   const std::string service_name = "ru.alterator.usbd";
   const std::string object_path = "/ru/alterator/altusbd";
@@ -33,6 +36,7 @@ private:
   std::unique_ptr<sdbus::IObject> dbus_object_ptr;
   std::shared_ptr<spdlog::logger> logger_;
   std::shared_ptr<dal::LocalStorage> dbase_;
+  std::shared_ptr<UdevMonitor> udev_monitor_;
 };
 
 } // namespace usbmount

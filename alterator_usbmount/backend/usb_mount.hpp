@@ -1,4 +1,5 @@
 #pragma once
+#include "active_device.hpp"
 #include <memory>
 #include <sdbus-c++/sdbus-c++.h>
 
@@ -8,7 +9,7 @@ class UsbMount {
 public:
   UsbMount() noexcept;
 
-  std::vector<std::string> ListDevices() const noexcept;
+  std::vector<ActiveDevice> ListDevices() const noexcept;
 
 private:
   const std::string kDest = "ru.alterator.usbd";

@@ -17,12 +17,12 @@ public:
 
   void Run() noexcept;
   void Stop() noexcept;
+  std::vector<UsbUdevDevice> GetConnectedDevices() const noexcept;
 
 private:
   bool StopRequested() noexcept;
   void ProcessDevice() noexcept;
 
-  std::vector<UsbUdevDevice> GetConnectedDevices() const noexcept;
   void ReviewConnectedDevices() noexcept;
   std::shared_ptr<UsbUdevDevice> RecieveDevice() noexcept;
 

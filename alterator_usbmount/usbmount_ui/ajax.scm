@@ -9,4 +9,5 @@
 
 (define (init)
  (ls-devices)
+ (form-bind "btn_prsnt_scan" "click" ls-devices)
 )

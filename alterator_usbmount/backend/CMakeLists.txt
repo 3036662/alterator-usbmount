@@ -2,6 +2,7 @@ add_executable(usbmount
     main.cpp
     usb_mount.cpp
     dispatcher_impl.cpp
+    active_device.cpp
 )
 
 target_link_libraries(usbmount PRIVATE lisp_bindings)

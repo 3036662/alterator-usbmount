@@ -1,5 +1,9 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0//EN" "http://www.w3.org/TR/REC-html40/strict.dtd">
 <html wf="none">
+   <head>
+    <link type="text/css" rel="stylesheet" href="/design/styles/alt_usb_mount.css" />
+   <!-- <script src="/design/scripts/alt-usb-guard.js" /> -->
+   </head>
     <body>
     <form method="POST">
         <table id="devices_list_table" class="alterator-listbox single-select" align="center" name="list_prsnt_devices">
@@ -8,6 +12,8 @@
           <thead>
               <tr>
                 <th>N</th>
+                <th><span translate="_">Block</span></th>
+                <th><span translate="_">Filesystem</span></th>
                 <th><span translate="_">VID</span></th>
                 <th><span translate="_">PID</span></th>
                 <th><span translate="_">SN</span></th>
@@ -18,18 +24,21 @@
           <tbody>              
                   <tr class="wrap">
                     <td><span class="alterator-label" name="name" /></td>                    
-                    <td><span class="alterator-label" name="label_prsnt_usb_vid" /></td>
-                    <td><span class="alterator-label" name="label_prsnt_usb_pid" /></td>
-                    <td><span class="alterator-label" name="label_prsnt_usb_serial" /></td>
-                    <td><span class="alterator-label" name="label_prsnt_usb_status" /></td>
-                    <td><span class="alterator-label" name="label_prsnt_usb_mountpoint" /></td>
+                    <td><span class="alterator-label" name="lbl_block" /></td>
+                    <td><span class="alterator-label" name="lbl_fs" /></td>
+                    <td><span class="alterator-label" name="lbl_vid" /></td>
+                    <td><span class="alterator-label" name="lbl_pid" /></td>
+                    <td><span class="alterator-label" name="lbl_serial" /></td>                    
+                    <td><span class="alterator-label" name="lbl_status" /></td>
+                    <td><span class="alterator-label" name="lbl_mount" /></td>
                   </tr>
           </tbody>
         </table>
         <div name="usb_buttons" class="right_buttons">
                   <input type="button" name="btn_prsnt_scan" class="btn" value="Scan plugged-in USB devices" />&nbsp;&nbsp;
-                  <input type="button" id="btn_prsnt_dev_add" name="btn_prsnt_dev_add" class="btn" value="Allow device" />
+                 <!-- <input type="button" id="btn_prsnt_dev_add" name="btn_prsnt_dev_add" class="btn" value="Allow device" />
                   <input type="button" id="btn_prsnt_dev_block" name="btn_prsnt_dev_block" class="btn" value="Block device" />
+                  -->  
         </div>
       </form>
     </body>  

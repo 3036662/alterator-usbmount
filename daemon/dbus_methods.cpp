@@ -1,21 +1,37 @@
 #include "dbus_methods.hpp"
+#include "dal/dto.hpp"
 #include "dal/local_storage.hpp"
+#include "udev_monitor.hpp"
 #include "usb_udev_device.hpp"
+#include <boost/json.hpp>
+#include <boost/json/array.hpp>
+#include <boost/json/object.hpp>
+#include <boost/json/serialize.hpp>
 #include <exception>
 #include <sdbus-c++/Message.h>
 #include <string>
+#include <utility>
 
 namespace usbmount {
 
-DbusMethods::DbusMethods(std::shared_ptr<spdlog::logger> logger)
+DbusMethods::DbusMethods(std::shared_ptr<UdevMonitor> udev_monitor,
+                         std::shared_ptr<spdlog::logger> logger)
     : connection_(sdbus::createSystemBusConnection(service_name)),
       dbus_object_ptr(sdbus::createObject(*connection_, object_path)),
-      logger_(std::move(logger)), dbase_(dal::LocalStorage::GetStorage()) {
+      logger_(std::move(logger)), dbase_(dal::LocalStorage::GetStorage()),
+      udev_monitor_(std::move(udev_monitor)) {
+  // Health()
   dbus_object_ptr->registerMethod(interface_name, "health", "", "s", Health);
+  // ListDevices()
+  dbus_object_ptr->registerMethod(
+      interface_name, "ListDevices", "", "s",
+      [this](const sdbus::MethodCall &call) { ListActiveDevices(call); });
+  // CanAnotherUserUnmount("/dev/sd..")
   dbus_object_ptr->registerMethod(interface_name, "CanAnotherUserUnmount", "s",
                                   "s", [this](sdbus::MethodCall call) {
                                     CanAnotherUserUnmount(std::move(call));
                                   });
+  // CanUserMount("/dev/sd..")
   dbus_object_ptr->registerMethod(
       interface_name, "CanUserMount", "s", "s",
       [this](sdbus::MethodCall call) { CanUserMount(std::move(call)); });
@@ -81,6 +97,36 @@ void DbusMethods::CanUserMount(sdbus::MethodCall call) {
   }
   // just in case  -must be unreacheable
   reply << "YES";
+  reply.send();
+}
+
+void DbusMethods::ListActiveDevices(const sdbus::MethodCall &call) {
+  namespace json = boost::json;
+  logger_->debug("[DBUS][ListActiveDevices]");
+  auto devices = udev_monitor_->GetConnectedDevices();
+  json::array response_array;
+  for (const auto &dev : devices) {
+    json::object obj;
+    obj["device"] = dev.block_name();
+    obj["vid"] = dev.vid();
+    obj["pid"] = dev.pid();
+    obj["serial"] = dev.serial();
+    obj["fs"] = dev.filesystem();
+    // mount_point
+    auto index_mount = dbase_->mount_points.Find(dev.block_name());
+    if (index_mount)
+      obj["mount"] = dbase_->mount_points.Read(*index_mount).mount_point();
+    else
+      obj["mount"] = "";
+    // permissions
+    auto perm_index = dbase_->permissions.Find(
+        dal::Device({dev.vid(), dev.pid(), dev.serial()}));
+    perm_index.has_value() ? obj["status"] = "owned" : obj["status"] = "free";
+    response_array.emplace_back(std::move(obj));
+  }
+  sdbus::MethodReply reply = call.createReply();
+  logger_->debug("[DBUS] Response = {}", json::serialize(response_array));
+  reply << json::serialize(response_array);
   reply.send();
 }
 

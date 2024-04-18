@@ -1,0 +1,12 @@
+.alterator-listbox caption{
+    background-color: white;
+    border: solid;
+    border-width: thin;
+    margin-bottom: 2px;
+    font-weight: 600;
+}
+
+.right_buttons{
+    float: right;
+    margin-top: 15px;
+}

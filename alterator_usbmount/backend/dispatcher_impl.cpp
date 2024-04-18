@@ -1,4 +1,5 @@
 #include "dispatcher_impl.hpp"
+#include "common_utils.hpp"
 #include "lisp_message.hpp"
 #include "log.hpp"
 #include "usb_mount.hpp"
@@ -20,6 +21,11 @@ bool DispatcherImpl::Dispatch(const LispMessage &msg) const noexcept {
 
 bool DispatcherImpl::ListBlockDevices() const noexcept {
   auto devices = usbmount_.ListDevices();
+  std::cout << kMessBeg;
+  for (const auto &device : devices) {
+    std::cout << common_utils::ToLisp(device);
+  }
+  std::cout << kMessEnd;
   return true;
 }
 
