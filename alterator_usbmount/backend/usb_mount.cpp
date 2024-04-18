@@ -44,7 +44,7 @@ std::vector<ActiveDevice> UsbMount::ListDevices() const noexcept {
     Log::Error() << "Error parsing the daemon response";
     Log::Error() << ex.what();
   }
-  //Log::Debug() << "[ListDevices]" << json_string;
+  // Log::Debug() << "[ListDevices]" << json_string;
   return res;
 }
 
