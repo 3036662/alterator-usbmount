@@ -6,6 +6,7 @@ add_executable(usbmount
 
 target_link_libraries(usbmount PRIVATE lisp_bindings)
 target_link_libraries(usbmount PRIVATE SDBusCpp::sdbus-c++)
+target_link_libraries(usbmount PRIVATE boost_json)
 target_include_directories(usbmount PUBLIC ${CMAKE_SOURCE_DIR}/alterator_bindings)
 
 if(CMAKE_BUILD_TYPE STREQUAL "Debug")
