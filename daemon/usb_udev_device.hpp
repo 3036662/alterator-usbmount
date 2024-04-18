@@ -5,7 +5,7 @@
 
 namespace usbmount {
 
-enum class Action { kRemove, kAdd, kChange, kUndefined };
+enum class Action { kRemove, kAdd, kChange, kNoAction, kUndefined };
 /// a  custom deleter for shared_ptr<udev_device>
 void UdevDeviceFree(udev_device *dev) noexcept;
 

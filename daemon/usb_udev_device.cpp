@@ -90,8 +90,7 @@ void UsbUdevDevice::getUdevDeviceInfo(
       udev_device_get_property_value(device.get(), "ID_MODEL_ID");
   if (p_pid != NULL)
     pid_ = p_pid;
-  // serial number is needed only for "add" action
-  if (action_ == Action::kAdd)
+  if (action_ != Action::kRemove)
     FindSerial(device);
 }
 
@@ -144,11 +143,8 @@ void UsbUdevDevice::SetAction(const char *p_action) {
     else if (tmp == "change")
       action_ = Action::kChange;
     else
-      action_ = Action::kUndefined;
-    if (action_ == Action::kUndefined)
-      throw std::logic_error("Undefined action for device");
-  } else
-    throw std::logic_error("Empty ACTION");
+      action_ = Action::kNoAction;
+  }
 }
 
 std::string UsbUdevDevice::toString() const noexcept {
@@ -163,6 +159,9 @@ std::string UsbUdevDevice::toString() const noexcept {
     break;
   case Action::kChange:
     res << "change";
+    break;
+  case Action::kNoAction:
+    res << "no_action";
     break;
   case Action::kUndefined:
     res << "undefined";
