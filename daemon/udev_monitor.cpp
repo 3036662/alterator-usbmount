@@ -144,44 +144,57 @@ std::shared_ptr<UsbUdevDevice> UdevMonitor::RecieveDevice() noexcept {
   return std::shared_ptr<UsbUdevDevice>();
 }
 
-void UdevMonitor::ReviewConnectedDevices() noexcept {
-  // first review mountpoints
-  utils::ReviewMountPoints(logger_);
-  // get a list of connected block devices
+std::vector<UsbUdevDevice> UdevMonitor::GetConnectedDevices() const noexcept {
+  std::vector<UsbUdevDevice> res;
   using utils::udev::UdevEnumerateFree;
   std::unique_ptr<udev_enumerate, decltype(&UdevEnumerateFree)> enumerate(
       udev_enumerate_new(udev_.get()), UdevEnumerateFree);
   if (!enumerate) {
-    logger_->error("[ReviewDevices] Can't enumerate devices");
-    return;
+    logger_->error("[GetConnectedDevices] Can't enumerate devices");
+    return res;
   }
   if (udev_enumerate_add_match_subsystem(enumerate.get(), "block") < 0) {
     logger_->error("udev_enumerate_add_match_subsystem error");
-    return;
+    return res;
   }
   udev_enumerate_add_match_property(enumerate.get(), "ID_BUS", "usb");
   udev_enumerate_scan_devices(enumerate.get());
   udev_list_entry *entry = udev_enumerate_get_list_entry(enumerate.get());
-  std::unordered_set<std::string> present_devices;
   while (entry != NULL) {
     const char *p_path = udev_list_entry_get_name(entry);
     if (p_path == NULL) {
-      logger_->error("[ReviewDevices] udev_list_entry_get_name error ");
+      logger_->error("[GetConnectedDevices] udev_list_entry_get_name error ");
       continue;
     }
     std::unique_ptr<udev_device, decltype(&UdevDeviceFree)> device(
         udev_device_new_from_syspath(udev_.get(), p_path), UdevDeviceFree);
     if (!device) {
-      logger_->error("[ReviewDevices] udev_device_new_from_syspath error ");
+      logger_->error(
+          "[GetConnectedDevices] udev_device_new_from_syspath error ");
       continue;
     }
-    const char *devnode = udev_device_get_devnode(device.get());
-    if (devnode == NULL)
+    try {
+      res.emplace_back(std::move(device));
+    } catch (const std::exception &ex) {
+      logger_->warn("Cant construt a UdevDevice");
+      logger_->warn(ex.what());
       continue;
-    present_devices.emplace(devnode);
-    logger_->debug(devnode);
-    logger_->flush();
+    }
     entry = udev_list_entry_get_next(entry);
+  }
+  logger_->flush();
+  return res;
+}
+
+void UdevMonitor::ReviewConnectedDevices() noexcept {
+  // first review mountpoints
+  utils::ReviewMountPoints(logger_);
+  // get a list of connected block devices
+  std::unordered_set<std::string> present_devices;
+  auto device_objects = GetConnectedDevices();
+  for (const auto &dev : device_objects) {
+    present_devices.emplace(dev.block_name());
+    logger_->debug("[ReviewConnectedDevices] found {}", dev.block_name());
   }
   // get all mounted from db
   auto mountpoints = dbase_->mount_points.GetAll();
