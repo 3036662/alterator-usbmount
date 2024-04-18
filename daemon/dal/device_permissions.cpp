@@ -10,6 +10,7 @@
 #include <shared_mutex>
 #include <stdexcept>
 #include <utility>
+#include <vector>
 
 namespace usbmount::dal {
 
@@ -81,6 +82,19 @@ void DevicePermissions::Update(uint64_t index, const Dto &dto) {
   data_.at(index) = std::make_shared<PermissionEntry>(entry);
   lock.unlock();
   WriteRaw();
+}
+
+std::map<uint64_t, std::shared_ptr<const PermissionEntry>>
+DevicePermissions::getAll() const noexcept {
+  std::map<uint64_t, std::shared_ptr<const PermissionEntry>> res;
+  std::shared_lock<std::shared_mutex> lock(data_mutex_);
+  for (const auto &entry : data_) {
+    auto perm = std::dynamic_pointer_cast<const PermissionEntry>(entry.second);
+    if (perm) {
+      res.emplace(entry.first, perm);
+    }
+  }
+  return res;
 }
 
 } // namespace usbmount::dal

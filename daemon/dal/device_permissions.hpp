@@ -1,6 +1,8 @@
 #pragma once
+#include "dto.hpp"
 #include "table.hpp"
 #include <cstdint>
+#include <vector>
 
 namespace usbmount::dal {
 
@@ -40,6 +42,9 @@ public:
    * @return std::optional<uint64_t> index or empty if nothing was found
    */
   std::optional<uint64_t> Find(const Device &dev) const noexcept;
+
+  std::map<uint64_t, std::shared_ptr<const PermissionEntry>>
+  getAll() const noexcept;
 
 private:
   /**
