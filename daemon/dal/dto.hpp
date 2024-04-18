@@ -43,6 +43,10 @@ public:
 
   json::value ToJson() const noexcept override;
 
+  inline const std::string &vid() const noexcept { return vid_; }
+  inline const std::string &pid() const noexcept { return pid_; }
+  inline const std::string &serial() const noexcept { return serial_; }
+
 private:
   std::string vid_;
   std::string pid_;
