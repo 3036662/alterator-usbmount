@@ -37,16 +37,6 @@ void MountDevice(std::shared_ptr<UsbUdevDevice> ptr_device,
  */
 bool ReviewMountPoints(const std::shared_ptr<spdlog::logger> &logger) noexcept;
 
-/**
- * @brief Utility function for timing
- */
-template <class result_t = std::chrono::milliseconds,
-          class clock_t = std::chrono::high_resolution_clock,
-          class duration_t = std::chrono::milliseconds>
-auto since(std::chrono::time_point<clock_t, duration_t> const &start) {
-  return std::chrono::duration_cast<result_t>(clock_t::now() - start);
-}
-
 namespace udev {
 /**
  * @brief A custom deleter for udev_enumerate struct
