@@ -15,6 +15,9 @@ bool DispatcherImpl::Dispatch(const LispMessage &msg) const noexcept {
   if (msg.action == "list" && msg.objects == "list_block") {
     return ListBlockDevices();
   }
+  if (msg.action == "read" && msg.objects == "list-devices") {
+    return ListRules();
+  }
   std::cout << kMessBeg << kMessEnd;
   return true;
 }
@@ -25,6 +28,14 @@ bool DispatcherImpl::ListBlockDevices() const noexcept {
   for (const auto &device : devices) {
     std::cout << common_utils::ToLisp(device);
   }
+  std::cout << kMessEnd;
+  return true;
+}
+
+bool DispatcherImpl::ListRules() const noexcept {
+  using namespace common_utils;
+  std::cout << kMessBeg;
+  std::cout << WrapWithQuotes(EscapeQuotes(usbmount_.getRulesJson()));
   std::cout << kMessEnd;
   return true;
 }

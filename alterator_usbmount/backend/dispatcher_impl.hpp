@@ -12,6 +12,7 @@ public:
 
 private:
   bool ListBlockDevices() const noexcept;
+  bool ListRules() const noexcept;
 
   static constexpr const char *kMessBeg = "(";
   static constexpr const char *kMessEnd = ")";

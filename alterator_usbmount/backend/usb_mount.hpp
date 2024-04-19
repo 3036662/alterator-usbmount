@@ -10,6 +10,7 @@ public:
   UsbMount() noexcept;
 
   std::vector<ActiveDevice> ListDevices() const noexcept;
+  std::string getRulesJson() const noexcept;
 
 private:
   const std::string kDest = "ru.alterator.usbd";
