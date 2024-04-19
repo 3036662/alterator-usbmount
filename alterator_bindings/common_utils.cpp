@@ -84,6 +84,8 @@ std::string QuoteIfNotQuoted(const std::string &str) noexcept {
 std::optional<uint32_t> StrToUint(const std::string &str) noexcept {
   uint32_t res = 0;
   try {
+    if (!str.empty() && str[0] == '-')
+      throw std::exception();
     size_t pos = 0;
     res = static_cast<uint32_t>(std::stoul(str, &pos, 10));
     if (pos != str.size())
