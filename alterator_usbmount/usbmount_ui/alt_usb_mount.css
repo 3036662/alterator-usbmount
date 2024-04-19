@@ -10,3 +10,43 @@
     float: right;
     margin-top: 15px;
 }
+
+.rules_list{
+    width: 100%;
+    font-size: 8pt;
+    border: 1px solid #808080;
+    border-spacing: 0;
+    font-family: Arial;
+    text-align: left;
+}
+.rules_list caption{
+    background-color: white;
+    border: solid;
+    border-width: thin;
+    margin-bottom: 2px;
+    font-weight: 600;
+}
+
+.rules_list thead tr th{
+    padding: 4px;
+    background-color: #e6e6e6;
+    border: 1px solid #808080;
+    vertical-align: middle;
+
+}
+
+.rules_list tr td{
+    padding: 4px;
+    color: #001056;
+    border-right: 1px solid #808080;
+}
+.tr_odd{
+   background-color: #f0f0f0; 
+}
+
+.tr_even{
+    background-color: white;
+}
+.tr_selected{
+    background-color: #D0E1FF;
+}

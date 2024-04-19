@@ -16,3 +16,8 @@ install(FILES
     ${CMAKE_CURRENT_SOURCE_DIR}/usbmount_ui/alt_usb_mount.css
     DESTINATION "/usr/share/alterator/design/styles"
 )
+
+install(FILES
+    ${CMAKE_CURRENT_SOURCE_DIR}/usbmount_ui/alt_usb_mount.js
+    DESTINATION "/usr/share/alterator/design/scripts"
+)
