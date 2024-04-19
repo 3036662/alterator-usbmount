@@ -29,6 +29,7 @@ private:
   void CanUserMount(sdbus::MethodCall);
   void ListActiveDevices(const sdbus::MethodCall &);
   void ListActiveRules(const sdbus::MethodCall &);
+  void GetSystemUsersAndGroups(const sdbus::MethodCall &);
 
   const std::string service_name = "ru.alterator.usbd";
   const std::string object_path = "/ru/alterator/altusbd";

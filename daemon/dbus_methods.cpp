@@ -15,6 +15,8 @@
 
 namespace usbmount {
 
+namespace json = boost::json;
+
 DbusMethods::DbusMethods(std::shared_ptr<UdevMonitor> udev_monitor,
                          std::shared_ptr<spdlog::logger> logger)
     : connection_(sdbus::createSystemBusConnection(service_name)),
@@ -106,7 +108,6 @@ void DbusMethods::CanUserMount(sdbus::MethodCall call) {
 }
 
 void DbusMethods::ListActiveDevices(const sdbus::MethodCall &call) {
-  namespace json = boost::json;
   logger_->debug("[DBUS][ListActiveDevices]");
   auto devices = udev_monitor_->GetConnectedDevices();
   json::array response_array;
@@ -136,7 +137,6 @@ void DbusMethods::ListActiveDevices(const sdbus::MethodCall &call) {
 }
 
 void DbusMethods::ListActiveRules(const sdbus::MethodCall &call) {
-  namespace json = boost::json;
   logger_->debug("[DBUS][ListActiveRules]");
   json::array response_array;
   auto rules = dbase_->permissions.getAll();
@@ -149,6 +149,10 @@ void DbusMethods::ListActiveRules(const sdbus::MethodCall &call) {
   sdbus::MethodReply reply = call.createReply();
   reply << json::serialize(response_array);
   reply.send();
+}
+
+void DbusMethods::GetSystemUsersAndGroups(const sdbus::MethodCall &) {
+  logger_->debug("[DBUS][GetUsersAndGroups]");
 }
 
 } // namespace usbmount
