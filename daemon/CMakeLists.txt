@@ -1,23 +1,29 @@
 add_executable(altusbd 
     main.cpp
-    daemon.cpp
-    udev_monitor.cpp
-   # udisks_dbus.cpp 
-    utils.cpp
-    usb_udev_device.cpp
-    custom_mount.cpp
-    dbus_methods.cpp#
+)
+
+add_library(daemon_libs OBJECT
+     utils.cpp
+     custom_mount.cpp
+     usb_udev_device.cpp
+     daemon.cpp
+     udev_monitor.cpp
+     dbus_methods.cpp
+     #udisks_dbus.cpp 
 )
 
 add_subdirectory(dal)
 target_link_libraries(altusbd PRIVATE DAL)
 target_link_libraries(altusbd PRIVATE boost_json)
+target_link_libraries(altusbd PRIVATE daemon_libs)
+
 
 if(CMAKE_BUILD_TYPE STREQUAL "Debug")
-    include(Format)
-    Format(altusbd .)
-    include(ClangTidy)
-    AddClangTidy(altusbd)
+   add_subdirectory(test)
+   include(Format)
+   Format(altusbd .)
+   include(ClangTidy)
+   AddClangTidy(altusbd)
    # add_dependencies(altusbd run_cppcheck)
    AddCppCheck(daemon_cppcheck)
    add_dependencies(altusbd daemon_cppcheck)
