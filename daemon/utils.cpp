@@ -1,18 +1,23 @@
 #include "utils.hpp"
 #include "custom_mount.hpp"
 #include "dal/local_storage.hpp"
+#include "spdlog/async.h"
 #include "usb_udev_device.hpp"
 #include <acl/libacl.h>
 #include <boost/algorithm/string/predicate.hpp>
+#include <boost/algorithm/string/regex.hpp>
+#include <boost/algorithm/string/trim.hpp>
+#include <boost/regex.hpp>
 #include <cerrno>
+#include <cstdint>
 #include <cstring>
 #include <exception>
 #include <filesystem>
-
-#include "spdlog/async.h"
+#include <fstream>
 #include <iostream>
 #include <libudev.h>
 #include <mntent.h>
+#include <optional>
 #include <spdlog/common.h>
 #include <sstream>
 #include <stdexcept>
@@ -21,6 +26,7 @@
 #include <sys/types.h>
 #include <syslog.h>
 #include <thread>
+#include <vector>
 
 namespace usbmount::utils {
 
@@ -79,6 +85,96 @@ bool ReviewMountPoints(const std::shared_ptr<spdlog::logger> &logger) noexcept {
   endmntent(p_file);
   dbase->mount_points.RemoveExpired(mtab_mountpoints);
   return true;
+}
+
+std::optional<IdMinMax> GetSystemUidMinMax(const logger_t &logger) noexcept {
+  const std::string fname = "/etc/login.defs";
+  try {
+    if (!std::filesystem::exists(fname)) {
+      logger->error("[GetSystemUidMinMax] file {} was not found", fname);
+      return std::nullopt;
+    }
+  } catch (const std::exception &ex) {
+    logger->error("[GetSystemUidMinMax] {}", ex.what());
+    return std::nullopt;
+  }
+  std::ifstream defs_file(fname);
+  if (!defs_file.is_open()) {
+    logger->error("[GetSystemUidMinMax] can't open {}", fname);
+    return std::nullopt;
+  }
+  boost::regex whitespace("\\s+");
+  std::string line;
+  IdMinMax res{0, 0, 0, 0};
+  bool res_ok = false;
+  try {
+    while (std::getline(defs_file, line)) {
+      boost::trim(line);
+      if (line.empty() || boost::starts_with(line, "#"))
+        continue;
+      std::vector<std::string> tokens;
+      boost::split_regex(tokens, line, whitespace);
+      if (tokens.size() > 1) {
+        if (tokens[0] == "UID_MIN")
+          res.uid_min = static_cast<uid_t>(StrToUint(tokens[1]));
+        else if (tokens[0] == "UID_MAX")
+          res.uid_max = static_cast<uid_t>(StrToUint(tokens[1]));
+        else if (tokens[0] == "GID_MIN")
+          res.gid_min = static_cast<gid_t>(StrToUint(tokens[1]));
+        else if (tokens[0] == "GID_MAX")
+          res.gid_max = static_cast<gid_t>(StrToUint(tokens[1]));
+      }
+      if (res.uid_min > 0 && res.uid_max > 0 && res.gid_min > 0 &&
+          res.gid_max > 0) {
+        res_ok = true;
+        break;
+      }
+    }
+  } catch (const std::exception &ex) {
+    logger->error("Error parsing {}", fname);
+    logger->error(ex.what());
+    defs_file.close();
+    return std::nullopt;
+  }
+  defs_file.close();
+  return res_ok ? std::make_optional(res) : std::nullopt;
+}
+
+std::vector<std::string> GetPossibleShells(const logger_t &logger) noexcept {
+  std::vector<std::string> res;
+  const std::string fname = "/etc/shells";
+  try {
+    if (!std::filesystem::exists(fname))
+      throw std::runtime_error("File not found " + fname);
+  } catch (const std::exception &ex) {
+    logger->error("[GetPossibleShells] {}", ex.what());
+    return res;
+  }
+  std::ifstream file(fname);
+  if (!file.is_open()) {
+    logger->error("Can't open file {}", fname);
+    return res;
+  }
+  std::string line;
+  while (std::getline(file, line)) {
+    boost::trim(line);
+    if (line.empty())
+      continue;
+    res.emplace_back(std::move(line));
+  }
+  file.close();
+  return res;
+}
+
+uint64_t StrToUint(const std::string &str) {
+  uint64_t res = 0;
+  size_t pos = 0;
+  if (!str.empty() && str[0] == '-')
+    throw std::invalid_argument("Can't parse to uint " + str);
+  res = static_cast<uint64_t>(std::stoul(str, &pos, 10));
+  if (pos != str.size())
+    throw std::invalid_argument("Can't parse to uint " + str);
+  return res;
 }
 
 namespace udev {

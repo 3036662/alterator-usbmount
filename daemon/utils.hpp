@@ -1,5 +1,6 @@
 #pragma once
 #include "custom_mount.hpp"
+#include "dal/dto.hpp"
 #include "usb_udev_device.hpp"
 #include <acl/libacl.h>
 #include <chrono>
@@ -13,8 +14,12 @@
 #include <sys/acl.h>
 #include <sys/syslog.h>
 #include <sys/types.h>
+#include <unordered_map>
+#include <vector>
 
 namespace usbmount::utils {
+
+using logger_t = std::shared_ptr<spdlog::logger>;
 
 /**
  * @brief Logger initialization
@@ -36,6 +41,38 @@ void MountDevice(std::shared_ptr<UsbUdevDevice> ptr_device,
  * @brief Check for expired mountpoints in local table
  */
 bool ReviewMountPoints(const std::shared_ptr<spdlog::logger> &logger) noexcept;
+
+/**
+ * @brief read /etc/login.defs for UID_MIN,UID_MAX,GID_MIN,GID_MAX
+ *
+ */
+struct IdMinMax {
+  uid_t uid_min = 0;
+  uid_t uid_max = 0;
+  gid_t gid_min = 0;
+  gid_t gid_max = 0;
+};
+
+/**
+ * @brief Get the System User ID Min Max
+ * @return std::unordered_map<std::string,std::pair<uid_t,uid_t>>
+ */
+std::optional<IdMinMax> GetSystemUidMinMax(const logger_t &) noexcept;
+
+/**
+ * @brief Get the Possible Shells for user
+ * @return std::vector<std::string>
+ */
+std::vector<std::string> GetPossibleShells(const logger_t &) noexcept;
+
+/**
+ * @brief string to uint_64
+ *
+ * @param str
+ * @return uint64_t
+ * @throws std::invalid_argument
+ */
+uint64_t StrToUint(const std::string &str);
 
 namespace udev {
 /**
