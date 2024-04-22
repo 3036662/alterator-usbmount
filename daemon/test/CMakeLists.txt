@@ -9,7 +9,7 @@ target_link_libraries(test_daemon PRIVATE daemon_libs)
 target_link_libraries(test_daemon PRIVATE boost_json)
 target_link_libraries(test_daemon PRIVATE DAL)
 target_include_directories(test_daemon PUBLIC ${CMAKE_SOURCE_DIR}/alterator_bindings/ )
-target_link_libraries(test_daemon PRIVATE common_utils)
+
 
 include(CTest)
 include(Catch)
