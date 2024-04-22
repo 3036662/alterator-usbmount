@@ -1,11 +1,13 @@
 #include "utils.hpp"
 #include "custom_mount.hpp"
+#include "dal/dto.hpp"
 #include "dal/local_storage.hpp"
 #include "spdlog/async.h"
 #include "usb_udev_device.hpp"
 #include <acl/libacl.h>
 #include <boost/algorithm/string/predicate.hpp>
 #include <boost/algorithm/string/regex.hpp>
+#include <boost/algorithm/string/split.hpp>
 #include <boost/algorithm/string/trim.hpp>
 #include <boost/regex.hpp>
 #include <cerrno>
@@ -26,6 +28,7 @@
 #include <sys/types.h>
 #include <syslog.h>
 #include <thread>
+#include <unordered_set>
 #include <vector>
 
 namespace usbmount::utils {
@@ -140,8 +143,9 @@ std::optional<IdMinMax> GetSystemUidMinMax(const logger_t &logger) noexcept {
   return res_ok ? std::make_optional(res) : std::nullopt;
 }
 
-std::vector<std::string> GetPossibleShells(const logger_t &logger) noexcept {
-  std::vector<std::string> res;
+std::unordered_set<std::string>
+GetPossibleShells(const logger_t &logger) noexcept {
+  std::unordered_set<std::string> res;
   const std::string fname = "/etc/shells";
   try {
     if (!std::filesystem::exists(fname))
@@ -160,7 +164,86 @@ std::vector<std::string> GetPossibleShells(const logger_t &logger) noexcept {
     boost::trim(line);
     if (line.empty())
       continue;
-    res.emplace_back(std::move(line));
+    res.emplace(std::move(line));
+  }
+  file.close();
+  return res;
+}
+
+std::vector<dal::User> GetHumanUsers(const IdMinMax &id_limits,
+                                     const logger_t &logger) noexcept {
+  std::vector<dal::User> res;
+  std::unordered_set<std::string> shells = GetPossibleShells(logger);
+  const std::string fpath = "/etc/passwd";
+  namespace fs = std::filesystem;
+  try {
+    if (!fs::exists(fpath))
+      throw std::runtime_error("File not found " + fpath);
+  } catch (const std::exception &ex) {
+    logger->error("[GetHumanUsers] {}", ex.what());
+    return res;
+  }
+  std::ifstream file(fpath);
+  if (!file.is_open()) {
+    logger->error("[GetHumanUsers] Can't open file {}", fpath);
+    return res;
+  }
+  std::string line;
+  while (std::getline(file, line)) {
+    std::vector<std::string> tokens;
+    boost::split(tokens, line, [](const char symbol) { return symbol == ':'; });
+    if (tokens.size() == 7 && !tokens[0].empty() &&
+        shells.count(tokens[6]) > 0) {
+      try {
+        uid_t uid = StrToUint(tokens[2]);
+        gid_t gid = StrToUint(tokens[3]);
+        if (uid >= id_limits.uid_min && uid <= id_limits.uid_max &&
+            gid >= id_limits.gid_min && gid <= id_limits.gid_max)
+          res.emplace_back(uid, std::move(tokens[0]));
+      } catch (const std::exception &ex) {
+        logger->warn("Can't parse {} string: {}", fpath, line);
+        continue;
+      }
+    }
+    tokens.clear();
+  }
+  file.close();
+  return res;
+}
+
+std::vector<dal::Group> GetHumanGroups(const IdMinMax &id_limits,
+                                       const logger_t &logger) noexcept {
+  std::vector<dal::Group> res;
+  const std::string fpath = "/etc/group";
+  namespace fs = std::filesystem;
+  try {
+    if (!fs::exists(fpath))
+      throw std::runtime_error("File not found " + fpath);
+  } catch (const std::exception &ex) {
+    logger->error("[GetHumanUsers] {}", ex.what());
+    return res;
+  }
+  std::ifstream file(fpath);
+  if (!file.is_open()) {
+    logger->error("[GetHumanUsers] Can't open file {}", fpath);
+    return res;
+  }
+  std::string line;
+  while (std::getline(file, line)) {
+    std::vector<std::string> tokens;
+    boost::split(tokens, line, [](const char symbol) { return symbol == ':'; });
+    if (tokens.size() >= 3 && !tokens[0].empty()) {
+      try {
+        uid_t uid = StrToUint(tokens[2]);
+        if (uid >= id_limits.uid_min && uid <= id_limits.uid_max) {
+          res.emplace_back(uid, std::move(tokens[0]));
+        }
+      } catch (const std::exception &ex) {
+        logger->warn("Can't parse {} string: {}", fpath, line);
+        continue;
+      }
+    }
+    tokens.clear();
   }
   file.close();
   return res;

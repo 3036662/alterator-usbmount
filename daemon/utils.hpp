@@ -61,9 +61,23 @@ std::optional<IdMinMax> GetSystemUidMinMax(const logger_t &) noexcept;
 
 /**
  * @brief Get the Possible Shells for user
- * @return std::vector<std::string>
+ * @return std::unordered_set<std::string>
  */
-std::vector<std::string> GetPossibleShells(const logger_t &) noexcept;
+std::unordered_set<std::string> GetPossibleShells(const logger_t &) noexcept;
+
+/**
+ * @brief Get the Human Users array
+ * @return std::vector<dal::User>
+ */
+std::vector<dal::User> GetHumanUsers(const IdMinMax &,
+                                     const logger_t &) noexcept;
+
+/**
+ * @brief Get the Guman Groups array
+ * @return std::vector<dal::Group>
+ */
+std::vector<dal::Group> GetHumanGroups(const IdMinMax &,
+                                       const logger_t &) noexcept;
 
 /**
  * @brief string to uint_64
