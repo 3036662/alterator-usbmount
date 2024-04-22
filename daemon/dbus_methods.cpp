@@ -3,14 +3,16 @@
 #include "dal/local_storage.hpp"
 #include "udev_monitor.hpp"
 #include "usb_udev_device.hpp"
+#include "utils.hpp"
 #include <boost/json.hpp>
 #include <boost/json/array.hpp>
 #include <boost/json/object.hpp>
 #include <boost/json/serialize.hpp>
-#include <cstdint>
 #include <exception>
+#include <iterator>
 #include <sdbus-c++/Message.h>
 #include <string>
+#include <sys/socket.h>
 #include <utility>
 
 namespace usbmount {
@@ -33,6 +35,10 @@ DbusMethods::DbusMethods(std::shared_ptr<UdevMonitor> udev_monitor,
   dbus_object_ptr->registerMethod(
       interface_name, "ListRules", "", "s",
       [this](const sdbus::MethodCall &call) { ListActiveRules(call); });
+  // Get users and groups
+  dbus_object_ptr->registerMethod(
+      interface_name, "GetUsersAndGroups", "", "s",
+      [this](const sdbus::MethodCall &call) { GetSystemUsersAndGroups(call); });
   // CanAnotherUserUnmount("/dev/sd..")
   dbus_object_ptr->registerMethod(interface_name, "CanAnotherUserUnmount", "s",
                                   "s", [this](sdbus::MethodCall call) {
@@ -151,8 +157,27 @@ void DbusMethods::ListActiveRules(const sdbus::MethodCall &call) {
   reply.send();
 }
 
-void DbusMethods::GetSystemUsersAndGroups(const sdbus::MethodCall &) {
+void DbusMethods::GetSystemUsersAndGroups(const sdbus::MethodCall &call) {
   logger_->debug("[DBUS][GetUsersAndGroups]");
+  json::object res;
+  const auto id_limits = utils::GetSystemUidMinMax(logger_);
+  if (id_limits.has_value()) {
+    auto users = utils::GetHumanUsers(id_limits.value(), logger_);
+    if (!std::empty(users)) {
+      res["users"] = json::array();
+      for (const auto &usr : users)
+        res["users"].as_array().emplace_back(usr.ToJson());
+    }
+    auto groups = utils::GetHumanGroups(id_limits.value(), logger_);
+    if (!groups.empty()) {
+      res["groups"] = json::array();
+      for (const auto &grp : groups)
+        res["groups"].as_array().emplace_back(grp.ToJson());
+    }
+  }
+  sdbus::MethodReply reply = call.createReply();
+  reply << json::serialize(res);
+  reply.send();
 }
 
 } // namespace usbmount
