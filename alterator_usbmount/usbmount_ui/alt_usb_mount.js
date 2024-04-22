@@ -35,9 +35,9 @@ function AppendTheRule(item,index){
     let new_row =tBody.insertRow(-1);    
     index % 2 == 0 ? new_row.classList.add("tr_even"):new_row.classList.add("tr_odd");
     InsertCell(new_row,item.id);
-    InsertCell(new_row,item.perm.device.vid);
-    InsertCell(new_row,item.perm.device.pid);
-    InsertCell(new_row,item.perm.device.serial);
+    InsertCell(new_row,item.perm.device.vid,'rule_vid');
+    InsertCell(new_row,item.perm.device.pid,'rule_pid');
+    InsertCell(new_row,item.perm.device.serial,'rule_serial');
     InsertCell(new_row,item.perm.users[0].name,"rule_user");
     InsertCell(new_row,item.perm.groups[0].name,"rule_group");  
 }
@@ -77,10 +77,28 @@ function BindDoubleClick(){
      user_cells.forEach(cell => {
          cell.addEventListener('dblclick',function(e){DblClickOnUserOrGroup(e,'rule_user_val','users_list');});
      });
+     // double click on groups
      let group_cells=table.querySelectorAll('td.rule_group');
      group_cells.forEach(cell => {
          cell.addEventListener('dblclick',function(e){DblClickOnUserOrGroup(e,'rule_group_val','groups_list'); });
      });
+
+     // double click on vid
+     let vid_cells =table.querySelectorAll('td.rule_vid');
+     vid_cells.forEach(cell => {
+        cell.addEventListener('dblclick',function(e){DblClickOnEditable(e,'rule_vid_val');})
+     });
+     // double click on pid
+     let pid_cells =table.querySelectorAll('td.rule_pid');
+     pid_cells.forEach(cell => {
+        cell.addEventListener('dblclick',function(e){DblClickOnEditable(e,'rule_pid_val');})
+     });
+     // double click on serial
+     let serial_cells =table.querySelectorAll('td.rule_serial');
+     serial_cells.forEach(cell => {
+         cell.addEventListener('dblclick',function(e){DblClickOnEditable(e,'rule_serial_val');})
+      });
+
 }
 
 // ------------------- local data ---------------------
@@ -147,4 +165,42 @@ function CreateUserGroupSelect(span_class,storage_name){
     });
     return dropdown;
 }
+
+// ------------- edit vid,pid or serial ----------------------
+
+function DblClickOnEditable(event,span_class){
+    let td_el;
+    let span_el;
+    if (event.target.nodeName=="TD"){
+        td_el=event.target;
+        span_el=td_el.querySelector('span.'+span_class);
+    } else if(event.target.nodeName=="SPAN") {
+        span_el=event.target;
+        td_el=span_el.parentElement;
+    }
+    if (span_el)
+        span_el.classList.add('hidden');
+    if (td_el){
+        let input=CreateInput(span_class,span_el.textContent);
+        td_el.appendChild(input);
+        input.focus();
+    }
+}
+
+function CreateInput(span_class,initial_text){
+    let input = document.createElement("input");
+    input.value=initial_text;
+    // add event on focus out - if nothing was chosen, remove select
+    input.addEventListener("focusout", (event) => {
+        if (!event.target.value || event.target.value===initial_text){
+            // show a sibling span
+            event.target.parentElement.querySelector('span.'+span_class).classList.remove('hidden');
+            // remove select
+            event.target.remove();
+        }
+    });
+    return input;
+}
+
+
 
