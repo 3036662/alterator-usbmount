@@ -41,7 +41,7 @@
                   -->  
         </div>
     </form>
-    <form method="POST">
+    <form method="POST" onsubmit="return false;">
       <table id="rules_list_table" class="rules_list" align="center" name="list_rules">
         <p><span translate="_">Rules:</span></p>
         <caption><span translate="_">List of rules</span></caption>  
@@ -62,13 +62,14 @@
                   <td><span class="alterator-label" name="lbl_rule_pid" /></td>
                   <td><span class="alterator-label" name="lbl_rule_serial" /></td>                    
                   <td><span class="alterator-label" name="lbl_rule_user" /></td>
-                  <td><span class="alterator-label" name="lbl_rule_group" /></td>
+                  <td><span class="alterator-label" name="lbl_rule_group" /></td>                 
                 </tr>          
         </tbody>
       </table>
       <div name="usb_buttons" class="right_buttons">
-                <input type="button" name="btn_prsnt_scan" class="btn" value="Scan plugged-in USB devices" />&nbsp;&nbsp;
-               <!-- <input type="button" id="btn_prsnt_dev_add" name="btn_prsnt_dev_add" class="btn" value="Allow device" />
+        <input type="button" class="like_btn" value="Edit" id="edit_rule_btn"/>
+        <!--   <input type="button" name="btn_prsnt_scan" class="btn" value="Scan plugged-in USB devices" />&nbsp;&nbsp;
+               <input type="button" id="btn_prsnt_dev_add" name="btn_prsnt_dev_add" class="btn" value="Allow device" />
                 <input type="button" id="btn_prsnt_dev_block" name="btn_prsnt_dev_block" class="btn" value="Block device" />
                 -->  
       </div>

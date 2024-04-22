@@ -1,6 +1,7 @@
 function InitUi(){
     BindRowSelect();
-    BindDoubleClick();  
+    BindDoubleClick();
+    BinEditRow();  
 }
 
 // ------------------- rules list -------------------------
@@ -40,6 +41,17 @@ function AppendTheRule(item,index){
     InsertCell(new_row,item.perm.device.serial,'rule_serial');
     InsertCell(new_row,item.perm.users[0].name,"rule_user");
     InsertCell(new_row,item.perm.groups[0].name,"rule_group");  
+    // insert a pen picture
+    // let cell=new_row.insertCell(-1);
+    // let svg=document.createElementNS("http://www.w3.org/2000/svg", "svg");
+    // svg.setAttribute("xmlns", "http://www.w3.org/2000/svg");
+    // svg.setAttribute("viewBox", "0 0 0.72 0.72");
+    // svg.setAttribute("width", "24");
+    // svg.setAttribute("height", "24");
+    // const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+    // path.setAttribute('d',"M0.659 0.217A0.036 0.036 0 0 0 0.652 0.197L0.523 0.068A0.036 0.036 0 0 0 0.503 0.061a0.036 0.036 0 0 0 -0.02 0.008l-0.085 0.084 -0.329 0.328A0.036 0.036 0 0 0 0.06 0.502v0.128A0.036 0.036 0 0 0 0.09 0.66h0.128A0.036 0.036 0 0 0 0.241 0.653L0.568 0.325 0.652 0.24 0.658 0.23V0.22ZM0.205 0.6H0.12V0.515L0.418 0.217l0.085 0.085ZM0.546 0.259 0.461 0.174 0.504 0.133l0.085 0.085Z");
+    // svg.appendChild(path);
+    // cell.appendChild(svg);
 }
 
 function InsertCell(row,text,htmlclass){
@@ -66,8 +78,32 @@ function BindRowSelect(){
         });
         const clicked_row=event.target.closest('tr');
         if (clicked_row) clicked_row.classList.toggle('tr_selected');
+        let button=document.getElementById("edit_rule_btn");
+        if (button){
+            button.disabled=false;
+            button.classList.remove('like_btn_disabled');    
+            button.classList.add('like_btn');        
+        }
+
     });
 }
+
+// edit row button
+function BinEditRow(){    
+    let button=document.getElementById('edit_rule_btn');
+    button.disabled=true;
+    button.classList.add('like_btn_disabled');
+    button.classList.remove('like_btn');
+    button.addEventListener('click',function(e){
+        let table = document.getElementById('rules_list_table');
+        let selected_row=table.querySelector('tr.tr_selected');
+        if (selected_row){
+            // TODO open row editor
+            alert("click edit");
+        }
+    });
+}; 
+
 
 // bind boudle-clicks on table cells
 function BindDoubleClick(){
@@ -201,6 +237,8 @@ function CreateInput(span_class,initial_text){
     });
     return input;
 }
+
+// ------------------- edit row -------------
 
 
 
