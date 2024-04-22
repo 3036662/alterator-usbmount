@@ -23,6 +23,7 @@
 
 (define (init)
  (js "InitUi")
+ (js "SetUsersAndGroups" (car(removeFirstElement(woo-read "/usbmount/get_users_groups"))))
  (ls-rules)
  (ls-devices)
  (form-bind "btn_prsnt_scan" "click" ls-devices)

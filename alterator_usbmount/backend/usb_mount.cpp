@@ -48,14 +48,22 @@ std::vector<ActiveDevice> UsbMount::ListDevices() const noexcept {
   return res;
 }
 
-std::string UsbMount::getRulesJson() const noexcept {
+std::string UsbMount::GetStringNoParams(const std::string &method_name) const {
   std::string res;
   if (!dbus_proxy_)
     return res;
-  auto method = dbus_proxy_->createMethodCall(kInterfaceName, "ListRules");
+  auto method = dbus_proxy_->createMethodCall(kInterfaceName, method_name);
   auto reply = dbus_proxy_->callMethod(method);
   reply >> res;
   return res;
+}
+
+std::string UsbMount::getRulesJson() const noexcept {
+  return GetStringNoParams("ListRules");
+}
+
+std::string UsbMount::GetUsersGroups() const noexcept {
+  return GetStringNoParams("GetUsersAndGroups");
 }
 
 } // namespace alterator::usbmount

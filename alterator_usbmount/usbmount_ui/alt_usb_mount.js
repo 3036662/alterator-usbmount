@@ -76,3 +76,14 @@ function DblClickOnUser(event){
     alert(event.target.textContent);
 }
 
+
+function SetUsersAndGroups(data){
+    try{
+       let json_obj=JSON.parse(data);
+       localStorage.setItem("users_list",JSON.stringify(json_obj.users));
+       localStorage.setItem("groups_list",JSON.stringify(json_obj.groups));            
+    }
+    catch(e){
+        console.log(e.message);
+    }
+}

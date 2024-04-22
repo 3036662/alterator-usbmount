@@ -18,6 +18,10 @@ bool DispatcherImpl::Dispatch(const LispMessage &msg) const noexcept {
   if (msg.action == "read" && msg.objects == "list-devices") {
     return ListRules();
   }
+
+  if (msg.action == "read" && msg.objects == "get_users_groups") {
+    return GetUsersGroups();
+  }
   std::cout << kMessBeg << kMessEnd;
   return true;
 }
@@ -36,6 +40,14 @@ bool DispatcherImpl::ListRules() const noexcept {
   using namespace common_utils;
   std::cout << kMessBeg;
   std::cout << WrapWithQuotes(EscapeQuotes(usbmount_.getRulesJson()));
+  std::cout << kMessEnd;
+  return true;
+}
+
+bool DispatcherImpl::GetUsersGroups() const noexcept {
+  using namespace common_utils;
+  std::cout << kMessBeg;
+  std::cout << WrapWithQuotes(EscapeQuotes(usbmount_.GetUsersGroups()));
   std::cout << kMessEnd;
   return true;
 }
