@@ -3,6 +3,8 @@ function InitUi(){
     BindDoubleClick();  
 }
 
+// ------------------- rules list -------------------------
+
 function UpdateRulesList(data){
     try{
         let json_arr=JSON.parse(data);
@@ -14,6 +16,8 @@ function UpdateRulesList(data){
     } catch(e){
         console.log(e.message);
     }
+    BindDoubleClick();
+    BindRowSelect();
 }
 
 // clear list;
@@ -35,21 +39,23 @@ function AppendTheRule(item,index){
     InsertCell(new_row,item.perm.device.pid);
     InsertCell(new_row,item.perm.device.serial);
     InsertCell(new_row,item.perm.users[0].name,"rule_user");
-    InsertCell(new_row,item.perm.groups[0].name);
-    BindRowSelect();
-    BindDoubleClick();
+    InsertCell(new_row,item.perm.groups[0].name,"rule_group");  
 }
 
 function InsertCell(row,text,htmlclass){
     let cell =row.insertCell(-1);
     if (htmlclass) cell.classList.add(htmlclass);
+    let text_span=document.createElement('span');
     let cell_text =document.createTextNode(text);
-    cell.appendChild(cell_text);
+    text_span.appendChild(cell_text);
+    if (htmlclass) text_span.classList.add(htmlclass+'_val');
+    cell.appendChild(text_span);
 }
 
-// bind events
+// ------------------ bind events ----------------------
+
+// single select for table rows
 function BindRowSelect(){
-    // single select for table rows
     let table = document.getElementById('rules_list_table');
     table.addEventListener('click',function(event){
         const rows = table.querySelectorAll('tr');
@@ -63,20 +69,23 @@ function BindRowSelect(){
     });
 }
 
+// bind boudle-clicks on table cells
 function BindDoubleClick(){
      // double click on user
      let table = document.getElementById('rules_list_table');
      let user_cells= table.querySelectorAll('td.rule_user');
      user_cells.forEach(cell => {
-         cell.addEventListener('dblclick',DblClickOnUser);
+         cell.addEventListener('dblclick',function(e){DblClickOnUserOrGroup(e,'rule_user_val','users_list');});
+     });
+     let group_cells=table.querySelectorAll('td.rule_group');
+     group_cells.forEach(cell => {
+         cell.addEventListener('dblclick',function(e){DblClickOnUserOrGroup(e,'rule_group_val','groups_list'); });
      });
 }
 
-function DblClickOnUser(event){
-    alert(event.target.textContent);
-}
+// ------------------- local data ---------------------
 
-
+// Save lists of possible users and groups to the local storage
 function SetUsersAndGroups(data){
     try{
        let json_obj=JSON.parse(data);
@@ -87,3 +96,55 @@ function SetUsersAndGroups(data){
         console.log(e.message);
     }
 }
+
+// ---------------------- Select user or group -----------------------------
+
+function DblClickOnUserOrGroup(event,span_class,storage_name){
+    let td_el;
+    let span_el;
+    if (event.target.nodeName=="TD"){
+        td_el=event.target;
+        span_el=td_el.querySelector('span.'+span_class);
+    } else if(event.target.nodeName=="SPAN") {
+        span_el=event.target;
+        td_el=span_el.parentElement;
+    }
+    if (span_el)
+        span_el.classList.add('hidden');
+    if (td_el){
+        let dropdown=CreateUserGroupSelect(span_class,storage_name);
+        td_el.appendChild(dropdown);
+        dropdown.focus();
+    }
+}
+
+
+function CreateUserGroupSelect(span_class,storage_name){
+    const stored_items = localStorage.getItem(storage_name);
+    const items = stored_items ? JSON.parse(stored_items) : [];
+    let dropdown = document.createElement("select");
+    const empty_option = document.createElement('option');
+    empty_option.text = "";
+    empty_option.value="-";
+    dropdown.add(empty_option);
+    items.forEach(item => {
+        const option = document.createElement('option');
+        option.text = item.name;
+        if (storage_name=="users_list")
+            option.value=item.uid;
+        else if (storage_name=="groups_list")
+            option.value=item.gid;
+        dropdown.add(option);
+    });
+    // add event on focus out - if nothing was chosen, remove select
+    dropdown.addEventListener("focusout", (event) => {
+        if (!event.target.value || event.target.value==='-'){
+            // show a sibling span
+            event.target.parentElement.querySelector('span.'+span_class).classList.remove('hidden');
+            // remove select
+            event.target.remove();
+        }
+    });
+    return dropdown;
+}
+

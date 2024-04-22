@@ -1,3 +1,7 @@
+.hidden {
+    display: none;
+}
+
 .alterator-listbox caption{
     background-color: white;
     border: solid;
