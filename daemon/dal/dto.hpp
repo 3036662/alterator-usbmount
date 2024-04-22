@@ -65,6 +65,7 @@ public:
 
   json::value ToJson() const noexcept override;
   inline uid_t uid() const noexcept { return uid_; }
+  const std::string &name() const noexcept { return name_; }
 
 private:
   uid_t uid_ = 0;
@@ -83,6 +84,7 @@ public:
 
   json::value ToJson() const noexcept override;
   inline gid_t gid() const noexcept { return gid_; }
+  const std::string &name() const noexcept { return name_; }
 
 private:
   gid_t gid_ = 0;
