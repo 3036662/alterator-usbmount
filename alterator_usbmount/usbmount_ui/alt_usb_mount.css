@@ -2,6 +2,8 @@
     display: none;
 }
 
+/* Alterator-like table */
+
 .alterator-listbox caption{
     background-color: white;
     border: solid;
@@ -40,10 +42,16 @@
 }
 
 .rules_list tr td{
-    padding: 4px;
     color: #001056;
     border-right: 1px solid #808080;
+    max-width: 100%;
+    vertical-align: middle;
 }
+
+.padding_td{
+    padding: 4px;
+}
+
 .tr_odd{
    background-color: #f0f0f0; 
 }
@@ -53,6 +61,19 @@
 }
 .tr_selected{
     background-color: #D0E1FF;
+}
+
+.edit_inline{
+    width: 98%;
+    display: block;
+    margin: auto;
+    border: 1px solid gray;
+    font-size: 8pt;
+    font-family: Arial;
+}
+
+.td_value_changed{
+    background-color: #a9f972;
 }
 
 /* Alterator-like button*/

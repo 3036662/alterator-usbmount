@@ -41,26 +41,17 @@ function AppendTheRule(item,index){
     InsertCell(new_row,item.perm.device.serial,'rule_serial');
     InsertCell(new_row,item.perm.users[0].name,"rule_user");
     InsertCell(new_row,item.perm.groups[0].name,"rule_group");  
-    // insert a pen picture
-    // let cell=new_row.insertCell(-1);
-    // let svg=document.createElementNS("http://www.w3.org/2000/svg", "svg");
-    // svg.setAttribute("xmlns", "http://www.w3.org/2000/svg");
-    // svg.setAttribute("viewBox", "0 0 0.72 0.72");
-    // svg.setAttribute("width", "24");
-    // svg.setAttribute("height", "24");
-    // const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
-    // path.setAttribute('d',"M0.659 0.217A0.036 0.036 0 0 0 0.652 0.197L0.523 0.068A0.036 0.036 0 0 0 0.503 0.061a0.036 0.036 0 0 0 -0.02 0.008l-0.085 0.084 -0.329 0.328A0.036 0.036 0 0 0 0.06 0.502v0.128A0.036 0.036 0 0 0 0.09 0.66h0.128A0.036 0.036 0 0 0 0.241 0.653L0.568 0.325 0.652 0.24 0.658 0.23V0.22ZM0.205 0.6H0.12V0.515L0.418 0.217l0.085 0.085ZM0.546 0.259 0.461 0.174 0.504 0.133l0.085 0.085Z");
-    // svg.appendChild(path);
-    // cell.appendChild(svg);
 }
 
 function InsertCell(row,text,htmlclass){
     let cell =row.insertCell(-1);
+    cell.classList.add('padding_td');
     if (htmlclass) cell.classList.add(htmlclass);
     let text_span=document.createElement('span');
     let cell_text =document.createTextNode(text);
     text_span.appendChild(cell_text);
     if (htmlclass) text_span.classList.add(htmlclass+'_val');
+    text_span.classList.add('span_val');
     cell.appendChild(text_span);
 }
 
@@ -77,33 +68,26 @@ function BindRowSelect(){
             }
         });
         const clicked_row=event.target.closest('tr');
-        if (clicked_row) clicked_row.classList.toggle('tr_selected');
-        let button=document.getElementById("edit_rule_btn");
-        if (button){
-            button.disabled=false;
-            button.classList.remove('like_btn_disabled');    
-            button.classList.add('like_btn');        
-        }
-
+        if (!clicked_row) return;
+        clicked_row.classList.toggle('tr_selected');
+        if (!clicked_row.classList.contains('editing'))
+            EnableButton(document.getElementById("edit_rule_btn"));
     });
 }
 
-// edit row button
-function BinEditRow(){    
-    let button=document.getElementById('edit_rule_btn');
+function DisableButton(button){
+    if (!button) return;
     button.disabled=true;
     button.classList.add('like_btn_disabled');
     button.classList.remove('like_btn');
-    button.addEventListener('click',function(e){
-        let table = document.getElementById('rules_list_table');
-        let selected_row=table.querySelector('tr.tr_selected');
-        if (selected_row){
-            // TODO open row editor
-            alert("click edit");
-        }
-    });
-}; 
+}
 
+function EnableButton(button){
+    if (!button) return;
+    button.disabled=false;
+    button.classList.remove('like_btn_disabled');    
+    button.classList.add('like_btn');    
+}
 
 // bind boudle-clicks on table cells
 function BindDoubleClick(){
@@ -111,28 +95,28 @@ function BindDoubleClick(){
      let table = document.getElementById('rules_list_table');
      let user_cells= table.querySelectorAll('td.rule_user');
      user_cells.forEach(cell => {
-         cell.addEventListener('dblclick',function(e){DblClickOnUserOrGroup(e,'rule_user_val','users_list');});
+         cell.addEventListener('dblclick',function(e){DblClickOnUserOrGroup(e,'users_list');});
      });
      // double click on groups
      let group_cells=table.querySelectorAll('td.rule_group');
      group_cells.forEach(cell => {
-         cell.addEventListener('dblclick',function(e){DblClickOnUserOrGroup(e,'rule_group_val','groups_list'); });
+         cell.addEventListener('dblclick',function(e){DblClickOnUserOrGroup(e,'groups_list'); });
      });
 
      // double click on vid
      let vid_cells =table.querySelectorAll('td.rule_vid');
      vid_cells.forEach(cell => {
-        cell.addEventListener('dblclick',function(e){DblClickOnEditable(e,'rule_vid_val');})
+        cell.addEventListener('dblclick',DblClickOnEditable)
      });
      // double click on pid
      let pid_cells =table.querySelectorAll('td.rule_pid');
      pid_cells.forEach(cell => {
-        cell.addEventListener('dblclick',function(e){DblClickOnEditable(e,'rule_pid_val');})
+        cell.addEventListener('dblclick',DblClickOnEditable)
      });
      // double click on serial
      let serial_cells =table.querySelectorAll('td.rule_serial');
      serial_cells.forEach(cell => {
-         cell.addEventListener('dblclick',function(e){DblClickOnEditable(e,'rule_serial_val');})
+         cell.addEventListener('dblclick',DblClickOnEditable)
       });
 
 }
@@ -153,12 +137,12 @@ function SetUsersAndGroups(data){
 
 // ---------------------- Select user or group -----------------------------
 
-function DblClickOnUserOrGroup(event,span_class,storage_name){
+function DblClickOnUserOrGroup(event,storage_name){
     let td_el;
     let span_el;
     if (event.target.nodeName=="TD"){
         td_el=event.target;
-        span_el=td_el.querySelector('span.'+span_class);
+        span_el=td_el.querySelector('span.span_val');
     } else if(event.target.nodeName=="SPAN") {
         span_el=event.target;
         td_el=span_el.parentElement;
@@ -166,14 +150,16 @@ function DblClickOnUserOrGroup(event,span_class,storage_name){
     if (span_el)
         span_el.classList.add('hidden');
     if (td_el){
-        let dropdown=CreateUserGroupSelect(span_class,storage_name);
+        let dropdown=CreateUserGroupSelect(storage_name);
+        BindRemoveSelectOnFocusLost(dropdown);
+        td_el.classList.toggle('padding_td');
         td_el.appendChild(dropdown);
         dropdown.focus();
     }
 }
 
 
-function CreateUserGroupSelect(span_class,storage_name){
+function CreateUserGroupSelect(storage_name){
     const stored_items = localStorage.getItem(storage_name);
     const items = stored_items ? JSON.parse(stored_items) : [];
     let dropdown = document.createElement("select");
@@ -184,32 +170,41 @@ function CreateUserGroupSelect(span_class,storage_name){
     items.forEach(item => {
         const option = document.createElement('option');
         option.text = item.name;
-        if (storage_name=="users_list")
-            option.value=item.uid;
-        else if (storage_name=="groups_list")
-            option.value=item.gid;
+        option.value=item.name;
         dropdown.add(option);
     });
-    // add event on focus out - if nothing was chosen, remove select
-    dropdown.addEventListener("focusout", (event) => {
-        if (!event.target.value || event.target.value==='-'){
-            // show a sibling span
-            event.target.parentElement.querySelector('span.'+span_class).classList.remove('hidden');
-            // remove select
-            event.target.remove();
-        }
-    });
+    dropdown.classList.add('edit_inline');
     return dropdown;
+}
+
+// bind event on focus out - if nothing was chosen, remove select
+function BindRemoveSelectOnFocusLost(select_element){
+    select_element.addEventListener("focusout", (event) => {
+             SaveSelectValueToSpan(event.target);   
+        });
+}
+
+function SaveSelectValueToSpan(select){
+    let sibling_span=select.parentElement.querySelector('span.span_val');
+    let parent_td=select.parentElement;
+    if (!sibling_span || !parent_td || parent_td.nodeName!='TD') return;    
+    if (select.value && select.value!='-' && select.value!=sibling_span.textContent){
+        sibling_span.textContent=select.value;
+        parent_td.classList.add('td_value_changed');
+    }    
+    parent_td.classList.toggle('padding_td');
+    select.remove();
+    sibling_span.classList.remove('hidden');
 }
 
 // ------------- edit vid,pid or serial ----------------------
 
-function DblClickOnEditable(event,span_class){
+function DblClickOnEditable(event){
     let td_el;
     let span_el;
     if (event.target.nodeName=="TD"){
         td_el=event.target;
-        span_el=td_el.querySelector('span.'+span_class);
+        span_el=td_el.querySelector('span.span_val');
     } else if(event.target.nodeName=="SPAN") {
         span_el=event.target;
         td_el=span_el.parentElement;
@@ -217,28 +212,129 @@ function DblClickOnEditable(event,span_class){
     if (span_el)
         span_el.classList.add('hidden');
     if (td_el){
-        let input=CreateInput(span_class,span_el.textContent);
+        let input=CreateInput(span_el.textContent);
+        BindRemoveInputOnFocusLost(input);
+        td_el.classList.toggle('padding_td');
         td_el.appendChild(input);
         input.focus();
     }
 }
 
-function CreateInput(span_class,initial_text){
+function CreateInput(initial_text){
     let input = document.createElement("input");
     input.value=initial_text;
+    input.classList.add("edit_inline");
+    return input;
+}
+
+function BindRemoveInputOnFocusLost(input){
     // add event on focus out - if nothing was chosen, remove select
     input.addEventListener("focusout", (event) => {
-        if (!event.target.value || event.target.value===initial_text){
-            // show a sibling span
-            event.target.parentElement.querySelector('span.'+span_class).classList.remove('hidden');
-            // remove select
-            event.target.remove();
-        }
+        SaveInputValueToSpan(event.target);               
     });
-    return input;
+}
+
+function SaveInputValueToSpan(input){
+    let parent_td=input.parentElement;
+    let initial_text;
+    let sibling_span=input.parentElement.querySelector('span.span_val');
+    if (sibling_span) initial_text=sibling_span.textContent;
+    if (!sibling_span || !initial_text || !parent_td || parent_td.nodeName!='TD') return;
+    if (input.value!="" && input.value!=sibling_span.textContent){
+        sibling_span.textContent=input.value;
+        parent_td.classList.add('td_value_changed');
+    }
+    parent_td.classList.toggle('padding_td');
+    input.remove();
+    sibling_span.classList.remove('hidden'); 
 }
 
 // ------------------- edit row -------------
 
+// edit row button
+function BinEditRow(){    
+    let button=document.getElementById('edit_rule_btn');
+    DisableButton(button);
+    button.addEventListener('click',function(e){
+        let table = document.getElementById('rules_list_table');
+        let selected_row=table.querySelector('tr.tr_selected');
+        if (selected_row){
+            MakeTheRowEditable(selected_row);
+        }
+    });
+}; 
 
+// make the whole row editable
+function MakeTheRowEditable(row){
+    if (row.classList.contains('editing')) return;
+    row.classList.add('editing');
+    const td_elements = row.querySelectorAll('td');
+    td_elements.forEach(td=>{
+        let td_class;
+        if (td.classList.contains('rule_vid')) td_class='rule_vid';
+        else if (td.classList.contains('rule_pid')) td_class='rule_pid';
+        else if (td.classList.contains('rule_serial')) td_class='rule_serial';
+        else if (td.classList.contains('rule_user')) td_class='rule_user';
+        else if (td.classList.contains('rule_group')) td_class='rule_group';
+        // create inputs
+        const input_classes= ['rule_vid', 'rule_pid', 'rule_serial'];
+        let is_input=input_classes.some(class_name => td.classList.contains(class_name));
+        let span_el=td.querySelector('span.span_val');
+        if (is_input && span_el){
+                let input =CreateInput(span_el.textContent);
+                BindRowFocusLost(input);
+                td.classList.toggle('padding_td');    
+                span_el.classList.toggle('hidden');
+                td.appendChild(input);
+                // focus on first field
+                if (td_class==='rule_vid') input.focus();
+        }
+        // create selects
+        const select_classes = ['rule_user','rule_group'];
+        let is_select=select_classes.some(class_name => td.classList.contains(class_name));
+        if (is_select && span_el){
+            let storage;
+            if (td_class=="rule_user") storage='users_list';
+            else if (td_class=="rule_group") storage='groups_list';
+            if (storage){
+                let select=CreateUserGroupSelect(storage);
+                BindRowFocusLost(select);
+                td.classList.toggle('padding_td');
+                span_el.classList.toggle('hidden');
+                td.appendChild(select);
+            }
+        }
+    });
+    DisableButton(document.getElementById("edit_rule_btn"));
+}
 
+// if all inputs in row lost their focus, save values, remove inputs
+function BindRowFocusLost(input){
+    input.addEventListener("focusout",(event)=>{
+        let row_has_focus=false;
+        let row=event.target.parentElement.parentElement;
+        if (row.nodeName!='TR') return;
+        let td_elements=row.querySelectorAll('td');
+        td_elements.forEach(td=>{
+            let input=td.querySelector('input');
+            let select=td.querySelector('select');
+            if (input && input==event.relatedTarget) row_has_focus=true;
+            if (select && select==event.relatedTarget) row_has_focus=true;    
+        });
+        // if row has no focus -save values and remove inputs and selects
+        if (row_has_focus) return;
+        td_elements.forEach(td=>{
+            //let span=td.querySelector('span.span_val');
+            let curr_input=td.querySelector('input');
+            let curr_select=td.querySelector('select');
+            if (!curr_input && !curr_select) return;
+            if (curr_input)
+                SaveInputValueToSpan(curr_input);
+            else if (curr_select)
+                SaveSelectValueToSpan(curr_select);              
+        });
+        row.classList.remove('editing');
+        EnableButton(document.getElementById("edit_rule_btn"));    
+    });
+  
+}
