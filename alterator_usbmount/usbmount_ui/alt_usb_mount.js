@@ -1,8 +1,12 @@
 function InitUi(){
+    // click events
     BindRowSelect();
     BindDoubleClick();
+    // button click events
     BinEditRow(); 
     BindReset(); 
+    BindDeleteSelectedRows();
+    BindRowCheckbox();
 }
 
 // ------------------- rules list -------------------------
@@ -18,6 +22,7 @@ function UpdateRulesList(data){
         BindTableCheckbox(table);    
         BindDoubleClick();
         BindRowSelect();
+        BindRowCheckbox();
     } catch(e){
         console.log(e.message);
     }
@@ -35,6 +40,7 @@ function ResetRulesList(){
         BindTableCheckbox(table);
         BindDoubleClick();
         BindRowSelect();
+        BindRowCheckbox();
     } catch(e){
         console.log(e.message);
     }
@@ -101,6 +107,86 @@ function BindRowSelect(){
     });
 }
 
+// multiselect checkbox in the header of a table
+function BindTableCheckbox(table){
+    if (!table) return;
+    try{
+        let header_checkbox=table.tHead.querySelector('input.list_checkbox');
+        header_checkbox.checked=false;
+        header_checkbox.addEventListener('change',function(e){
+            let  checkbox=e.target;
+            if (!checkbox) return;
+            let inputs;
+            try{
+                table=checkbox.parentElement.parentElement.parentElement.parentElement;
+                let body= table.tBodies[0];                
+                inputs=body.querySelectorAll('input.list_checkbox');
+
+            }
+            catch (e){
+                console.log(e.message);
+            } 
+            if (!inputs) return;
+            const event=new Event('change');          
+            inputs.forEach(el=>{
+                    el.checked=checkbox.checked;
+                    el.dispatchEvent(event);
+            });                
+        });
+    }
+    catch (e){
+        console.log(e.message);
+    }    
+}
+
+// enable "delete" button if some rows are checked, disable if nothing is "checked"
+function BindRowCheckbox(){
+    let table = document.getElementById('rules_list_table');
+    try{
+        let checkboxes=table.tBodies[0].querySelectorAll('input.list_checkbox');
+        if (!checkboxes) return;
+        checkboxes.forEach(checkbox=>{
+            checkbox.addEventListener('change',function(e){
+                // if checked - enable button delete
+                if (e.target.checked==true){
+                    let delete_btn=document.getElementById('delete_rule_btn');
+                    if (delete_btn.disabled==true) EnableButton(delete_btn);
+                }
+                // if not checked, check all rows, if nothing is checked - disable button
+                else if (e.target.checked==false){
+                    try{
+                        let tbody=e.target.parentElement.parentElement.parentElement;
+                        if (!tbody || tbody.nodeName!="TBODY") return;
+                        let inputs=tbody.querySelectorAll('input.list_checkbox');
+                        let some=false;
+                        for (let i=0;i<inputs.length;++i){
+                            if (inputs[i].checked){
+                                some=true;
+                                break;
+                            }
+                        }
+                        // if nothing is checked
+                        if (!some) {
+                             DisableButton(document.getElementById('delete_rule_btn'));
+                             // uncheck a checkbox in the header
+                             document.getElementById('rules_list_table').tHead.querySelector('input.list_checkbox').checked=false;
+                        }    
+                    }
+                    catch (e){ 
+                        console.log(e);
+                        return;
+                    }
+                }
+
+
+            });
+        });
+    }
+    catch (e){
+        console.log(e.message);
+    }
+}
+
 function DisableButton(button){
     if (!button) return;
     button.disabled=true;
@@ -147,34 +233,27 @@ function BindDoubleClick(){
 
 }
 
-function BindTableCheckbox(table){
-    if (!table) return;
-    try{
-        let header_checkbox=table.tHead.querySelector('input.list_checkbox');
-        header_checkbox.checked=false;
-        header_checkbox.addEventListener('change',function(e){
-            let  checkbox=e.target;
-            if (!checkbox) return;
-            let inputs;
-            try{
-                table=checkbox.parentElement.parentElement.parentElement.parentElement;
-                let body= table.tBodies[0];                
-                inputs=body.querySelectorAll('input.list_checkbox');
 
-            }
-            catch (e){
-                console.log(e.message);
-            } 
-            if (!inputs) return;          
-            inputs.forEach(el=>{
-                    el.checked=checkbox.checked;
-            });                
-        });
-    }
-    catch (e){
-        console.log(e.message);
-    }    
+
+// edit row button
+function BinEditRow(){    
+    let button=document.getElementById('edit_rule_btn');
+    DisableButton(button);
+    button.addEventListener('click',function(e){
+        let table = document.getElementById('rules_list_table');
+        let selected_row=table.querySelector('tr.tr_selected');
+        if (selected_row){
+            MakeTheRowEditable(selected_row);
+        }
+    });
+}; 
+
+// delete rules button
+function BindDeleteSelectedRows(){
+    let button=document.getElementById('delete_rule_btn');
+    DisableButton(button);
 }
+
 
 // ------------------- local data ---------------------
 
@@ -188,6 +267,24 @@ function SetUsersAndGroups(data){
     catch(e){
         console.log(e.message);
     }
+}
+
+function BindReset(){
+    let button=document.getElementById('reset_rule_btn');
+    DisableButton(button);
+    button.addEventListener('click',function(e){
+        let table = document.getElementById('rules_list_table');
+        let selected_row=table.querySelector('tr.tr_selected');   
+        if (selected_row){
+            ResetRow(selected_row);
+        }
+    });
+    let button_all=document.getElementById('reset_all_btn');
+    button_all.addEventListener('click',function(e){
+        ResetRulesList();
+        DisableButton(document.getElementById('edit_rule_btn'));
+    });
+
 }
 
 // ---------------------- Select user or group -----------------------------
@@ -320,37 +417,6 @@ function SaveInputValueToSpan(input,do_not_save){
 }
 
 // ------------------- edit row -------------
-
-// edit row button
-function BinEditRow(){    
-    let button=document.getElementById('edit_rule_btn');
-    DisableButton(button);
-    button.addEventListener('click',function(e){
-        let table = document.getElementById('rules_list_table');
-        let selected_row=table.querySelector('tr.tr_selected');
-        if (selected_row){
-            MakeTheRowEditable(selected_row);
-        }
-    });
-}; 
-
-function BindReset(){
-    let button=document.getElementById('reset_rule_btn');
-    DisableButton(button);
-    button.addEventListener('click',function(e){
-        let table = document.getElementById('rules_list_table');
-        let selected_row=table.querySelector('tr.tr_selected');   
-        if (selected_row){
-            ResetRow(selected_row);
-        }
-    });
-    let button_all=document.getElementById('reset_all_btn');
-    button_all.addEventListener('click',function(e){
-        ResetRulesList();
-        DisableButton(document.getElementById('edit_rule_btn'));
-    });
-
-}
 
 function ResetRow(row){
     let td=row.querySelector('td.rule_id');
