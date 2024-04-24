@@ -102,7 +102,7 @@ function BindRowSelect(){
         });
         EnableButton(document.getElementById('reset_rule_btn'));
         clicked_row.classList.toggle('tr_selected');
-        if (!clicked_row.classList.contains('editing'))
+        if (!clicked_row.classList.contains('editing') && !clicked_row.classList.contains('tr_deleted_rule'))
             EnableButton(document.getElementById("edit_rule_btn"));        
     });
 }
@@ -243,7 +243,9 @@ function BinEditRow(){
         let table = document.getElementById('rules_list_table');
         let selected_row=table.querySelector('tr.tr_selected');
         if (selected_row){
-            MakeTheRowEditable(selected_row);
+            // edit the row if not deleted
+            if (!selected_row.classList.contains("tr_deleted_rule"))
+                MakeTheRowEditable(selected_row);
         }
     });
 }; 
@@ -252,6 +254,25 @@ function BinEditRow(){
 function BindDeleteSelectedRows(){
     let button=document.getElementById('delete_rule_btn');
     DisableButton(button);
+    button.addEventListener('click',function(e){
+        let table = document.getElementById('rules_list_table');
+        try {
+            let checkboxes=table.tBodies[0].querySelectorAll('input.list_checkbox');
+            checkboxes.forEach(checkbox=>{
+                if (!checkbox.checked) return;
+                let tr=checkbox.parentElement.parentElement;            
+                // if a selected row is going to be deleted, disable the "edit" button
+                if (tr.classList.contains('tr_selected')) DisableButton(document.getElementById('edit_rule_btn'));                
+                ResetRow(tr); // reset if some change were made                
+                if (tr && tr.nodeName=="TR") tr.classList.add('tr_deleted_rule'); // mark as deleted
+            });
+
+        }
+        catch (e){
+            console.log(e.message);
+            return;
+        }
+    });
 }
 
 
@@ -272,6 +293,7 @@ function SetUsersAndGroups(data){
 function BindReset(){
     let button=document.getElementById('reset_rule_btn');
     DisableButton(button);
+    // reset a row
     button.addEventListener('click',function(e){
         let table = document.getElementById('rules_list_table');
         let selected_row=table.querySelector('tr.tr_selected');   
@@ -279,6 +301,7 @@ function BindReset(){
             ResetRow(selected_row);
         }
     });
+    // reset all
     let button_all=document.getElementById('reset_all_btn');
     button_all.addEventListener('click',function(e){
         ResetRulesList();
@@ -421,6 +444,7 @@ function SaveInputValueToSpan(input,do_not_save){
 function ResetRow(row){
     let td=row.querySelector('td.rule_id');
     if (!td) return;
+    row.classList.remove('tr_deleted_rule');
     let val_span=td.querySelector('span.span_val');
     if (!val_span) return;
     let rule_id=val_span.textContent;

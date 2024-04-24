@@ -48,6 +48,8 @@
     vertical-align: middle;
 }
 
+
+
 .padding_td{
     padding: 4px;
 }
@@ -62,6 +64,12 @@
 .tr_selected{
     background-color: #D0E1FF;
 }
+
+.tr_deleted_rule {
+    text-decoration: line-through;
+}
+
+
 
 .edit_inline{
     width: 98%;
