@@ -389,13 +389,16 @@ function DblClickOnUserOrGroup(event, storage_name) {
         span_el = event.target;
         td_el = span_el.parentElement;
     }
+    let target_width=td_el.offsetWidth+'px';
     if (span_el)
         span_el.classList.add('hidden');
     if (td_el) {
         let dropdown = CreateUserGroupSelect(storage_name);
+        dropdown.style.width=target_width;
         BindRemoveSelectOnFocusLost(dropdown);
         td_el.classList.toggle('padding_td');
         td_el.appendChild(dropdown);
+        td_el.style.width=target_width;
         dropdown.focus();
     }
 }
@@ -462,10 +465,13 @@ function DblClickOnEditable(event) {
     if (span_el)
         span_el.classList.add('hidden');
     if (td_el) {
+        let target_width=td_el.offsetWidth+'px';
         let input = CreateInput(span_el.textContent);
+        input.style.width=target_width;
         BindRemoveInputOnFocusLost(input);
         td_el.classList.toggle('padding_td');
         td_el.appendChild(input);
+        td_el.style.width=target_width;
         input.focus();
     }
 }
@@ -558,12 +564,15 @@ function MakeTheRowEditable(row) {
         const input_classes = ['rule_vid', 'rule_pid', 'rule_serial'];
         let is_input = input_classes.some(class_name => td.classList.contains(class_name));
         let span_el = td.querySelector('span.span_val');
+        let target_width=td.offsetWidth+'px';
         if (is_input && span_el) {
             let input = CreateInput(span_el.textContent);
-            BindRowFocusLost(input);
+            BindRowFocusLost(input);            
+            input.style.width=target_width;
             td.classList.toggle('padding_td');
             span_el.classList.toggle('hidden');
             td.appendChild(input);
+            td.style.width=target_width;
             // focus on first field
             if (td_class === 'rule_vid') input.focus();
         }
@@ -577,9 +586,11 @@ function MakeTheRowEditable(row) {
             if (storage) {
                 let select = CreateUserGroupSelect(storage);
                 BindRowFocusLost(select);
+                select.style.width=target_width;
                 td.classList.toggle('padding_td');
                 span_el.classList.toggle('hidden');
                 td.appendChild(select);
+                td.style.width=target_width;
             }
         }
     });

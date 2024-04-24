@@ -4,12 +4,14 @@
 
 /* Alterator-like table */
 
+
 .alterator-listbox caption{
     background-color: white;
     border: solid;
     border-width: thin;
     margin-bottom: 2px;
     font-weight: 600;
+
 }
 
 .right_buttons{
@@ -72,8 +74,7 @@
 
 
 .edit_inline{
-    width: 98%;
-    display: block;
+    max-width: 98%;
     margin: auto;
     border: 1px solid gray;
     font-size: 8pt;
