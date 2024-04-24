@@ -47,6 +47,7 @@
         <caption><span translate="_">List of rules</span></caption>  
         <thead>
             <tr>
+              <th><input type="checkbox" class="list_checkbox"/></th>
               <th>N</th>
               <th><span translate="_">VID</span></th>
               <th><span translate="_">PID</span></th>
@@ -56,18 +57,13 @@
              </tr>
         </thead>
         <tbody>              
-                <tr class="wrap">
-                  <td><span class="alterator-label" name="name" /></td>                    
-                  <td><span class="alterator-label" name="lbl_rule_vid" /></td>
-                  <td><span class="alterator-label" name="lbl_rule_pid" /></td>
-                  <td><span class="alterator-label" name="lbl_rule_serial" /></td>                    
-                  <td><span class="alterator-label" name="lbl_rule_user" /></td>
-                  <td><span class="alterator-label" name="lbl_rule_group" /></td>                 
-                </tr>          
+        
         </tbody>
       </table>
       <div name="usb_buttons" class="right_buttons">
         <input type="button" class="like_btn" value="Edit" id="edit_rule_btn"/>
+        <input type="button" class="like_btn" value="Reset row" id="reset_rule_btn"/>
+        <input type="button" class="like_btn" value="Reset all" id="reset_all_btn"/>
         <!--   <input type="button" name="btn_prsnt_scan" class="btn" value="Scan plugged-in USB devices" />&nbsp;&nbsp;
                <input type="button" id="btn_prsnt_dev_add" name="btn_prsnt_dev_add" class="btn" value="Allow device" />
                 <input type="button" id="btn_prsnt_dev_block" name="btn_prsnt_dev_block" class="btn" value="Block device" />

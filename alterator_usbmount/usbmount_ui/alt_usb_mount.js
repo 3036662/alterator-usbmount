@@ -1,7 +1,8 @@
 function InitUi(){
     BindRowSelect();
     BindDoubleClick();
-    BinEditRow();  
+    BinEditRow(); 
+    BindReset(); 
 }
 
 // ------------------- rules list -------------------------
@@ -9,15 +10,34 @@ function UpdateRulesList(data){
     try{
         let json_arr=JSON.parse(data);
         let table = document.getElementById('rules_list_table');
+        localStorage.setItem('rules_data',data);
+        ClearList(table);
+        for (index in json_arr){
+            AppendTheRule(json_arr[index],index);
+        }
+        BindTableCheckbox(table);    
+        BindDoubleClick();
+        BindRowSelect();
+    } catch(e){
+        console.log(e.message);
+    }
+}
+
+function ResetRulesList(){
+    try{
+        let data=localStorage.getItem('rules_data');
+        let json_arr=JSON.parse(data);
+        let table = document.getElementById('rules_list_table');
         ClearList(table);
         for (index in json_arr){
             AppendTheRule(json_arr[index],index);
         }    
+        BindTableCheckbox(table);
+        BindDoubleClick();
+        BindRowSelect();
     } catch(e){
         console.log(e.message);
     }
-    BindDoubleClick();
-    BindRowSelect();
 }
 
 // clear list;
@@ -34,7 +54,13 @@ function AppendTheRule(item,index){
     const tBody=table.getElementsByTagName('tbody')[0];
     let new_row =tBody.insertRow(-1);    
     index % 2 == 0 ? new_row.classList.add("tr_even"):new_row.classList.add("tr_odd");
-    InsertCell(new_row,item.id);
+    let checkbox_cell=new_row.insertCell(-1);
+    let checkbox=document.createElement('input');
+    checkbox.classList.add('list_checkbox');
+    checkbox.setAttribute('type', 'checkbox');
+    checkbox_cell.appendChild(checkbox);
+    checkbox_cell.classList.add('padding_td');
+    InsertCell(new_row,item.id,'rule_id');
     InsertCell(new_row,item.perm.device.vid,'rule_vid');
     InsertCell(new_row,item.perm.device.pid,'rule_pid');
     InsertCell(new_row,item.perm.device.serial,'rule_serial');
@@ -60,17 +86,18 @@ function InsertCell(row,text,htmlclass){
 function BindRowSelect(){
     let table = document.getElementById('rules_list_table');
     table.addEventListener('click',function(event){
-        const rows = table.querySelectorAll('tr');
+        const clicked_row=event.target.closest('tr');
+        if (!clicked_row || clicked_row.parentElement.nodeName!='TBODY') return;
+        const rows = table.tBodies[0].querySelectorAll('tr');
         rows.forEach(row => {
             if (row.classList.contains('tr_selected')) {
                 row.classList.remove('tr_selected');
             }
         });
-        const clicked_row=event.target.closest('tr');
-        if (!clicked_row) return;
+        EnableButton(document.getElementById('reset_rule_btn'));
         clicked_row.classList.toggle('tr_selected');
         if (!clicked_row.classList.contains('editing'))
-            EnableButton(document.getElementById("edit_rule_btn"));
+            EnableButton(document.getElementById("edit_rule_btn"));        
     });
 }
 
@@ -118,6 +145,35 @@ function BindDoubleClick(){
          cell.addEventListener('dblclick',DblClickOnEditable)
       });
 
+}
+
+function BindTableCheckbox(table){
+    if (!table) return;
+    try{
+        let header_checkbox=table.tHead.querySelector('input.list_checkbox');
+        header_checkbox.checked=false;
+        header_checkbox.addEventListener('change',function(e){
+            let  checkbox=e.target;
+            if (!checkbox) return;
+            let inputs;
+            try{
+                table=checkbox.parentElement.parentElement.parentElement.parentElement;
+                let body= table.tBodies[0];                
+                inputs=body.querySelectorAll('input.list_checkbox');
+
+            }
+            catch (e){
+                console.log(e.message);
+            } 
+            if (!inputs) return;          
+            inputs.forEach(el=>{
+                    el.checked=checkbox.checked;
+            });                
+        });
+    }
+    catch (e){
+        console.log(e.message);
+    }    
 }
 
 // ------------------- local data ---------------------
@@ -277,6 +333,57 @@ function BinEditRow(){
         }
     });
 }; 
+
+function BindReset(){
+    let button=document.getElementById('reset_rule_btn');
+    DisableButton(button);
+    button.addEventListener('click',function(e){
+        let table = document.getElementById('rules_list_table');
+        let selected_row=table.querySelector('tr.tr_selected');   
+        if (selected_row){
+            ResetRow(selected_row);
+        }
+    });
+    let button_all=document.getElementById('reset_all_btn');
+    button_all.addEventListener('click',function(e){
+        ResetRulesList();
+        DisableButton(document.getElementById('edit_rule_btn'));
+    });
+
+}
+
+function ResetRow(row){
+    let td=row.querySelector('td.rule_id');
+    if (!td) return;
+    let val_span=td.querySelector('span.span_val');
+    if (!val_span) return;
+    let rule_id=val_span.textContent;
+    try {
+        let data=localStorage.getItem("rules_data");
+        if (!data) return;
+        let rules_arr=JSON.parse(data);
+        let rule_obj=rules_arr.find(obj => obj.id=== rule_id);
+        if (!rule_obj) return;
+        //vid 
+        let vid_span=row.querySelector('td.rule_vid').querySelector('span.span_val');
+        if (vid_span) vid_span.textContent=rule_obj.perm.device.vid;
+        let  pid_span=row.querySelector('td.rule_pid').querySelector('span.span_val');
+        if (pid_span) pid_span.textContent=rule_obj.perm.device.pid;
+        let  serial_span=row.querySelector('td.rule_serial').querySelector('span.span_val');
+        if (serial_span) serial_span.textContent= rule_obj.perm.device.serial;
+        let user_span=row.querySelector('td.rule_user').querySelector('span.span_val');
+        if (user_span) user_span.textContent = rule_obj.perm.users[0].name;
+        let group_span = row.querySelector('td.rule_group').querySelector('span.span_val');
+        if (group_span) group_span.textContent =rule_obj.perm.groups[0].name;
+        let td_elements=row.querySelectorAll('td');
+        td_elements.forEach(td => {
+            td.classList.remove('td_value_changed');
+        });
+    }
+    catch (e){
+        console.log(e.message);
+    }
+}
 
 // make the whole row editable
 function MakeTheRowEditable(row){
