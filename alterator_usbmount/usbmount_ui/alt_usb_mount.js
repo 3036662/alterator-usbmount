@@ -5,7 +5,6 @@ function InitUi(){
 }
 
 // ------------------- rules list -------------------------
-
 function UpdateRulesList(data){
     try{
         let json_arr=JSON.parse(data);
@@ -181,14 +180,22 @@ function CreateUserGroupSelect(storage_name){
 function BindRemoveSelectOnFocusLost(select_element){
     select_element.addEventListener("focusout", (event) => {
              SaveSelectValueToSpan(event.target);   
-        });
+    });
+    select_element.addEventListener('keyup',(event)=>{
+        if (event.keyCode==27 ) // escape
+            SaveSelectValueToSpan(event.target,true);               
+        if (event.keyCode==13) // enter
+            SaveSelectValueToSpan(event.target);  
+    });
+
 }
 
-function SaveSelectValueToSpan(select){
+function SaveSelectValueToSpan(select,do_not_save){
+    if (!select.parentElement) return;
     let sibling_span=select.parentElement.querySelector('span.span_val');
     let parent_td=select.parentElement;
     if (!sibling_span || !parent_td || parent_td.nodeName!='TD') return;    
-    if (select.value && select.value!='-' && select.value!=sibling_span.textContent){
+    if (!do_not_save && select.value && select.value!='-' && select.value!=sibling_span.textContent){
         sibling_span.textContent=select.value;
         parent_td.classList.add('td_value_changed');
     }    
@@ -232,15 +239,22 @@ function BindRemoveInputOnFocusLost(input){
     input.addEventListener("focusout", (event) => {
         SaveInputValueToSpan(event.target);               
     });
+    input.addEventListener('keyup',(event)=>{
+        if (event.keyCode==27 )
+            SaveInputValueToSpan(event.target,true);  
+        if (event.keyCode==13)
+            SaveInputValueToSpan(event.target);                 
+    });
 }
 
-function SaveInputValueToSpan(input){
+function SaveInputValueToSpan(input,do_not_save){
     let parent_td=input.parentElement;
+    if (!parent_td) return;
     let initial_text;
     let sibling_span=input.parentElement.querySelector('span.span_val');
     if (sibling_span) initial_text=sibling_span.textContent;
     if (!sibling_span || !initial_text || !parent_td || parent_td.nodeName!='TD') return;
-    if (input.value!="" && input.value!=sibling_span.textContent){
+    if (!do_not_save && input.value!="" && input.value!=sibling_span.textContent){
         sibling_span.textContent=input.value;
         parent_td.classList.add('td_value_changed');
     }
@@ -324,10 +338,9 @@ function BindRowFocusLost(input){
         // if row has no focus -save values and remove inputs and selects
         if (row_has_focus) return;
         td_elements.forEach(td=>{
-            //let span=td.querySelector('span.span_val');
             let curr_input=td.querySelector('input');
             let curr_select=td.querySelector('select');
-            if (!curr_input && !curr_select) return;
+            if (!curr_input && !curr_select) return; 
             if (curr_input)
                 SaveInputValueToSpan(curr_input);
             else if (curr_select)
@@ -336,5 +349,25 @@ function BindRowFocusLost(input){
         row.classList.remove('editing');
         EnableButton(document.getElementById("edit_rule_btn"));    
     });
+    input.addEventListener('keyup',(event)=>{
+        if (event.keyCode==27){
+            let row=event.target.parentElement.parentElement;
+            if (row.nodeName!='TR') return;
+            let td_elements=row.querySelectorAll('td');
+            td_elements.forEach(td=>{
+                let curr_input=td.querySelector('input');
+                let curr_select=td.querySelector('select');
+                if (!curr_input && !curr_select) return; 
+                if (curr_input)
+                    SaveInputValueToSpan(curr_input,true);
+                else if (curr_select)
+                    SaveSelectValueToSpan(curr_select,true);              
+            });
+            row.classList.remove('editing');
+            EnableButton(document.getElementById("edit_rule_btn"));      
+        }
+    });
+
+
   
 }
