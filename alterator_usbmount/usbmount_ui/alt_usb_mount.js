@@ -86,6 +86,16 @@ function AppendEmptyRow() {
     const table = document.getElementById('rules_list_table');
     const table_body = table.tBodies[0];
     const rows_count = table_body.querySelectorAll('tr').length;
+    let item=CreateEmptyRuleObj();   
+    let new_row = AppendTheRule(item, rows_count);
+    new_row.classList.add('row_appended_by_user');
+    RowSelect(table, new_row);
+    BindDoubleClick(new_row);
+    MakeTheRowEditable(new_row);
+    new_row.querySelector('input.list_checkbox').addEventListener('change', OnRowChecked);
+}
+
+function CreateEmptyRuleObj(){
     let device = {
         vid: "",
         pid: "",
@@ -108,12 +118,7 @@ function AppendEmptyRow() {
         id: "",
         perm: perms
     }
-    let new_row = AppendTheRule(item, rows_count);
-    new_row.classList.add('row_appended_by_user');
-    RowSelect(table, new_row);
-    BindDoubleClick(new_row);
-    MakeTheRowEditable(new_row);
-    new_row.querySelector('input.list_checkbox').addEventListener('change', OnRowChecked);
+    return item;
 }
 
 function InsertCell(row, text, htmlclass) {
@@ -462,10 +467,9 @@ function DblClickOnEditable(event) {
         span_el = event.target;
         td_el = span_el.parentElement;
     }
-    if (span_el)
-        span_el.classList.add('hidden');
     if (td_el) {
         let target_width=td_el.offsetWidth+'px';
+        if (span_el) span_el.classList.add('hidden');
         let input = CreateInput(span_el.textContent);
         input.style.width=target_width;
         BindRemoveInputOnFocusLost(input);
@@ -522,10 +526,18 @@ function ResetRow(row) {
     if (!val_span) return;
     let rule_id = val_span.textContent;
     try {
-        let data = localStorage.getItem("rules_data");
-        if (!data) return;
-        let rules_arr = JSON.parse(data);
-        let rule_obj = rules_arr.find(obj => obj.id === rule_id);
+        let rule_obj;
+        // if the rule is appended, use an empty object
+        if (row.classList.contains('row_appended_by_user')){
+            rule_obj=CreateEmptyRuleObj();
+        } 
+        // else read the rule from the local storage
+        else{
+            let data = localStorage.getItem("rules_data");
+            if (!data) return;
+            let rules_arr = JSON.parse(data);
+            rule_obj = rules_arr.find(obj => obj.id === rule_id);
+        }
         if (!rule_obj) return;
         //vid 
         let vid_span = row.querySelector('td.rule_vid').querySelector('span.span_val');
