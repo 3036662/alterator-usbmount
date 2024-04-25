@@ -64,7 +64,7 @@
     background-color: white;
 }
 .tr_selected{
-    background-color: #6A9DF9;;
+    background-color: #ADC8F9;
 }
 
 .tr_deleted_rule {
@@ -81,8 +81,12 @@
     font-family: Arial;
 }
 
-.td_value_changed{
+.td_value_good{
     background-color: #a9f972;
+}
+
+.td_value_bad{
+    background-color: #fb5151;;
 }
 
 /* Alterator-like button*/
@@ -116,3 +120,14 @@
     vertical-align: middle;
     font-family: "Liberation Sans", Tahoma, Verdana, Geneva, Arial, Helvetica, sans-serif;
 }
+
+.validation_warning {
+    display: none;
+    background-color: white;
+    color: red;
+    padding: 5px;
+    border-radius: 5px;
+    border: 1px solid gray;
+    margin-top: 20px;
+    margin-bottom: 20px;
+  }

@@ -13,6 +13,16 @@ function InitUi() {
     let delete_curr_btn = document.getElementById('delete_curr_btn');
     DisableButton(delete_curr_btn);
     delete_curr_btn.addEventListener('click', DeleteSelectedRow);
+    // keybord "Insert" on a table
+    let table_body=document.getElementById('rules_list_table').tBodies[0];
+    table_body.addEventListener('keydown',function(e){
+        if (e.key=="Insert"){
+             document.getElementById('add_rule_btn').dispatchEvent(new Event('click'));   
+        }
+        if (e.key=="Delete" && table_body.querySelectorAll('tr.tr_selected').length!=0){
+            document.getElementById('delete_curr_btn').dispatchEvent(new Event('click'));
+        }
+    });
 }
 
 
@@ -51,6 +61,7 @@ function ResetRulesList() {
         BindDoubleClick();
         BindRowSelect();
         BindRowCheckbox();
+        ShowToolTipIfSomeInvalid();
     } catch (e) {
         console.log(e.message);
     }
@@ -434,6 +445,7 @@ function DeleteRow(tr) {
         if (tr && tr.nodeName == "TR") tr.classList.add('tr_deleted_rule'); // mark as deleted
     }
     DisableButtonDeleteIfNoRowsCkecked();
+    ShowToolTipIfSomeInvalid();
 }
 
 
@@ -486,6 +498,7 @@ function DblClickOnUserOrGroup(event, storage_name) {
         span_el = event.target;
         td_el = span_el.parentElement;
     }
+    if (td_el.parentElement.classList.contains('tr_deleted_rule')) return;
     let target_width = td_el.offsetWidth + 'px';
     if (span_el)
         span_el.classList.add('hidden');
@@ -538,13 +551,35 @@ function SaveSelectValueToSpan(select, do_not_save) {
     let sibling_span = select.parentElement.querySelector('span.span_val');
     let parent_td = select.parentElement;
     if (!sibling_span || !parent_td || parent_td.nodeName != 'TD') return;
-    if (!do_not_save && select.value && select.value != '-' && select.value != sibling_span.textContent) {
+    let empty_val=!select.value || select.value == '-';
+    let sibling_span_empty=sibling_span.textContent.length==0;
+    if (parent_td.parentElement.classList.contains('row_appended_by_user') && empty_val && sibling_span_empty){
+        parent_td.classList.add('td_value_changed');
+        parent_td.classList.add('td_value_bad');
+    }
+    if (!do_not_save && !empty_val && select.value != sibling_span.textContent) {
         sibling_span.textContent = select.value;
         parent_td.classList.add('td_value_changed');
+        parent_td.classList.remove('td_value_good');
+        parent_td.classList.remove('td_value_bad');
+        // validation
+        let valid=false;
+        if (parent_td.classList.contains('rule_user')){
+           valid=ValidateUser(select.value);
+        } else if (parent_td.classList.contains('rule_group')){
+            valid=ValidateGroup(select.value);
+        }
+        if (valid){
+            parent_td.classList.add('td_value_good');
+        } else {
+            parent_td.classList.add('td_value_bad');            
+        }
+
     }
     parent_td.classList.toggle('padding_td');
     select.remove();
     sibling_span.classList.remove('hidden');
+    ShowToolTipIfSomeInvalid();
 }
 
 // ------------- edit vid,pid or serial ----------------------
@@ -560,6 +595,7 @@ function DblClickOnEditable(event) {
         td_el = span_el.parentElement;
     }
     if (td_el) {
+        if (td_el.parentElement.classList.contains('tr_deleted_rule')) return;
         let target_width = td_el.offsetWidth + 'px';
         if (span_el) span_el.classList.add('hidden');
         let input = CreateInput(span_el.textContent);
@@ -591,6 +627,7 @@ function BindRemoveInputOnFocusLost(input) {
         if (event.keyCode == 13)
             SaveInputValueToSpan(event.target);
     });
+  
 }
 
 function SaveInputValueToSpan(input, do_not_save) {
@@ -600,14 +637,48 @@ function SaveInputValueToSpan(input, do_not_save) {
     let sibling_span = input.parentElement.querySelector('span.span_val');
     if (sibling_span) initial_text = sibling_span.textContent;
     if (!sibling_span || initial_text === 'undefined' || !parent_td || parent_td.nodeName != 'TD') return;
+    if (parent_td.parentElement.classList.contains('row_appended_by_user') && input.value.length==0){
+        parent_td.classList.add('td_value_changed');
+        parent_td.classList.add('td_value_bad');
+    } 
     if (!do_not_save && input.value != "" && input.value != sibling_span.textContent) {
         sibling_span.textContent = input.value;
         parent_td.classList.add('td_value_changed');
+        parent_td.classList.remove('td_value_good');
+        parent_td.classList.remove('td_value_bad');
+        let valid=false;
+        if (parent_td.classList.contains('rule_vid') || parent_td.classList.contains('rule_pid')){
+            valid=ValidateVidPid(input.value);  
+        }
+        else if(parent_td.classList.contains('rule_serial')){
+            valid=input.value.trim().length>0;
+        }
+        if (valid){
+            parent_td.classList.add('td_value_good');
+        } else {
+            parent_td.classList.add('td_value_bad');
+        }
     }
     parent_td.classList.toggle('padding_td');
     input.remove();
     sibling_span.classList.remove('hidden');
+    ShowToolTipIfSomeInvalid();
+   
 }
+
+function ShowToolTipIfSomeInvalid(){   
+    let table = document.getElementById('rules_list_table');
+    let not_valid_cells=table.tBodies[0].querySelectorAll('td.td_value_bad');
+    let warinig =document.getElementById('validation_warning');
+    if (not_valid_cells.length>0){        
+        warinig.style.display = 'block';
+    }
+    else{
+        warinig.style.display='none';
+    }   
+    
+}
+
 
 // ------------------- edit row -------------
 
@@ -615,6 +686,11 @@ function ResetRow(row) {
     let td = row.querySelector('td.rule_id');
     if (!td) return;
     row.classList.remove('tr_deleted_rule');
+    row.querySelectorAll('td').forEach(cell =>{
+        cell.classList.remove('td_value_bad');
+        cell.classList.remove('td_value_good');
+        cell.classList.remove('td_value_changed');
+    });
     let val_span = td.querySelector('span.span_val');
     if (!val_span) return;
     let rule_id = val_span.textContent;
@@ -647,6 +723,7 @@ function ResetRow(row) {
         td_elements.forEach(td => {
             td.classList.remove('td_value_changed');
         });
+        ShowToolTipIfSomeInvalid();
     }
     catch (e) {
         console.log(e.message);
@@ -747,4 +824,31 @@ function BindRowFocusLost(input) {
             EnableButton(document.getElementById("edit_rule_btn"));
         }
     });
+}
+
+// ------------------- Validators -------------
+
+function ValidateVidPid(str) {
+    // Check if the string is a valid hexadecimal number
+    const hexRegex = /^[0-9A-Fa-f]{1,4}$/;
+    if (!hexRegex.test(str)) {
+      return false;
+    }
+    // Check if the hexadecimal number can be represented in two bytes
+    const hexValue = parseInt(str, 16);
+    return hexValue >= 0 && hexValue <= 0xFFFF && str.length==4;
+}
+
+function ValidateUser(user){
+    let us=user.trim();
+    let arr=JSON.parse(localStorage.getItem('groups_list'));
+    let some= arr.some(el=>el.name==us);
+    return some;
+}
+
+function ValidateGroup(group){
+    let us=group.trim();
+    let arr=JSON.parse(localStorage.getItem('groups_list'));
+    let some= arr.some(el=>el.name==us);
+    return some;
 }
