@@ -10,10 +10,11 @@ function InitUi() {
     document.getElementById('add_rule_btn').addEventListener('click', function (e) {
         AppendEmptyRow();
     });
-    let delete_curr_btn=document.getElementById('delete_curr_btn');
+    let delete_curr_btn = document.getElementById('delete_curr_btn');
     DisableButton(delete_curr_btn);
-    delete_curr_btn.addEventListener('click',DeleteSelectedRow);
+    delete_curr_btn.addEventListener('click', DeleteSelectedRow);
 }
+
 
 // ------------------- rules list -------------------------
 
@@ -27,7 +28,7 @@ function UpdateRulesList(data) {
         for (index in json_arr) {
             AppendTheRule(json_arr[index], index);
         }
-        BindTableCheckbox(table);
+        BindTableHeaderCheckbox(table);
         BindDoubleClick();
         BindRowSelect();
         BindRowCheckbox();
@@ -46,7 +47,7 @@ function ResetRulesList() {
         for (index in json_arr) {
             AppendTheRule(json_arr[index], index);
         }
-        BindTableCheckbox(table);
+        BindTableHeaderCheckbox(table);
         BindDoubleClick();
         BindRowSelect();
         BindRowCheckbox();
@@ -64,6 +65,12 @@ function ClearList(table) {
 }
 
 // append rule from json object
+/**
+ * @brief Appent <tr> row to table
+ * @param {Object} item 
+ * @param {Number} index 
+ * @returns HtmlElement row
+ */
 function AppendTheRule(item, index) {
     const table = document.getElementById('rules_list_table');
     const tBody = table.getElementsByTagName('tbody')[0];
@@ -84,12 +91,14 @@ function AppendTheRule(item, index) {
     return new_row;
 }
 
-
+/**
+ * Append an ampty <tr> row
+ */
 function AppendEmptyRow() {
     const table = document.getElementById('rules_list_table');
     const table_body = table.tBodies[0];
     const rows_count = table_body.querySelectorAll('tr').length;
-    let item=CreateEmptyRuleObj();   
+    let item = CreateEmptyRuleObj();
     let new_row = AppendTheRule(item, rows_count);
     new_row.classList.add('row_appended_by_user');
     RowSelect(table, new_row);
@@ -98,7 +107,7 @@ function AppendEmptyRow() {
     new_row.querySelector('input.list_checkbox').addEventListener('change', OnRowChecked);
 }
 
-function CreateEmptyRuleObj(){
+function CreateEmptyRuleObj() {
     let device = {
         vid: "",
         pid: "",
@@ -124,6 +133,12 @@ function CreateEmptyRuleObj(){
     return item;
 }
 
+/**
+ * @brief Insert a <td> cell to the <tr> row
+ * @param {HtmlElement} row 
+ * @param {string} text 
+ * @param {string} htmlclass 
+ */
 function InsertCell(row, text, htmlclass) {
     let cell = row.insertCell(-1);
     cell.classList.add('padding_td');
@@ -141,36 +156,39 @@ function InsertCell(row, text, htmlclass) {
 // single select for table rows
 function BindRowSelect() {
     let table = document.getElementById('rules_list_table');
-    table.addEventListener('click', function (event) {
-        const clicked_row = event.target.closest('tr');
-        // multiselect checkboxes by shift+click
-        if (event.shiftKey){
-            let tr_all=table.tBodies[0].querySelectorAll('tr');
-            let tr_selected_old=table.tBodies[0].querySelector('tr.tr_selected');
-            let index_selected_old=-1;               
-            let index_selected_new=-1;
-            tr_all.forEach((item,index)=>{
-                if (item==tr_selected_old) index_selected_old=index;
-                if (item==clicked_row) index_selected_new=index;
-            });
-            if (index_selected_new>=0 && index_selected_old>=0){
-               let begin=Math.min(index_selected_new,index_selected_old);
-               let end=Math.max(index_selected_new,index_selected_old);
-               for (let i=begin;i<=end;++i){
-                 let checkbox=tr_all[i].querySelector('input.list_checkbox')
-                 checkbox.checked=true;
-                 checkbox.dispatchEvent(new Event('change', { bubbles: true })); 
-               }     
-            }            
+    table.addEventListener('click', OnRowClicked);
+}
+
+function OnRowClicked(event) {
+    const clicked_row = event.target.closest('tr');
+    let table = document.getElementById('rules_list_table');
+    // multiselect checkboxes by shift+click
+    if (event.shiftKey) {
+        let tr_all = table.tBodies[0].querySelectorAll('tr');
+        let tr_selected_old = table.tBodies[0].querySelector('tr.tr_selected');
+        let index_selected_old = -1;
+        let index_selected_new = -1;
+        tr_all.forEach((item, index) => {
+            if (item == tr_selected_old) index_selected_old = index;
+            if (item == clicked_row) index_selected_new = index;
+        });
+        if (index_selected_new >= 0 && index_selected_old >= 0) {
+            let begin = Math.min(index_selected_new, index_selected_old);
+            let end = Math.max(index_selected_new, index_selected_old);
+            for (let i = begin; i <= end; ++i) {
+                let checkbox = tr_all[i].querySelector('input.list_checkbox')
+                checkbox.checked = true;
+                checkbox.dispatchEvent(new Event('change', { bubbles: true }));
+            }
         }
-        // multiselect checkboxes by ctrl+click
-        if (event.ctrlKey){
-            let checkbox= clicked_row.querySelector('input.list_checkbox');
-            checkbox.checked=true;
-            checkbox.dispatchEvent(new Event('change', { bubbles: true }));
-        }
-        RowSelect(table, clicked_row);   
-    });
+    }
+    // multiselect checkboxes by ctrl+click
+    if (event.ctrlKey) {
+        let checkbox = clicked_row.querySelector('input.list_checkbox');
+        checkbox.checked = true;
+        checkbox.dispatchEvent(new Event('change', { bubbles: true }));
+    }
+    RowSelect(table, clicked_row);
 }
 
 function RowSelect(table, row) {
@@ -189,7 +207,7 @@ function RowSelect(table, row) {
 }
 
 // multiselect checkbox in the header of a table
-function BindTableCheckbox(table) {
+function BindTableHeaderCheckbox(table) {
     if (!table) return;
     try {
         let header_checkbox = table.tHead.querySelector('input.list_checkbox');
@@ -220,6 +238,8 @@ function BindTableCheckbox(table) {
     }
 }
 
+
+// Row Checkbox in table body
 // enable "delete" button if some rows are checked, disable if nothing is "checked"
 function BindRowCheckbox() {
     let table = document.getElementById('rules_list_table');
@@ -235,6 +255,7 @@ function BindRowCheckbox() {
     }
 }
 
+// row checked in table body
 function OnRowChecked(e) {
     // if checked - enable button delete
     if (e.target.checked == true) {
@@ -247,6 +268,7 @@ function OnRowChecked(e) {
     }
 }
 
+// if no row are checked - disable the "delete checked" button
 function DisableButtonDeleteIfNoRowsCkecked() {
     try {
         let tbody = document.getElementById('rules_list_table').tBodies[0];
@@ -272,6 +294,10 @@ function DisableButtonDeleteIfNoRowsCkecked() {
     }
 }
 
+/**
+ * @brief Disable a button
+ * @param {HtmlElement} button 
+ */
 function DisableButton(button) {
     if (!button) return;
     button.disabled = true;
@@ -279,6 +305,10 @@ function DisableButton(button) {
     button.classList.remove('like_btn');
 }
 
+/**
+ * @brief Enable a button
+ * @param {HtmlElement} button 
+ */
 function EnableButton(button) {
     if (!button) return;
     button.disabled = false;
@@ -286,7 +316,11 @@ function EnableButton(button) {
     button.classList.add('like_btn');
 }
 
-// bind boudle-clicks on table cells
+
+/** 
+ * @brief bind boudle-clicks on table cells
+ *  @param {HtmlElement} row 
+ */
 function BindDoubleClick(row) {
     // double click on user
     let table = document.getElementById('rules_list_table');
@@ -301,16 +335,13 @@ function BindDoubleClick(row) {
         user_cells = row.querySelectorAll('td.rule_user');
         group_cells = row.querySelectorAll('td.rule_group');
     }
-
     user_cells.forEach(cell => {
         cell.addEventListener('dblclick', function (e) { DblClickOnUserOrGroup(e, 'users_list'); });
     });
     // double click on groups
-
     group_cells.forEach(cell => {
         cell.addEventListener('dblclick', function (e) { DblClickOnUserOrGroup(e, 'groups_list'); });
     });
-
     // double click on vid
     let vid_cells = table.querySelectorAll('td.rule_vid');
     vid_cells.forEach(cell => {
@@ -326,12 +357,10 @@ function BindDoubleClick(row) {
     serial_cells.forEach(cell => {
         cell.addEventListener('dblclick', DblClickOnEditable)
     });
-
 }
 
 
-
-// edit row button
+// "edit_row" button
 function BinEditRow() {
     let button = document.getElementById('edit_rule_btn');
     DisableButton(button);
@@ -372,15 +401,15 @@ function BindDeleteCheckedRows() {
 
 /**
  *  @brief delete one selected row
- */ 
-function DeleteSelectedRow(){
+ */
+function DeleteSelectedRow() {
     let table = document.getElementById('rules_list_table');
-    try{
-        let selected=table.tBodies[0].querySelectorAll('tr.tr_selected');
-        if (selected.length==0) return;
-        let tr=selected[0];
+    try {
+        let selected = table.tBodies[0].querySelectorAll('tr.tr_selected');
+        if (selected.length == 0) return;
+        let tr = selected[0];
         DeleteRow(tr);
-    } catch (e){
+    } catch (e) {
         console.log(e);
         return;
     }
@@ -390,9 +419,9 @@ function DeleteSelectedRow(){
  * @brief Delete one row
  * @param HtmlElement tr 
  */
-function DeleteRow(tr){
+function DeleteRow(tr) {
     // if a selected row is going to be deleted, disable the "edit" button
-    if (tr.classList.contains('tr_selected')) { 
+    if (tr.classList.contains('tr_selected')) {
         DisableButton(document.getElementById('edit_rule_btn'));
         DisableButton(document.getElementById('delete_curr_btn'));
     }
@@ -421,6 +450,9 @@ function SetUsersAndGroups(data) {
         console.log(e.message);
     }
 }
+
+// ------------------- Reset ---------------------
+
 
 function BindReset() {
     let button = document.getElementById('reset_rule_btn');
@@ -454,21 +486,21 @@ function DblClickOnUserOrGroup(event, storage_name) {
         span_el = event.target;
         td_el = span_el.parentElement;
     }
-    let target_width=td_el.offsetWidth+'px';
+    let target_width = td_el.offsetWidth + 'px';
     if (span_el)
         span_el.classList.add('hidden');
     if (td_el) {
         let dropdown = CreateUserGroupSelect(storage_name);
-        dropdown.style.width=target_width;
+        dropdown.style.width = target_width;
         BindRemoveSelectOnFocusLost(dropdown);
         td_el.classList.toggle('padding_td');
         td_el.appendChild(dropdown);
-        td_el.style.width=target_width;
+        td_el.style.width = target_width;
         dropdown.focus();
     }
 }
 
-
+// create a <select> dropdown list
 function CreateUserGroupSelect(storage_name) {
     const stored_items = localStorage.getItem(storage_name);
     const items = stored_items ? JSON.parse(stored_items) : [];
@@ -528,18 +560,19 @@ function DblClickOnEditable(event) {
         td_el = span_el.parentElement;
     }
     if (td_el) {
-        let target_width=td_el.offsetWidth+'px';
+        let target_width = td_el.offsetWidth + 'px';
         if (span_el) span_el.classList.add('hidden');
         let input = CreateInput(span_el.textContent);
-        input.style.width=target_width;
+        input.style.width = target_width;
         BindRemoveInputOnFocusLost(input);
         td_el.classList.toggle('padding_td');
         td_el.appendChild(input);
-        td_el.style.width=target_width;
+        td_el.style.width = target_width;
         input.focus();
     }
 }
 
+// create an <input> text elemnet 
 function CreateInput(initial_text) {
     let input = document.createElement("input");
     input.value = initial_text;
@@ -588,11 +621,11 @@ function ResetRow(row) {
     try {
         let rule_obj;
         // if the rule is appended, use an empty object
-        if (row.classList.contains('row_appended_by_user')){
-            rule_obj=CreateEmptyRuleObj();
-        } 
+        if (row.classList.contains('row_appended_by_user')) {
+            rule_obj = CreateEmptyRuleObj();
+        }
         // else read the rule from the local storage
-        else{
+        else {
             let data = localStorage.getItem("rules_data");
             if (!data) return;
             let rules_arr = JSON.parse(data);
@@ -636,15 +669,15 @@ function MakeTheRowEditable(row) {
         const input_classes = ['rule_vid', 'rule_pid', 'rule_serial'];
         let is_input = input_classes.some(class_name => td.classList.contains(class_name));
         let span_el = td.querySelector('span.span_val');
-        let target_width=td.offsetWidth+'px';
+        let target_width = td.offsetWidth + 'px';
         if (is_input && span_el) {
             let input = CreateInput(span_el.textContent);
-            BindRowFocusLost(input);            
-            input.style.width=target_width;
+            BindRowFocusLost(input);
+            input.style.width = target_width;
             td.classList.toggle('padding_td');
             span_el.classList.toggle('hidden');
             td.appendChild(input);
-            td.style.width=target_width;
+            td.style.width = target_width;
             // focus on first field
             if (td_class === 'rule_vid') input.focus();
         }
@@ -658,11 +691,11 @@ function MakeTheRowEditable(row) {
             if (storage) {
                 let select = CreateUserGroupSelect(storage);
                 BindRowFocusLost(select);
-                select.style.width=target_width;
+                select.style.width = target_width;
                 td.classList.toggle('padding_td');
                 span_el.classList.toggle('hidden');
                 td.appendChild(select);
-                td.style.width=target_width;
+                td.style.width = target_width;
             }
         }
     });
@@ -714,7 +747,4 @@ function BindRowFocusLost(input) {
             EnableButton(document.getElementById("edit_rule_btn"));
         }
     });
-
-
-
 }
