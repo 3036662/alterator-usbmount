@@ -5,11 +5,14 @@ function InitUi() {
     // button click events
     BinEditRow();
     BindReset();
-    BindDeleteSelectedRows();
+    BindDeleteCheckedRows();
     BindRowCheckbox();
     document.getElementById('add_rule_btn').addEventListener('click', function (e) {
         AppendEmptyRow();
     });
+    let delete_curr_btn=document.getElementById('delete_curr_btn');
+    DisableButton(delete_curr_btn);
+    delete_curr_btn.addEventListener('click',DeleteSelectedRow);
 }
 
 // ------------------- rules list -------------------------
@@ -140,7 +143,33 @@ function BindRowSelect() {
     let table = document.getElementById('rules_list_table');
     table.addEventListener('click', function (event) {
         const clicked_row = event.target.closest('tr');
-        RowSelect(table, clicked_row);
+        // multiselect checkboxes by shift+click
+        if (event.shiftKey){
+            let tr_all=table.tBodies[0].querySelectorAll('tr');
+            let tr_selected_old=table.tBodies[0].querySelector('tr.tr_selected');
+            let index_selected_old=-1;               
+            let index_selected_new=-1;
+            tr_all.forEach((item,index)=>{
+                if (item==tr_selected_old) index_selected_old=index;
+                if (item==clicked_row) index_selected_new=index;
+            });
+            if (index_selected_new>=0 && index_selected_old>=0){
+               let begin=Math.min(index_selected_new,index_selected_old);
+               let end=Math.max(index_selected_new,index_selected_old);
+               for (let i=begin;i<=end;++i){
+                 let checkbox=tr_all[i].querySelector('input.list_checkbox')
+                 checkbox.checked=true;
+                 checkbox.dispatchEvent(new Event('change', { bubbles: true })); 
+               }     
+            }            
+        }
+        // multiselect checkboxes by ctrl+click
+        if (event.ctrlKey){
+            let checkbox= clicked_row.querySelector('input.list_checkbox');
+            checkbox.checked=true;
+            checkbox.dispatchEvent(new Event('change', { bubbles: true }));
+        }
+        RowSelect(table, clicked_row);   
     });
 }
 
@@ -154,6 +183,7 @@ function RowSelect(table, row) {
     });
     EnableButton(document.getElementById('reset_rule_btn'));
     row.classList.toggle('tr_selected');
+    EnableButton(document.getElementById('delete_curr_btn'));
     if (!row.classList.contains('editing') && !row.classList.contains('tr_deleted_rule'))
         EnableButton(document.getElementById("edit_rule_btn"));
 }
@@ -213,11 +243,11 @@ function OnRowChecked(e) {
     }
     // if not checked, check all rows, if nothing is checked - disable button
     else if (e.target.checked == false) {
-        DisableButtonDeleteIfNoCkeckedRows();
+        DisableButtonDeleteIfNoRowsCkecked();
     }
 }
 
-function DisableButtonDeleteIfNoCkeckedRows() {
+function DisableButtonDeleteIfNoRowsCkecked() {
     try {
         let tbody = document.getElementById('rules_list_table').tBodies[0];
         if (!tbody || tbody.nodeName != "TBODY") return;
@@ -316,8 +346,11 @@ function BinEditRow() {
     });
 };
 
-// delete rules button
-function BindDeleteSelectedRows() {
+
+/**
+ * @brief Bind Delete checked rows button click event
+ */
+function BindDeleteCheckedRows() {
     let button = document.getElementById('delete_rule_btn');
     DisableButton(button);
     button.addEventListener('click', function (e) {
@@ -327,17 +360,7 @@ function BindDeleteSelectedRows() {
             checkboxes.forEach(checkbox => {
                 if (!checkbox.checked) return;
                 let tr = checkbox.parentElement.parentElement;
-                // if a selected row is going to be deleted, disable the "edit" button
-                if (tr.classList.contains('tr_selected')) DisableButton(document.getElementById('edit_rule_btn'));
-                if (tr.classList.contains('row_appended_by_user')) {
-                    let checkbox = tr.querySelector('input.list_checkbox');
-                    checkbox.checked = false;
-                    tr.remove();
-                } else {
-                    ResetRow(tr); // reset if some change were made              
-                    if (tr && tr.nodeName == "TR") tr.classList.add('tr_deleted_rule'); // mark as deleted
-                }
-                DisableButtonDeleteIfNoCkeckedRows();
+                DeleteRow(tr);
             });
         }
         catch (e) {
@@ -345,6 +368,43 @@ function BindDeleteSelectedRows() {
             return;
         }
     });
+}
+
+/**
+ *  @brief delete one selected row
+ */ 
+function DeleteSelectedRow(){
+    let table = document.getElementById('rules_list_table');
+    try{
+        let selected=table.tBodies[0].querySelectorAll('tr.tr_selected');
+        if (selected.length==0) return;
+        let tr=selected[0];
+        DeleteRow(tr);
+    } catch (e){
+        console.log(e);
+        return;
+    }
+}
+
+/**
+ * @brief Delete one row
+ * @param HtmlElement tr 
+ */
+function DeleteRow(tr){
+    // if a selected row is going to be deleted, disable the "edit" button
+    if (tr.classList.contains('tr_selected')) { 
+        DisableButton(document.getElementById('edit_rule_btn'));
+        DisableButton(document.getElementById('delete_curr_btn'));
+    }
+    if (tr.classList.contains('row_appended_by_user')) {
+        let checkbox = tr.querySelector('input.list_checkbox');
+        checkbox.checked = false;
+        tr.remove();
+    } else {
+        ResetRow(tr); // reset if some change were made              
+        if (tr && tr.nodeName == "TR") tr.classList.add('tr_deleted_rule'); // mark as deleted
+    }
+    DisableButtonDeleteIfNoRowsCkecked();
 }
 
 
