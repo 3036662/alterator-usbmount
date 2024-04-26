@@ -8,7 +8,7 @@ function InitUi() {
     BindDeleteCheckedRows();
     BindRowCheckbox();
     document.getElementById('add_rule_btn').addEventListener('click', function (e) {
-        AppendEmptyRow();
+        AppendRow();
     });
     let delete_curr_btn = document.getElementById('delete_curr_btn');
     DisableButton(delete_curr_btn);
@@ -23,6 +23,107 @@ function InitUi() {
             document.getElementById('delete_curr_btn').dispatchEvent(new Event('click'));
         }
     });
+
+    // enable the "Create a rule button if some row is selected"
+    DisableButton(document.getElementById('btn_create_rule'));
+    document.getElementById('devices_list_table').tabIndex = 0;
+    document.getElementById('devices_list_table').addEventListener('click', function (e) {
+        let table = document.getElementById('devices_list_table');
+        let selected = table.tBodies[0].querySelectorAll('tr.selected');
+        let button = document.getElementById('btn_create_rule');
+        if (selected.length > 0) EnableButton(button);
+        else {
+            DisableButton(button);
+        }
+    });
+    // double click on a device to create a rule
+    document.getElementById('devices_list_table').addEventListener('dblclick', function (e) {
+        const clicked_row = e.target.closest('tr');
+        if (clicked_row.classList.contains('selected')) {
+            document.getElementById('btn_create_rule').dispatchEvent(new Event('click'));
+        }
+    });
+    // create a rule
+    document.getElementById('btn_create_rule').addEventListener('click', function (e) {
+        let table = document.getElementById('devices_list_table');
+        let selected = table.tBodies[0].querySelectorAll('tr.selected');
+        if (selected.length <= 0) return;
+        CreateRuleForDevice(selected[0]);
+    });
+
+
+}
+
+function CreateRuleForDevice(alterator_row) {
+    if (!alterator_row) return;
+    let alterator_labels = alterator_row.querySelectorAll('span.alterator-label');
+    let vid;
+    let pid;
+    let serial;
+    let owned;
+    alterator_labels.forEach(lbl => {
+        let name = lbl.getAttribute('name');
+        if (name === 'lbl_vid') vid = lbl.textContent.trim();
+        if (name === 'lbl_pid') pid = lbl.textContent.trim();
+        if (name === 'lbl_serial') serial = lbl.textContent.trim();
+        if (name === 'lbl_status') owned = lbl.textContent.trim() === "owned";
+    });
+    if (!vid || !pid || !serial || owned === undefined) return;
+    let rules_tbody = document.getElementById('rules_list_table').tBodies[0];
+    // owned - edit existing rule
+    if (owned) {
+
+        // find the rule in rules 
+        let local_data = localStorage.getItem('rules_data');
+        let rule_id = -1;
+        try {
+            let json_arr = JSON.parse(local_data);
+            let rule = json_arr.find((element) =>
+                element.perm.device.vid === vid &&
+                element.perm.device.pid === pid &&
+                element.perm.device.serial === serial
+            );
+            if (rule) rule_id = rule.id;
+        }
+        catch (e) {
+            console.log(e.message);
+            return;
+        }
+        if (rule_id < 0) return;
+        // the rule is found, find in rules table
+        let rules_table_ids = rules_tbody.querySelectorAll('td.rule_id');
+        let row;
+        rules_table_ids.forEach(td_id => {
+            let span_val = td_id.querySelector('span.span_val');
+            if (span_val && span_val.textContent == rule_id) {
+                row = td_id.parentElement;
+            }
+        });
+        if (row) {
+            ResetRow(row);
+            MakeTheRowEditable(row);
+        }
+    }
+    else {
+        //check if already created in rules table
+        let existing_row;
+        let appended_rules = rules_tbody.querySelectorAll('tr.row_appended_by_user');
+        if (appended_rules){
+            appended_rules.forEach(td => {
+                if (td.querySelector('span.rule_vid_val').textContent.trim() === vid &&
+                    td.querySelector('span.rule_pid_val').textContent.trim() === pid &&
+                    td.querySelector('span.rule_serial_val').textContent.trim() == serial) {
+                    existing_row = td;
+                }
+            });
+        }
+        if (existing_row) {
+            MakeTheRowEditable(existing_row);
+        }
+        else {
+            AppendRow(CreateRuleTemplate(vid, pid, serial));
+        }
+    }
 }
 
 
@@ -106,11 +207,11 @@ function AppendTheRule(item, index) {
 /**
  * Append an ampty <tr> row
  */
-function AppendEmptyRow() {
+function AppendRow(item) {
     const table = document.getElementById('rules_list_table');
     const table_body = table.tBodies[0];
     const rows_count = table_body.querySelectorAll('tr').length;
-    let item = CreateEmptyRuleObj();
+    if (!item) item = CreateEmptyRuleObj();
     let new_row = AppendTheRule(item, rows_count);
     new_row.classList.add('row_appended_by_user');
     RowSelect(table, new_row);
@@ -118,6 +219,16 @@ function AppendEmptyRow() {
     MakeTheRowEditable(new_row);
     new_row.querySelector('input.list_checkbox').addEventListener('change', OnRowChecked);
 }
+
+function CreateRuleTemplate(vid, pid, serial) {
+    let obj = CreateEmptyRuleObj();
+    if (!vid || !pid || !serial) return obj;
+    obj.perm.device.vid = vid;
+    obj.perm.device.pid = pid;
+    obj.perm.device.serial = serial;
+    return obj;
+}
+
 
 function CreateEmptyRuleObj() {
     let device = {
