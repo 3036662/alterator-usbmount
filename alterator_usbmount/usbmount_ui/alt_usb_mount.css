@@ -23,6 +23,9 @@
     margin-top: 15px;
 }
 
+.rules_wrap{
+    padding-top: 20px;
+}
 .rules_list{
     width: 100%;
     font-size: 8pt;
@@ -30,6 +33,7 @@
     border-spacing: 0;
     font-family: Arial;
     text-align: left;
+  
 }
 .rules_list caption{
     background-color: white;
@@ -68,8 +72,8 @@
     background-color: white;
 }
 .tr_selected{
-    border-bottom: 2px solid blue;
-    border-top: 2px solid blue;
+    border-bottom: 3px solid #3399ff;
+    border-top: 3px solid #3399ff;
 }
 
 .tr_deleted_rule {
@@ -89,12 +93,12 @@
 
 .td_value_good{
     /*background-color: #a9f972;*/
-    background: linear-gradient(#7aff9d, #fff);
+    background: linear-gradient(#ccffcc, #fff);
 }
 
 .td_value_bad{
     /*background-color: #fb5151;*/
-    background: linear-gradient(#ff7a7a, #fff);
+    background: linear-gradient(#ffcccc, #fff);
     border-color: 2px solid white;
 }
 
@@ -133,7 +137,7 @@
 .validation_warning {
     display: none;
     background-color: white;
-    color: red;
+    color: #f32b63;
     padding: 5px;
     border-radius: 5px;
     border: 1px solid gray;
