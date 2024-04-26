@@ -14,12 +14,12 @@ function InitUi() {
     DisableButton(delete_curr_btn);
     delete_curr_btn.addEventListener('click', DeleteSelectedRow);
     // keybord "Insert" on a table
-    let table_body=document.getElementById('rules_list_table').tBodies[0];
-    table_body.addEventListener('keydown',function(e){
-        if (e.key=="Insert"){
-             document.getElementById('add_rule_btn').dispatchEvent(new Event('click'));   
+    let table_body = document.getElementById('rules_list_table').tBodies[0];
+    table_body.addEventListener('keydown', function (e) {
+        if (e.key == "Insert") {
+            document.getElementById('add_rule_btn').dispatchEvent(new Event('click'));
         }
-        if (e.key=="Delete" && table_body.querySelectorAll('tr.tr_selected').length!=0){
+        if (e.key == "Delete" && table_body.querySelectorAll('tr.tr_selected').length != 0) {
             document.getElementById('delete_curr_btn').dispatchEvent(new Event('click'));
         }
     });
@@ -172,25 +172,25 @@ function BindRowSelect() {
 }
 
 // bind keybord keys to rows, enable if editable
-function BindEditableRowKeys(row){
-    row.tabIndex=0;
-    row.addEventListener('keyup',(event)=>{
-        let tr=event.target.parentElement.parentElement;
-        let curr_index=-1;
-        if (tr.classList.contains('editing') && event.keyCode==13){
-            let inputs=tr.querySelectorAll('.edit_inline');
+function BindEditableRowKeys(row) {
+    row.tabIndex = 0;
+    row.addEventListener('keyup', (event) => {
+        let tr = event.target.parentElement.parentElement;
+        let curr_index = -1;
+        if (tr.classList.contains('editing') && event.keyCode == 13) {
+            let inputs = tr.querySelectorAll('.edit_inline');
 
-            inputs.forEach((input,index)=>{
-                 if (input===event.target) curr_index=index; 
+            inputs.forEach((input, index) => {
+                if (input === event.target) curr_index = index;
             });
             // not last input go to next input
-            if (curr_index >=0 && curr_index<inputs.length-1){
-                inputs[curr_index+1].focus();
-            } else if (curr_index=inputs.length-1){
+            if (curr_index >= 0 && curr_index < inputs.length - 1) {
+                inputs[curr_index + 1].focus();
+            } else if (curr_index = inputs.length - 1) {
                 event.target.dispatchEvent(new Event('focusout'));
             }
         }
-            
+
     });
 }
 
@@ -568,7 +568,7 @@ function BindRemoveSelectOnFocusLost(select_element) {
             SaveSelectValueToSpan(event.target, true);
         if (event.keyCode == 13) // enter
             SaveSelectValueToSpan(event.target);
-    }); 
+    });
 
 }
 
@@ -577,9 +577,9 @@ function SaveSelectValueToSpan(select, do_not_save) {
     let sibling_span = select.parentElement.querySelector('span.span_val');
     let parent_td = select.parentElement;
     if (!sibling_span || !parent_td || parent_td.nodeName != 'TD') return;
-    let empty_val=!select.value || select.value == '-';
-    let sibling_span_empty=sibling_span.textContent.length==0;
-    if (parent_td.parentElement.classList.contains('row_appended_by_user') && empty_val && sibling_span_empty){
+    let empty_val = !select.value || select.value == '-';
+    let sibling_span_empty = sibling_span.textContent.length == 0;
+    if (parent_td.parentElement.classList.contains('row_appended_by_user') && empty_val && sibling_span_empty) {
         parent_td.classList.add('td_value_changed');
         parent_td.classList.add('td_value_bad');
     }
@@ -589,16 +589,16 @@ function SaveSelectValueToSpan(select, do_not_save) {
         parent_td.classList.remove('td_value_good');
         parent_td.classList.remove('td_value_bad');
         // validation
-        let valid=false;
-        if (parent_td.classList.contains('rule_user')){
-           valid=ValidateUser(select.value);
-        } else if (parent_td.classList.contains('rule_group')){
-            valid=ValidateGroup(select.value);
+        let valid = false;
+        if (parent_td.classList.contains('rule_user')) {
+            valid = ValidateUser(select.value);
+        } else if (parent_td.classList.contains('rule_group')) {
+            valid = ValidateGroup(select.value);
         }
-        if (valid){
+        if (valid) {
             parent_td.classList.add('td_value_good');
         } else {
-            parent_td.classList.add('td_value_bad');            
+            parent_td.classList.add('td_value_bad');
         }
 
     }
@@ -653,7 +653,7 @@ function BindRemoveInputOnFocusLost(input) {
         if (event.keyCode == 13)
             SaveInputValueToSpan(event.target);
     });
-  
+
 }
 
 function SaveInputValueToSpan(input, do_not_save) {
@@ -663,23 +663,23 @@ function SaveInputValueToSpan(input, do_not_save) {
     let sibling_span = input.parentElement.querySelector('span.span_val');
     if (sibling_span) initial_text = sibling_span.textContent;
     if (!sibling_span || initial_text === 'undefined' || !parent_td || parent_td.nodeName != 'TD') return;
-    if (parent_td.parentElement.classList.contains('row_appended_by_user') && input.value.length==0){
+    if (parent_td.parentElement.classList.contains('row_appended_by_user') && input.value.length == 0) {
         parent_td.classList.add('td_value_changed');
         parent_td.classList.add('td_value_bad');
-    } 
+    }
     if (!do_not_save && input.value != "" && input.value != sibling_span.textContent) {
         sibling_span.textContent = input.value;
         parent_td.classList.add('td_value_changed');
         parent_td.classList.remove('td_value_good');
         parent_td.classList.remove('td_value_bad');
-        let valid=false;
-        if (parent_td.classList.contains('rule_vid') || parent_td.classList.contains('rule_pid')){
-            valid=ValidateVidPid(input.value);  
+        let valid = false;
+        if (parent_td.classList.contains('rule_vid') || parent_td.classList.contains('rule_pid')) {
+            valid = ValidateVidPid(input.value);
         }
-        else if(parent_td.classList.contains('rule_serial')){
-            valid=input.value.trim().length>0;
+        else if (parent_td.classList.contains('rule_serial')) {
+            valid = input.value.trim().length > 0;
         }
-        if (valid){
+        if (valid) {
             parent_td.classList.add('td_value_good');
         } else {
             parent_td.classList.add('td_value_bad');
@@ -689,20 +689,20 @@ function SaveInputValueToSpan(input, do_not_save) {
     input.remove();
     sibling_span.classList.remove('hidden');
     ShowToolTipIfSomeInvalid();
-   
+
 }
 
-function ShowToolTipIfSomeInvalid(){   
+function ShowToolTipIfSomeInvalid() {
     let table = document.getElementById('rules_list_table');
-    let not_valid_cells=table.tBodies[0].querySelectorAll('td.td_value_bad');
-    let warinig =document.getElementById('validation_warning');
-    if (not_valid_cells.length>0){        
+    let not_valid_cells = table.tBodies[0].querySelectorAll('td.td_value_bad');
+    let warinig = document.getElementById('validation_warning');
+    if (not_valid_cells.length > 0) {
         warinig.style.display = 'block';
     }
-    else{
-        warinig.style.display='none';
-    }   
-    
+    else {
+        warinig.style.display = 'none';
+    }
+
 }
 
 
@@ -712,7 +712,7 @@ function ResetRow(row) {
     let td = row.querySelector('td.rule_id');
     if (!td) return;
     row.classList.remove('tr_deleted_rule');
-    row.querySelectorAll('td').forEach(cell =>{
+    row.querySelectorAll('td').forEach(cell => {
         cell.classList.remove('td_value_bad');
         cell.classList.remove('td_value_good');
         cell.classList.remove('td_value_changed');
@@ -858,23 +858,23 @@ function ValidateVidPid(str) {
     // Check if the string is a valid hexadecimal number
     const hexRegex = /^[0-9A-Fa-f]{1,4}$/;
     if (!hexRegex.test(str)) {
-      return false;
+        return false;
     }
     // Check if the hexadecimal number can be represented in two bytes
     const hexValue = parseInt(str, 16);
-    return hexValue >= 0 && hexValue <= 0xFFFF && str.length==4;
+    return hexValue >= 0 && hexValue <= 0xFFFF && str.length == 4;
 }
 
-function ValidateUser(user){
-    let us=user.trim();
-    let arr=JSON.parse(localStorage.getItem('groups_list'));
-    let some= arr.some(el=>el.name==us);
+function ValidateUser(user) {
+    let us = user.trim();
+    let arr = JSON.parse(localStorage.getItem('groups_list'));
+    let some = arr.some(el => el.name == us);
     return some;
 }
 
-function ValidateGroup(group){
-    let us=group.trim();
-    let arr=JSON.parse(localStorage.getItem('groups_list'));
-    let some= arr.some(el=>el.name==us);
+function ValidateGroup(group) {
+    let us = group.trim();
+    let arr = JSON.parse(localStorage.getItem('groups_list'));
+    let some = arr.some(el => el.name == us);
     return some;
 }
