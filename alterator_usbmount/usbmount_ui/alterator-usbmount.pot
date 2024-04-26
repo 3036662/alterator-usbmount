@@ -1,0 +1,110 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2024-04-26 14:14+0300\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=CHARSET\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: стандартный ввод:1
+msgid "Connnected usb devices:"
+msgstr ""
+
+#: стандартный ввод:2
+msgid "List of devices"
+msgstr ""
+
+#: стандартный ввод:3
+msgid "Block"
+msgstr ""
+
+#: стандартный ввод:4
+msgid "Filesystem"
+msgstr ""
+
+#: стандартный ввод:5 ввод:14
+msgid "VID"
+msgstr ""
+
+#: стандартный ввод:6 ввод:15
+msgid "PID"
+msgstr ""
+
+#: стандартный ввод:7 ввод:16
+msgid "SN"
+msgstr ""
+
+#: стандартный ввод:8
+msgid "Status"
+msgstr ""
+
+#: стандартный ввод:9
+msgid "Mount"
+msgstr ""
+
+#: стандартный ввод:10
+msgid "Scan plugged-in USB devices"
+msgstr ""
+
+#: стандартный ввод:11
+msgid "Create a rule"
+msgstr ""
+
+#: стандартный ввод:12
+msgid "Rules:"
+msgstr ""
+
+#: стандартный ввод:13
+msgid "List of rules"
+msgstr ""
+
+#: стандартный ввод:17
+msgid "User"
+msgstr ""
+
+#: стандартный ввод:18
+msgid "Group"
+msgstr ""
+
+#: стандартный ввод:19
+msgid "Some invalid values were provided,please check the red cells"
+msgstr ""
+
+#: стандартный ввод:20
+msgid "Delete checked rows"
+msgstr ""
+
+#: стандартный ввод:21
+msgid "Reset all"
+msgstr ""
+
+#: стандартный ввод:22
+msgid "Edit"
+msgstr ""
+
+#: стандартный ввод:23
+msgid "Reset row"
+msgstr ""
+
+#: стандартный ввод:24
+msgid "Delete current"
+msgstr ""
+
+#: стандартный ввод:25
+msgid "Add"
+msgstr ""
+
+#: стандартный ввод:1
+msgid "USBMount"
+msgstr ""
