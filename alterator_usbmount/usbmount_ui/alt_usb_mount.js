@@ -50,6 +50,8 @@ function InitUi() {
         if (selected.length <= 0) return;
         CreateRuleForDevice(selected[0]);
     });
+    // SAVE button
+    DisableButton(document.getElementById('btn_save'));
 
 
 }
@@ -613,6 +615,7 @@ function BindReset() {
         let selected_row = table.querySelector('tr.tr_selected');
         if (selected_row) {
             ResetRow(selected_row);
+            ShowSaveButtonIfSomethigChaged();
         }
     });
     // reset all
@@ -623,6 +626,7 @@ function BindReset() {
         DisableButton(document.getElementById('delete_curr_btn'));
         DisableButton(document.getElementById('reset_rule_btn'));
         DisableButtonDeleteIfNoRowsCkecked();
+        DisableButton(document.getElementById('btn_save'));
     });
 
 }
@@ -813,12 +817,25 @@ function ShowToolTipIfSomeInvalid() {
     let warinig = document.getElementById('validation_warning');
     if (not_valid_cells.length > 0) {
         warinig.style.display = 'block';
+        DisableButton(document.getElementById('btn_save'));
     }
     else {
         warinig.style.display = 'none';
+        ShowSaveButtonIfSomethigChaged();     
     }
-
 }
+
+function ShowSaveButtonIfSomethigChaged(){
+    let table = document.getElementById('rules_list_table');
+    let tr_changed=table.querySelectorAll('td.td_value_changed');
+    if (tr_changed && tr_changed.length>0){
+         EnableButton(document.getElementById('btn_save'));
+    }
+    else{
+        DisableButton(document.getElementById('btn_save'));
+    }
+}
+
 
 
 // ------------------- edit row -------------

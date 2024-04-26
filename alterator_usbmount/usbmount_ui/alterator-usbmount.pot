@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-04-26 14:14+0300\n"
+"POT-Creation-Date: 2024-04-26 15:06+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -33,15 +33,15 @@ msgstr ""
 msgid "Filesystem"
 msgstr ""
 
-#: стандартный ввод:5 ввод:14
+#: стандартный ввод:5 ввод:13
 msgid "VID"
 msgstr ""
 
-#: стандартный ввод:6 ввод:15
+#: стандартный ввод:6 ввод:14
 msgid "PID"
 msgstr ""
 
-#: стандартный ввод:7 ввод:16
+#: стандартный ввод:7 ввод:15
 msgid "SN"
 msgstr ""
 
@@ -62,47 +62,47 @@ msgid "Create a rule"
 msgstr ""
 
 #: стандартный ввод:12
-msgid "Rules:"
-msgstr ""
-
-#: стандартный ввод:13
 msgid "List of rules"
 msgstr ""
 
-#: стандартный ввод:17
+#: стандартный ввод:16
 msgid "User"
 msgstr ""
 
-#: стандартный ввод:18
+#: стандартный ввод:17
 msgid "Group"
 msgstr ""
 
-#: стандартный ввод:19
+#: стандартный ввод:18
 msgid "Some invalid values were provided,please check the red cells"
 msgstr ""
 
-#: стандартный ввод:20
+#: стандартный ввод:19
 msgid "Delete checked rows"
 msgstr ""
 
-#: стандартный ввод:21
+#: стандартный ввод:20
 msgid "Reset all"
 msgstr ""
 
-#: стандартный ввод:22
+#: стандартный ввод:21
 msgid "Edit"
 msgstr ""
 
-#: стандартный ввод:23
+#: стандартный ввод:22
 msgid "Reset row"
 msgstr ""
 
-#: стандартный ввод:24
+#: стандартный ввод:23
 msgid "Delete current"
 msgstr ""
 
-#: стандартный ввод:25
+#: стандартный ввод:24
 msgid "Add"
+msgstr ""
+
+#: стандартный ввод:25
+msgid "SAVE"
 msgstr ""
 
 #: стандартный ввод:1

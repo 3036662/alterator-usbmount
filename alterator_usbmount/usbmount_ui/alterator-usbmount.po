@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-04-26 14:14+0300\n"
-"PO-Revision-Date: 2024-04-26 14:14+0300\n"
+"POT-Creation-Date: 2024-04-26 15:06+0300\n"
+"PO-Revision-Date: 2024-04-26 15:06+0300\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: ru\n"
@@ -34,15 +34,15 @@ msgstr "Утсройство"
 msgid "Filesystem"
 msgstr "Файловая система"
 
-#: стандартный ввод:5 ввод:14
+#: стандартный ввод:5 ввод:13
 msgid "VID"
 msgstr "VID"
 
-#: стандартный ввод:6 ввод:15
+#: стандартный ввод:6 ввод:14
 msgid "PID"
 msgstr "PID"
 
-#: стандартный ввод:7 ввод:16
+#: стандартный ввод:7 ввод:15
 msgid "SN"
 msgstr "Серийный номер"
 
@@ -63,51 +63,54 @@ msgid "Create a rule"
 msgstr "Назначить владельца"
 
 #: стандартный ввод:12
-msgid "Rules:"
-msgstr "Владельцы:"
-
-#: стандартный ввод:13
 msgid "List of rules"
 msgstr "Список владельцев"
 
-#: стандартный ввод:17
+#: стандартный ввод:16
 msgid "User"
 msgstr "Пользователь"
 
-#: стандартный ввод:18
+#: стандартный ввод:17
 msgid "Group"
 msgstr "Группа"
 
-#: стандартный ввод:19
+#: стандартный ввод:18
 msgid "Some invalid values were provided,please check the red cells"
 msgstr ""
 "Введены некорректные значения, обратите внимания на ячейки, отмеченные "
 "красным"
 
-#: стандартный ввод:20
+#: стандартный ввод:19
 msgid "Delete checked rows"
 msgstr "Удалить выбранные строки"
 
-#: стандартный ввод:21
+#: стандартный ввод:20
 msgid "Reset all"
 msgstr "Сбросить все"
 
-#: стандартный ввод:22
+#: стандартный ввод:21
 msgid "Edit"
 msgstr "Изменить"
 
-#: стандартный ввод:23
+#: стандартный ввод:22
 msgid "Reset row"
 msgstr "Сбросить"
 
-#: стандартный ввод:24
+#: стандартный ввод:23
 msgid "Delete current"
 msgstr "Удалить"
 
-#: стандартный ввод:25
+#: стандартный ввод:24
 msgid "Add"
 msgstr "Добавить"
+
+#: стандартный ввод:25
+msgid "SAVE"
+msgstr "Сохранить"
 
 #: стандартный ввод:1
 msgid "USBMount"
 msgstr "USBMount"
+
+#~ msgid "Rules:"
+#~ msgstr "Владельцы:"

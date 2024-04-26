@@ -144,3 +144,9 @@
     margin-top: 20px;
     margin-bottom: 20px;
   }
+
+  .separator{
+    display: block;
+    float: left;
+    width: 100%;
+  }
