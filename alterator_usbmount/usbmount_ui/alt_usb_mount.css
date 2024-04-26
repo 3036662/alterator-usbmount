@@ -18,6 +18,10 @@
     float: right;
     margin-top: 15px;
 }
+.left_buttons{
+    float: left;
+    margin-top: 15px;
+}
 
 .rules_list{
     width: 100%;
@@ -57,18 +61,20 @@
 }
 
 .tr_odd{
-   background-color: #f0f0f0; 
+   background-color: #f7f5f5; 
 }
 
 .tr_even{
     background-color: white;
 }
 .tr_selected{
-    background-color: #ADC8F9;
+    border-bottom: 2px solid blue;
+    border-top: 2px solid blue;
 }
 
 .tr_deleted_rule {
     text-decoration: line-through;
+    font-weight: 700;
 }
 
 
@@ -82,11 +88,14 @@
 }
 
 .td_value_good{
-    background-color: #a9f972;
+    /*background-color: #a9f972;*/
+    background: linear-gradient(#7aff9d, #fff);
 }
 
 .td_value_bad{
-    background-color: #fb5151;;
+    /*background-color: #fb5151;*/
+    background: linear-gradient(#ff7a7a, #fff);
+    border-color: 2px solid white;
 }
 
 /* Alterator-like button*/
