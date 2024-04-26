@@ -99,6 +99,7 @@ function AppendTheRule(item, index) {
     InsertCell(new_row, item.perm.device.serial, 'rule_serial');
     InsertCell(new_row, item.perm.users[0].name, "rule_user");
     InsertCell(new_row, item.perm.groups[0].name, "rule_group");
+    BindEditableRowKeys(new_row);
     return new_row;
 }
 
@@ -168,6 +169,29 @@ function InsertCell(row, text, htmlclass) {
 function BindRowSelect() {
     let table = document.getElementById('rules_list_table');
     table.addEventListener('click', OnRowClicked);
+}
+
+// bind keybord keys to rows, enable if editable
+function BindEditableRowKeys(row){
+    row.tabIndex=0;
+    row.addEventListener('keyup',(event)=>{
+        let tr=event.target.parentElement.parentElement;
+        let curr_index=-1;
+        if (tr.classList.contains('editing') && event.keyCode==13){
+            let inputs=tr.querySelectorAll('.edit_inline');
+
+            inputs.forEach((input,index)=>{
+                 if (input===event.target) curr_index=index; 
+            });
+            // not last input go to next input
+            if (curr_index >=0 && curr_index<inputs.length-1){
+                inputs[curr_index+1].focus();
+            } else if (curr_index=inputs.length-1){
+                event.target.dispatchEvent(new Event('focusout'));
+            }
+        }
+            
+    });
 }
 
 function OnRowClicked(event) {
@@ -482,6 +506,8 @@ function BindReset() {
     button_all.addEventListener('click', function (e) {
         ResetRulesList();
         DisableButton(document.getElementById('edit_rule_btn'));
+        DisableButton(document.getElementById('delete_curr_btn'));
+        DisableButton(document.getElementById('reset_rule_btn'));
     });
 
 }
@@ -542,7 +568,7 @@ function BindRemoveSelectOnFocusLost(select_element) {
             SaveSelectValueToSpan(event.target, true);
         if (event.keyCode == 13) // enter
             SaveSelectValueToSpan(event.target);
-    });
+    }); 
 
 }
 
