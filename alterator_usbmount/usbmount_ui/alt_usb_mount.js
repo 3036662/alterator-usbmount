@@ -622,6 +622,7 @@ function BindReset() {
         DisableButton(document.getElementById('edit_rule_btn'));
         DisableButton(document.getElementById('delete_curr_btn'));
         DisableButton(document.getElementById('reset_rule_btn'));
+        DisableButtonDeleteIfNoRowsCkecked();
     });
 
 }
