@@ -792,8 +792,8 @@ function SaveInputValueToSpan(input, do_not_save) {
         parent_td.classList.add('td_value_changed');
         parent_td.classList.add('td_value_bad');
     }
-    if (!do_not_save && input.value != "" && input.value != sibling_span.textContent) {
-        sibling_span.textContent = input.value;
+    if (!do_not_save && input.value != "" && input.value.trim() != sibling_span.textContent) {
+        sibling_span.textContent = input.value.trim();
         parent_td.classList.add('td_value_changed');
         parent_td.classList.remove('td_value_good');
         parent_td.classList.remove('td_value_bad');
