@@ -291,6 +291,7 @@ function BindRowSelect() {
 function BindEditableRowKeys(row) {
     row.tabIndex = 0;
     row.addEventListener('keyup', (event) => {
+        try{
         let tr = event.target.parentElement.parentElement;
         let curr_index = -1;
         if (tr.classList.contains('editing') && event.keyCode == 13) {
@@ -305,6 +306,10 @@ function BindEditableRowKeys(row) {
             } else if (curr_index = inputs.length - 1) {
                 event.target.dispatchEvent(new Event('focusout'));
             }
+        }
+        } catch (e){
+            console.log(e.message);
+            return;
         }
 
     });
