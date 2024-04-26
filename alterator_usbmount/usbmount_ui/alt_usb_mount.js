@@ -52,6 +52,7 @@ function InitUi() {
     });
     // SAVE button
     DisableButton(document.getElementById('btn_save'));
+    document.getElementById('btn_save').addEventListener('click',SaveRules);
 
 
 }
@@ -832,8 +833,9 @@ function ShowToolTipIfSomeInvalid() {
 
 function ShowSaveButtonIfSomethigChaged(){
     let table = document.getElementById('rules_list_table');
-    let tr_changed=table.querySelectorAll('td.td_value_changed');
-    if (tr_changed && tr_changed.length>0){
+    let tr_changed=table.tBodies[0].querySelectorAll('td.td_value_changed');
+    let tr_deleted=table.tBodies[0].querySelectorAll('tr.tr_deleted_rule');
+    if ((tr_changed && tr_changed.length>0) || (tr_deleted && tr_deleted.length>0) ){
          EnableButton(document.getElementById('btn_save'));
     }
     else{
@@ -1014,4 +1016,77 @@ function ValidateGroup(group) {
     let arr = JSON.parse(localStorage.getItem('groups_list'));
     let some = arr.some(el => el.name == us);
     return some;
+}
+
+// ------------------- Save -------------
+
+// Save -send to the backend
+function SaveRules(){
+    let tbody=document.getElementById('rules_list_table').tBodies[0];
+    let rows=tbody.querySelectorAll('tr');
+    let res ={
+        created:[],
+        updated:[],
+        deleted:[],
+        notchanged:[]
+    }
+    rows.forEach(row=>{
+        let rule_id=row.querySelector('td.rule_id').textContent.trim();
+        let is_existing=!row.classList.contains('row_appended_by_user') && rule_id.length>0;
+        let is_deleted=is_existing && row.classList.contains('tr_deleted_rule');
+        let changed_vals=row.querySelectorAll('td.td_value_changed');
+        let is_updated=is_existing && !is_deleted && changed_vals && changed_vals.length>0;
+        let is_not_changed=is_existing && !is_updated && !is_deleted; 
+        let is_created=!is_existing && changed_vals && changed_vals.length>0;
+        let vid,pid,serial,user,group,all_fields;
+        try{
+            vid=row.querySelector('span.rule_vid_val').textContent.trim();
+            pid=row.querySelector('span.rule_pid_val').textContent.trim();
+            serial=row.querySelector('span.rule_serial_val').textContent.trim();
+            user=row.querySelector('span.rule_user_val').textContent.trim();
+            group=row.querySelector('span.rule_group_val').textContent.trim();
+            all_fields=vid && pid && serial && user && group;
+        } catch (e){
+            console.log(e.message);
+            return;
+        }
+        // rules is created
+        if (is_created  && all_fields){
+            res.created.push({
+                id:rule_id,
+                vid:vid,
+                pid:pid,
+                serial:serial,
+                user:user,
+                group:group
+            });
+        }
+        // rule deleted
+        if (is_deleted){
+            res.deleted.push(rule_id);
+            return;
+        }
+        // updated
+        if (is_updated && all_fields){
+            let vid_updated=row.querySelector('td.rule_vid').classList.contains('td_value_changed');
+            let pid_updated=row.querySelector('td.rule_pid').classList.contains('td_value_changed');
+            let serial_updated=row.querySelector('td.rule_serial').classList.contains('td_value_changed');
+            let user_updated=row.querySelector('td.rule_user').classList.contains('td_value_changed');
+            let group_updated=row.querySelector('td.rule_group').classList.contains('td_value_changed');
+            res.updated.push({
+                id:rule_id,
+                vid: vid_updated ? vid : "",
+                pid: pid_updated ? pid : "",
+                serial: serial_updated ? serial :"",
+                user:user_updated ? user : "",
+                group: group_updated ? group : ""
+            });
+            return;
+        }
+        if (is_not_changed){
+            res.notchanged.push(rule_id);
+            return;
+        }
+    });
+    alert(JSON.stringify(res));
 }
