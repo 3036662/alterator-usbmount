@@ -101,6 +101,7 @@ function CreateRuleForDevice(alterator_row) {
         });
         if (row) {
             ResetRow(row);
+            RowSelect(document.getElementById('rules_list_table'),row);
             MakeTheRowEditable(row);
         }
     }
@@ -118,10 +119,12 @@ function CreateRuleForDevice(alterator_row) {
             });
         }
         if (existing_row) {
+            RowSelect(document.getElementById('rules_list_table'),existing_row);
             MakeTheRowEditable(existing_row);
         }
         else {
-            AppendRow(CreateRuleTemplate(vid, pid, serial));
+            let new_row=AppendRow(CreateRuleTemplate(vid, pid, serial));
+            RowSelect(document.getElementById('rules_list_table'),existing_row);
         }
     }
 }
