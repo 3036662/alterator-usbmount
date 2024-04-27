@@ -1089,5 +1089,8 @@ function SaveRules(){
             return;
         }
     });
-    alert(JSON.stringify(res));
+    // save to hidden input and fire an event for lisp
+    document.getElementById('hidden_inp_data_to_save').value=JSON.stringify(res);
+    document.getElementById('btn_save').dispatchEvent(new Event('rules_data_ready'));
 }
+
