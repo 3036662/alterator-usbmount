@@ -58,12 +58,27 @@ std::string UsbMount::GetStringNoParams(const std::string &method_name) const {
   return res;
 }
 
+std::string UsbMount::GetStringResponse(const DbusOneParam &param) const {
+  std::string res;
+  if (!dbus_proxy_)
+    return res;
+  auto method = dbus_proxy_->createMethodCall(kInterfaceName, param.method);
+  method << param.param;
+  auto reply = dbus_proxy_->callMethod(method);
+  reply >> res;
+  return res;
+}
+
 std::string UsbMount::getRulesJson() const noexcept {
   return GetStringNoParams("ListRules");
 }
 
 std::string UsbMount::GetUsersGroups() const noexcept {
   return GetStringNoParams("GetUsersAndGroups");
+}
+
+std::string UsbMount::SaveRules(const std::string &data) const noexcept {
+  return GetStringResponse({"SaveRules", data});
 }
 
 } // namespace alterator::usbmount

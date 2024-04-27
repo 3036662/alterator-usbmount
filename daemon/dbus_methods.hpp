@@ -1,6 +1,7 @@
 #pragma once
 #include "dal/local_storage.hpp"
 #include "udev_monitor.hpp"
+#include <boost/json/array.hpp>
 #include <memory>
 #include <sdbus-c++/Message.h>
 #include <sdbus-c++/sdbus-c++.h>
@@ -30,6 +31,10 @@ private:
   void ListActiveDevices(const sdbus::MethodCall &);
   void ListActiveRules(const sdbus::MethodCall &);
   void GetSystemUsersAndGroups(const sdbus::MethodCall &);
+  void SaveRules(sdbus::MethodCall);
+
+  void UpdateRules(const boost::json::array &arr_updated);
+  void CreateRules(const boost::json::array &arr_created);
 
   const std::string service_name = "ru.alterator.usbd";
   const std::string object_path = "/ru/alterator/altusbd";

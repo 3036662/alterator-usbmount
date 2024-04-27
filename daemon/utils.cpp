@@ -261,6 +261,21 @@ uint64_t StrToUint(const std::string &str) {
   return res;
 }
 
+bool ValidVid(const std::string &str) {
+  if (str.size() != 4)
+    return false;
+  if (str[0] == '-')
+    return false;
+  size_t pos = 0;
+  int val = std::stoi(str, &pos, 16);
+  std::cerr << val << '\n';
+  if (pos != str.size())
+    return false;
+  if (val < 0 || val > 0xFFFF)
+    return false;
+  return true;
+}
+
 namespace udev {
 void UdevEnumerateFree(udev_enumerate *udev_en) noexcept {
   if (udev_en != NULL)

@@ -24,7 +24,9 @@ void Mountpoints::DataFromRawJson() {
   if (!val.is_array())
     throw std::runtime_error("Mountpoints JSON must contain array");
   const json::array arr = val.as_array();
-  std::unique_lock<std::shared_mutex> lock(data_mutex_);
+  std::unique_lock<std::shared_mutex> lock;
+  if (!transaction_started_)
+    lock = std::unique_lock(data_mutex_);
   for (const json::value &element : arr) {
     if (!element.is_object())
       throw std::runtime_error("not an object");
@@ -37,7 +39,8 @@ void Mountpoints::DataFromRawJson() {
     data_.emplace(obj.at("id").to_number<uint64_t>(),
                   std::make_shared<MountEntry>(obj));
   }
-  lock.unlock();
+  if (!transaction_started_)
+    lock.unlock();
 }
 
 void Mountpoints::Create(const Dto &dto) {
@@ -45,17 +48,23 @@ void Mountpoints::Create(const Dto &dto) {
   // check an index to guarantee there is no such entry in the database.
   auto index = Find(entry);
   if (!index) {
-    std::unique_lock<std::shared_mutex> lock(data_mutex_);
+    std::unique_lock<std::shared_mutex> lock;
+    if (!transaction_started_)
+      lock = std::unique_lock(data_mutex_);
     index = data_.empty() ? 0 : (data_.rbegin()->first) + 1;
     data_.emplace(*index, std::make_shared<MountEntry>(entry));
-    lock.unlock();
-    WriteRaw();
+    if (!transaction_started_) {
+      lock.unlock();
+      WriteRaw();
+    }
   }
 }
 
 const MountEntry &Mountpoints::Read(uint64_t index) const {
   CheckIndex(index);
-  std::shared_lock<std::shared_mutex> lock(data_mutex_);
+  std::shared_lock<std::shared_mutex> lock;
+  if (!transaction_started_)
+    lock = std::shared_lock(data_mutex_);
   auto entry = std::dynamic_pointer_cast<MountEntry>(data_.at(index));
   if (!entry)
     throw std::runtime_error("Pointer cast to MountEntry failed");
@@ -65,15 +74,21 @@ const MountEntry &Mountpoints::Read(uint64_t index) const {
 void Mountpoints::Update(uint64_t index, const Dto &dto) {
   const MountEntry &entry = dynamic_cast<const MountEntry &>(dto);
   CheckIndex(index);
-  std::unique_lock<std::shared_mutex> lock(data_mutex_);
+  std::unique_lock<std::shared_mutex> lock;
+  if (!transaction_started_)
+    lock = std::unique_lock(data_mutex_);
   data_.at(index) = std::make_shared<MountEntry>(entry);
-  lock.unlock();
-  WriteRaw();
+  if (!transaction_started_) {
+    lock.unlock();
+    WriteRaw();
+  }
 }
 
 std::optional<uint64_t>
 Mountpoints::Find(const MountEntry &entry) const noexcept {
-  std::shared_lock<std::shared_mutex> lock(data_mutex_);
+  std::shared_lock<std::shared_mutex> lock;
+  if (!transaction_started_)
+    lock = std::shared_lock(data_mutex_);
   auto it_found = std::find_if(
       data_.cbegin(), data_.cend(),
       [&entry](const std::pair<const uint64_t, std::shared_ptr<Dto>> &element) {
@@ -88,7 +103,9 @@ Mountpoints::Find(const MountEntry &entry) const noexcept {
 
 std::optional<uint64_t>
 Mountpoints::Find(const std::string &block_dev) const noexcept {
-  std::shared_lock<std::shared_mutex> lock(data_mutex_);
+  std::shared_lock<std::shared_mutex> lock;
+  if (!transaction_started_)
+    lock = std::shared_lock(data_mutex_);
   auto it_found = std::find_if(
       data_.cbegin(), data_.cend(),
       [&block_dev](
@@ -104,7 +121,9 @@ Mountpoints::Find(const std::string &block_dev) const noexcept {
 
 void Mountpoints::RemoveExpired(
     const std::unordered_set<std::string> &valid_set) noexcept {
-  std::unique_lock<std::shared_mutex> lock(data_mutex_);
+  std::unique_lock<std::shared_mutex> lock;
+  if (!transaction_started_)
+    lock = std::unique_lock(data_mutex_);
   for (auto it = data_.cbegin(); it != data_.cend();) {
     auto mnt_entry = std::dynamic_pointer_cast<MountEntry>(it->second);
     if (mnt_entry && valid_set.count(mnt_entry->mount_point()) == 0) {
@@ -113,12 +132,16 @@ void Mountpoints::RemoveExpired(
       ++it;
     }
   }
-  lock.unlock();
-  WriteRaw();
+  if (!transaction_started_) {
+    lock.unlock();
+    WriteRaw();
+  }
 }
 
 std::vector<MountEntry> Mountpoints::GetAll() const noexcept {
-  std::shared_lock<std::shared_mutex> lock(data_mutex_);
+  std::shared_lock<std::shared_mutex> lock;
+  if (!transaction_started_)
+    lock = std::shared_lock(data_mutex_);
   std::vector<MountEntry> res;
   for (const auto &element : data_) {
     auto mnt_entry = std::dynamic_pointer_cast<MountEntry>(element.second);

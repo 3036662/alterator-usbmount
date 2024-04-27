@@ -4,6 +4,7 @@
 #include "usb_udev_device.hpp"
 #include <acl/libacl.h>
 #include <chrono>
+#include <cstdint>
 #include <libudev.h>
 #include <memory>
 #include <spdlog/logger.h>
@@ -87,6 +88,8 @@ std::vector<dal::Group> GetHumanGroups(const IdMinMax &,
  * @throws std::invalid_argument
  */
 uint64_t StrToUint(const std::string &str);
+
+bool ValidVid(const std::string &);
 
 namespace udev {
 /**

@@ -4,16 +4,22 @@
 #include "udev_monitor.hpp"
 #include "usb_udev_device.hpp"
 #include "utils.hpp"
+#include <algorithm>
 #include <boost/json.hpp>
 #include <boost/json/array.hpp>
 #include <boost/json/object.hpp>
+#include <boost/json/parse.hpp>
 #include <boost/json/serialize.hpp>
+#include <boost/json/value.hpp>
+#include <cstdint>
 #include <exception>
 #include <iterator>
 #include <sdbus-c++/Message.h>
+#include <stdexcept>
 #include <string>
 #include <sys/socket.h>
 #include <utility>
+#include <vector>
 
 namespace usbmount {
 
@@ -48,6 +54,10 @@ DbusMethods::DbusMethods(std::shared_ptr<UdevMonitor> udev_monitor,
   dbus_object_ptr->registerMethod(
       interface_name, "CanUserMount", "s", "s",
       [this](sdbus::MethodCall call) { CanUserMount(std::move(call)); });
+  // SaveRules (json string)
+  dbus_object_ptr->registerMethod(
+      interface_name, "SaveRules", "s", "s",
+      [this](sdbus::MethodCall call) { SaveRules(std::move(call)); });
   dbus_object_ptr->finishRegistration();
 }
 
@@ -178,6 +188,141 @@ void DbusMethods::GetSystemUsersAndGroups(const sdbus::MethodCall &call) {
   sdbus::MethodReply reply = call.createReply();
   reply << json::serialize(res);
   reply.send();
+}
+
+void DbusMethods::SaveRules(sdbus::MethodCall call) {
+  logger_->debug("[DBUS][SaveRules]");
+  json::object res;
+  // TODO
+  std::string form_data;
+  call >> form_data;
+  try {
+    // parse data to json object
+    const json::value val = json::parse(form_data);
+    const json::object &json_data = val.as_object();
+    dbase_->permissions.StartTransaction();
+    // delete rules
+    if (json_data.contains("deleted") && json_data.at("deleted").is_array()) {
+      json::array arr_deleted = json_data.at("deleted").as_array();
+      logger_->debug("[DBUS][SaveRules] Deleted");
+      for (const auto &element : arr_deleted) {
+        uint64_t id_to_delete = utils::StrToUint(element.as_string().c_str());
+        dbase_->permissions.Delete(id_to_delete);
+      }
+    }
+    // update rules
+    if (json_data.contains("updated") && json_data.at("updated").is_array()) {
+      json::array arr_updated = json_data.at("updated").as_array();
+      logger_->debug("[DBUS][SaveRules] Updated");
+      UpdateRules(arr_updated);
+    }
+    // create rules
+    if (json_data.contains("created") && json_data.at("created").is_array()) {
+      json::array arr_created = json_data.at("created").as_array();
+      logger_->debug("[DBUS][SaveRules] Created");
+      CreateRules(arr_created);
+    }
+    dbase_->permissions.ProcessTransaction();
+    logger_->debug("[DBUS][SaveRules] Finished transacion");
+  } catch (const std::exception &ex) {
+    logger_->error(ex.what());
+  }
+  logger_->debug("[DBUS][SaveRules]{}", form_data);
+  logger_->flush();
+
+  res["STATUS"] = "OK";
+  sdbus::MethodReply reply = call.createReply();
+  reply << json::serialize(res);
+  reply.send();
+}
+
+void DbusMethods::CreateRules(const boost::json::array &arr_created) {
+  auto id_limits = utils::GetSystemUidMinMax(logger_);
+  std::vector<dal::User> system_users;
+  std::vector<dal::Group> system_groups;
+  if (id_limits) {
+    system_users = utils::GetHumanUsers(id_limits.value(), logger_);
+    system_groups = utils::GetHumanGroups(id_limits.value(), logger_);
+  }
+
+  for (const auto &element : arr_created) {
+    const json::object &obj = element.as_object();
+    std::string vid = obj.at("vid").as_string().c_str();
+    std::string pid = obj.at("pid").as_string().c_str();
+    std::string serial = obj.at("serial").as_string().c_str();
+    std::string user = obj.at("user").as_string().c_str();
+    std::string group = obj.at("group").as_string().c_str();
+    auto it_system_user = std::find_if(
+        system_users.cbegin(), system_users.cend(),
+        [&user](const dal::User &usr) { return usr.name() == user; });
+    bool valid_user = it_system_user != system_users.cend();
+    auto it_system_group = std::find_if(
+        system_groups.cbegin(), system_groups.cend(),
+        [&group](const dal::Group &grp) { return grp.name() == group; });
+    bool valid_group = it_system_group != system_groups.cend();
+    if (!utils::ValidVid(vid) || !utils::ValidVid(pid) || serial.empty() ||
+        user.empty() || group.empty() || !valid_group || !valid_user) {
+      throw std::invalid_argument("invalid arguments for device permissions");
+    }
+    std::vector<dal::User> new_users{*it_system_user};
+    std::vector<dal::Group> new_groups{*it_system_group};
+    dal::PermissionEntry new_entry(dal::Device({vid, pid, serial}),
+                                   std::move(new_users), std::move(new_groups));
+    dbase_->permissions.Create(new_entry);
+  }
+}
+
+void DbusMethods::UpdateRules(const boost::json::array &arr_updated) {
+  auto id_limits = utils::GetSystemUidMinMax(logger_);
+  std::vector<dal::User> system_users;
+  std::vector<dal::Group> system_groups;
+  if (id_limits) {
+    system_users = utils::GetHumanUsers(id_limits.value(), logger_);
+    system_groups = utils::GetHumanGroups(id_limits.value(), logger_);
+  }
+  for (const auto &element : arr_updated) {
+    const json::object &obj = element.as_object();
+    uint64_t id_to_update = utils::StrToUint(obj.at("id").as_string().c_str());
+    // const std::string vid=
+    std::string vid = obj.at("vid").as_string().c_str();
+    std::string pid = obj.at("pid").as_string().c_str();
+    std::string serial = obj.at("serial").as_string().c_str();
+    std::string user = obj.at("user").as_string().c_str();
+    std::string group = obj.at("group").as_string().c_str();
+    // get original  perm copy
+    json::object original =
+        dbase_->permissions.Read(id_to_update).ToJson().as_object();
+    if (!vid.empty())
+      original.at("device").as_object().at("vid") = vid;
+    if (!pid.empty())
+      original.at("device").as_object().at("pid") = pid;
+    if (!serial.empty())
+      original.at("device").as_object().at("serial") = serial;
+    if (!user.empty() && !system_users.empty()) {
+      auto it_system_user = std::find_if(
+          system_users.cbegin(), system_users.cend(),
+          [&user](const dal::User &usr) { return usr.name() == user; });
+      if (it_system_user != system_users.cend()) {
+        original.at("users").as_array()[0].as_object().at("uid") =
+            it_system_user->uid();
+        original.at("users").as_array()[0].as_object().at("name") =
+            it_system_user->name();
+      }
+    }
+    if (!group.empty() && !system_groups.empty()) {
+      auto it_system_group = std::find_if(
+          system_groups.cbegin(), system_groups.cend(),
+          [&group](const dal::Group &grp) { return grp.name() == group; });
+      if (it_system_group != system_groups.cend()) {
+        original.at("groups").as_array()[0].as_object().at("gid") =
+            it_system_group->gid();
+        original.at("groups").as_array()[0].as_object().at("name") =
+            it_system_group->name();
+      }
+    }
+    // update data
+    dbase_->permissions.Update(id_to_update, dal::PermissionEntry(original));
+  }
 }
 
 } // namespace usbmount

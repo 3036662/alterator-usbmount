@@ -73,6 +73,11 @@ private:
    * @throws runtime_error, system_error (json  parser)
    */
   void DataFromRawJson() override;
+
+  // no cloning
+  inline std::shared_ptr<Dto> Clone() const noexcept override {
+    return nullptr;
+  };
 };
 
 } // namespace usbmount::dal

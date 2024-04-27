@@ -1,4 +1,5 @@
 #include "device_permissions.hpp"
+#include <boost/algorithm/string/predicate.hpp>
 #include <boost/json/object.hpp>
 #include <boost/json/parse.hpp>
 #include <boost/json/serialize.hpp>
@@ -305,9 +306,10 @@ TEST_CASE("Write from threads"){
     auto fut1=std::async(std::launch::async,[](){
       auto dbase= LocalStorage::GetStorage(); 
 
-      for (size_t i=0;i<20;++i){
+    // create different mount points
+    for (size_t i=0;i<20;++i){
       dbase->mount_points.Create(
-         MountEntry({"/dev/sda0","/mount1","vfat"})
+         MountEntry({"/dev/sda"+std::to_string(i),"/mount1","vfat"})
       );
       }
     });
@@ -315,7 +317,7 @@ TEST_CASE("Write from threads"){
       auto dbase= LocalStorage::GetStorage(); 
       for (size_t i=0;i<20;++i){
       dbase->mount_points.Create(
-          MountEntry({"/dev/sda3","/mount1","vfat"})
+          MountEntry({"/dev/sdb"+std::to_string(i),"/mount1","vfat"})
       );
       }
     });
@@ -327,11 +329,73 @@ TEST_CASE("Write from threads"){
     LocalStorage::GetStorage()->mount_points.Clear();
   }
 
+  SECTION("Transaction write permissions"){
+    LocalStorage::GetStorage()->permissions.Clear();
+    auto fut1=std::async(std::launch::async,[](){
+      auto dbase= LocalStorage::GetStorage(); 
+      dbase->permissions.StartTransaction();
+      for (size_t i=0;i<20;++i){
+      dbase->permissions.Create(
+          PermissionEntry(Device({"00","0000","234958098"}),
+                              {{0,"root"}},{{500,"groupName"}})
+      );
+      }
+      dbase->permissions.ProcessTransaction();
+    });
+    auto fut2=std::async(std::launch::async,[](){
+      auto dbase= LocalStorage::GetStorage(); 
+      dbase->permissions.StartTransaction();
+      for (size_t i=0;i<20;++i){
+      dbase->permissions.Create(
+          PermissionEntry(Device({"00","0000","234958098"}),
+                              {{0,"root"}},{{500,"groupName"}})
+      );
+      }
+      dbase->permissions.ProcessTransaction();
+    });
+    fut1.wait();
+    fut2.wait();
+    REQUIRE(LocalStorage::GetStorage()->permissions.size()==40);
+    REQUIRE(LocalStorage::GetStorage()->permissions.Find(
+       Device({"00","0000","234958098"})
+    ));
+    REQUIRE(!LocalStorage::GetStorage()->permissions.Find(
+       Device({"00","0000","zzz234958098"})
+    ));
+
+    
+    auto& permsdb=LocalStorage::GetStorage()->permissions;
+    auto perms=permsdb.getAll();
+    permsdb.StartTransaction();
+    size_t counter=0;
+    for (auto& perm:perms){
+       ++counter;
+       json::object new_json_obj=perm.second->ToJson().as_object();
+       new_json_obj.at("device").as_object().at("serial")="serial"+std::to_string(counter);
+       auto new_entry=PermissionEntry(new_json_obj);
+       permsdb.Update(perm.first, PermissionEntry(new_entry));
+    }
+
+    permsdb.ProcessTransaction();
+
+    perms=permsdb.getAll();
+    for (auto& perm:perms){
+      REQUIRE( boost::contains(perm.second->getDevice().serial(),"serial"));
+    }
+
+    perms=permsdb.getAll();
+    permsdb.StartTransaction();
+    for (const auto& perm:perms) permsdb.Delete(perm.first);
+    permsdb.ProcessTransaction();
+    REQUIRE(permsdb.size()==0);
+  }
+
 
 }
 
 TEST_CASE("CreateInitialDb"){
   auto dbase=LocalStorage::GetStorage();
+  dbase->permissions.Clear();
   dbase->permissions.Create(
     PermissionEntry(Device({"048d","1234","\xd0\x89"}),
                               {{1000,"test"}},{{1001,"usb_flash1"}})

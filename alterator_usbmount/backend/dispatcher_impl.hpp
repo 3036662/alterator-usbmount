@@ -6,7 +6,7 @@ namespace alterator::usbmount {
 
 class DispatcherImpl {
 public:
-  explicit DispatcherImpl(UsbMount &guard);
+  explicit DispatcherImpl(UsbMount &);
 
   bool Dispatch(const LispMessage &msg) const noexcept;
 
@@ -14,6 +14,7 @@ private:
   bool ListBlockDevices() const noexcept;
   bool ListRules() const noexcept;
   bool GetUsersGroups() const noexcept;
+  bool SaveRules(const LispMessage &) const noexcept;
 
   static constexpr const char *kMessBeg = "(";
   static constexpr const char *kMessEnd = ")";

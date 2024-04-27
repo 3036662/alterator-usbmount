@@ -57,4 +57,13 @@ TEST_CASE("Test utils") {
       REQUIRE(group.gid() <= id_limits->gid_max);
     }
   }
+
+  SECTION("Vid validator") {
+    using namespace usbmount::utils;
+    REQUIRE(ValidVid("0000"));
+    REQUIRE(ValidVid("ffff"));
+    REQUIRE(ValidVid("a0b2"));
+    REQUIRE(!ValidVid("a0x0"));
+    REQUIRE(!ValidVid("-000"));
+  }
 }

@@ -2,6 +2,8 @@
 #include "dto.hpp"
 #include "table.hpp"
 #include <cstdint>
+#include <mutex>
+#include <shared_mutex>
 #include <vector>
 
 namespace usbmount::dal {
@@ -52,6 +54,11 @@ private:
    * @throws runtime_error, system_error (json  parser)
    */
   void DataFromRawJson() override;
+
+  // no cloning
+  inline std::shared_ptr<Dto> Clone() const noexcept override {
+    return nullptr;
+  };
 };
 
 } // namespace usbmount::dal
