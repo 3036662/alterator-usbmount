@@ -107,10 +107,10 @@ std::optional<IdMinMax> GetSystemUidMinMax(const logger_t &logger) noexcept {
     return std::nullopt;
   }
   boost::regex whitespace("\\s+");
-  std::string line;
   IdMinMax res{0, 0, 0, 0};
   bool res_ok = false;
   try {
+    std::string line;
     while (std::getline(defs_file, line)) {
       boost::trim(line);
       if (line.empty() || boost::starts_with(line, "#"))
@@ -165,6 +165,7 @@ GetPossibleShells(const logger_t &logger) noexcept {
     if (line.empty())
       continue;
     res.emplace(std::move(line));
+    line.clear();
   }
   file.close();
   return res;
