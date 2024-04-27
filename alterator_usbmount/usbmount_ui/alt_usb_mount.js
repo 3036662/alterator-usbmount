@@ -788,21 +788,22 @@ function SaveInputValueToSpan(input, do_not_save) {
     let sibling_span = input.parentElement.querySelector('span.span_val');
     if (sibling_span) initial_text = sibling_span.textContent;
     if (!sibling_span || initial_text === 'undefined' || !parent_td || parent_td.nodeName != 'TD') return;
-    if (parent_td.parentElement.classList.contains('row_appended_by_user') && input.value.length == 0) {
+    let input_val=input.value.replace(/[&<>"']/g, "");
+    if (parent_td.parentElement.classList.contains('row_appended_by_user') && input_val.length == 0) {
         parent_td.classList.add('td_value_changed');
         parent_td.classList.add('td_value_bad');
     }
-    if (!do_not_save && input.value != "" && input.value.trim() != sibling_span.textContent) {
-        sibling_span.textContent = input.value.trim();
+    if (!do_not_save && input_val != "" && input_val != sibling_span.textContent) {
+        sibling_span.textContent = input_val;
         parent_td.classList.add('td_value_changed');
         parent_td.classList.remove('td_value_good');
         parent_td.classList.remove('td_value_bad');
         let valid = false;
         if (parent_td.classList.contains('rule_vid') || parent_td.classList.contains('rule_pid')) {
-            valid = ValidateVidPid(input.value);
+            valid = ValidateVidPid(input_val);
         }
         else if (parent_td.classList.contains('rule_serial')) {
-            valid = input.value.trim().length > 0;
+            valid = input_val.length > 0;
         }
         if (valid) {
             parent_td.classList.add('td_value_good');
