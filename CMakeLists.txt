@@ -33,8 +33,12 @@ pkg_check_modules(UDEV REQUIRED IMPORTED_TARGET libudev)
 message("Building daemon...")
 add_subdirectory(daemon)
 
+# common 
+add_subdirectory(common)
+
 # alterator-usb-mount
 add_subdirectory(alterator_usbmount)
+
 
 
 # only for debug
