@@ -15,15 +15,33 @@ class UdevMonitor {
 public:
   explicit UdevMonitor(std::shared_ptr<spdlog::logger> &logger);
 
+  /// @brief start device monitor
   void Run() noexcept;
+  /// @brief stop monitor thread
   void Stop() noexcept;
   std::vector<UsbUdevDevice> GetConnectedDevices() const noexcept;
 
 private:
   bool StopRequested() noexcept;
   void ProcessDevice() noexcept;
+  void ProcessDevice(std::shared_ptr<UsbUdevDevice> device) noexcept;
 
+  /**
+   * @brief Review connected devices and unmount mountpoints for which devices
+   * are not present
+   *
+   */
   void ReviewConnectedDevices() noexcept;
+
+  /**
+   * @brief Mount present device is they are not mounted
+   */
+  void ApplyMountRulesIfNotMounted() noexcept;
+
+  /**
+   * @brief Recieve a device from udev
+   * @return std::shared_ptr<UsbUdevDevice>
+   */
   std::shared_ptr<UsbUdevDevice> RecieveDevice() noexcept;
 
   std::shared_ptr<spdlog::logger> &logger_;

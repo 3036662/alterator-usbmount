@@ -45,9 +45,9 @@ public:
   inline const std::string &pid() const noexcept { return pid_; }
   inline const std::string &serial() const noexcept { return serial_; }
 
-private:
   void SetAction(const char *p_action);
 
+private:
   /**
    * @brief This function is a workaround for some cases when the Udev has no
    * ID_SERIAL_SHORT value. It traverses the Udev devices tree to find a serial

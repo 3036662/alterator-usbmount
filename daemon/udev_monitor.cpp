@@ -52,6 +52,8 @@ UdevMonitor::UdevMonitor(std::shared_ptr<spdlog::logger> &logger)
 void UdevMonitor::Run() noexcept {
   // review local mounts
   ReviewConnectedDevices();
+  // Mount devices if not mounted on start
+  ApplyMountRulesIfNotMounted();
   uint64_t iteration_counter = 0;
   std::future<void> fut_review_mounts;
   while (!StopRequested()) {
@@ -90,6 +92,11 @@ void UdevMonitor::Run() noexcept {
 
 void UdevMonitor::ProcessDevice() noexcept {
   auto device = RecieveDevice();
+  ProcessDevice(std::move(device));
+}
+
+void UdevMonitor::ProcessDevice(
+    std::shared_ptr<UsbUdevDevice> device) noexcept {
   if (!device)
     return;
   // there are some rules in db for this device
@@ -221,6 +228,18 @@ void UdevMonitor::ReviewConnectedDevices() noexcept {
   }
   logger_->flush();
   // unmount expired devices
+}
+
+void UdevMonitor::ApplyMountRulesIfNotMounted() noexcept {
+  logger_->debug("[ApplyMountRulesIfNotMounted] Apply rules on start");
+  auto device_objects = GetConnectedDevices();
+  for (const auto &dev : device_objects) {
+    auto device = std::make_shared<UsbUdevDevice>(dev);
+    device->SetAction("add");
+    logger_->debug("[ApplyMountRulesIfNotMounted] found {}",
+                   device->block_name());
+    ProcessDevice(std::move(device));
+  }
 }
 
 } // namespace usbmount
