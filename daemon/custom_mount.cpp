@@ -234,9 +234,19 @@ bool CustomMount::PerfomMount() noexcept {
     logger_->info("Mounted {} to {}", ptr_device_->block_name(),
                   end_mount_point_.value());
   } else {
-    logger_->error(strerror(errno));
-    RemoveMountPoint(end_mount_point_.value());
-    return false;
+    logger_->error("[PerfomMount]{}", strerror(errno));
+    logger_->info("Try to mount as READ only");
+    // if mount failed try to mount as readonly
+    res = mount(ptr_device_->block_name().c_str(),
+                end_mount_point_.value().c_str(), mount_opts.fs.c_str(),
+                mount_opts.mount_flags | MS_RDONLY,
+                mount_opts.mount_data.c_str());
+    if (res == -1) {
+      logger_->error("[PerfomMount] Error mounting as read-only");
+      RemoveMountPoint(end_mount_point_.value());
+      return false;
+    }
+    logger_->debug("[PerfomMount] Mounted as READ ONLY");
   }
   // chown+chmod after mount if not read-only fs
   // if (!mount_opts.read_only) {
@@ -358,6 +368,19 @@ void CustomMount::SetMountOptions(MountOptions &opts) const noexcept {
                   ptr_device_->filesystem());
   }
   logger_->debug("Mount data = {}", opts.mount_data);
+}
+
+bool CustomMount::FixNtfs(const std::string &block) const noexcept {
+  logger_->info("[FixNtfs] try ro remove a dirty bit");
+  std::string command = "/bin/ntfsfix -d ";
+  command += block;
+  int result = system(command.c_str());
+  if (result != 0) {
+    logger_->error("Error running ntfsfix");
+    return false;
+  }
+  logger_->info("[FixNtfs] OK");
+  return true;
 }
 
 } // namespace usbmount

@@ -70,6 +70,8 @@ private:
    */
   void SetMountOptions(MountOptions &opts) const noexcept;
 
+  bool FixNtfs(const std::string &block) const noexcept;
+
   const std::shared_ptr<spdlog::logger> logger_;
   std::shared_ptr<UsbUdevDevice> ptr_device_;
   std::shared_ptr<dal::LocalStorage> dbase_;
