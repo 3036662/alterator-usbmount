@@ -31,6 +31,10 @@ bool DispatcherImpl::Dispatch(const LispMessage &msg) const noexcept {
   if (msg.action == "read" && msg.objects == "save_rules") {
     return SaveRules(msg);
   }
+
+  if (msg.action == "read" && msg.objects == "health") {
+    return Health();
+  }
   std::cout << kMessBeg << kMessEnd;
   return true;
 }
@@ -74,6 +78,14 @@ bool DispatcherImpl::SaveRules(const LispMessage &msg) const noexcept {
       std::cout << WrapWithQuotes("FAIL");
     }
   }
+  std::cout << kMessEnd;
+  return true;
+}
+
+bool DispatcherImpl::Health() const noexcept {
+  std::cout << kMessBeg;
+  std::cout << common_utils::WrapWithQuotes(
+      (usbmount_.Health() ? "OK" : "DEAD"));
   std::cout << kMessEnd;
   return true;
 }

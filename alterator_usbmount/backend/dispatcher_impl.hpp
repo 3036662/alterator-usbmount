@@ -15,6 +15,7 @@ private:
   bool ListRules() const noexcept;
   bool GetUsersGroups() const noexcept;
   bool SaveRules(const LispMessage &) const noexcept;
+  bool Health() const noexcept;
 
   static constexpr const char *kMessBeg = "(";
   static constexpr const char *kMessEnd = ")";

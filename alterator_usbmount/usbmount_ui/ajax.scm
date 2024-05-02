@@ -25,17 +25,24 @@
 
 (define (save-rules)
 ;(woo-error (object->string   (car(removeFirstElement(woo-read "/usbmount/save_rules" 'data (form-value "new_rules_data")))) ))
-     (if (string=? "OK" (car(car(removeFirstElement(woo-read "/usbmount/save_rules" 'data (form-value "new_rules_data"))))))  
+     (if (string=? "OK" (caar(removeFirstElement(woo-read "/usbmount/save_rules" 'data (form-value "new_rules_data")))))  
       (ls-rules)
       (woo-error (_ "Save rules operation FAILED"))
      ); //if
 )
 
+
 (define (init)
- (js "InitUi")
- (js "SetUsersAndGroups" (car(removeFirstElement(woo-read "/usbmount/get_users_groups"))))
- (ls-rules)
- (ls-devices)
+ (let ((health (caar(removeFirstElement(woo-read "/usbmount/health" ))) )) 
+    (js "InitUi" health)
+    (if (string=? "OK" health)
+      (begin
+        (js "SetUsersAndGroups" (car(removeFirstElement(woo-read "/usbmount/get_users_groups"))))
+        (ls-rules)
+        (ls-devices)
+      )
+    ) 
+  )  
  (form-bind "btn_prsnt_scan" "click" ls-devices)
  (form-bind "btn_save" "rules_data_ready" save-rules)
 )

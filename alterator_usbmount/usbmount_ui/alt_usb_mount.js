@@ -1,4 +1,4 @@
-function InitUi() {
+function InitUi(health) {
     // click events
     BindRowSelect();
     BindDoubleClick();
@@ -54,7 +54,34 @@ function InitUi() {
     DisableButton(document.getElementById('btn_save'));
     document.getElementById('btn_save').addEventListener('click',SaveRules);
 
+    // toggle status switch
+    let toggle_daemon=document.getElementById('checkbox_daemon_status');
+    toggle_daemon.addEventListener('change',ShowLableForTooggle);
+    if (health==="OK") toggle_daemon.checked=true;
+    else toggle_daemon.checked=false;         
+    toggle_daemon.dispatchEvent(new Event('change'));
+    localStorage.setItem('health_status',health);    
+    if (health!=="OK"){
+        document.getElementById('interface_wrap').classList.add('hidden');       
+    }
+}
 
+function ShowLableForTooggle(e){
+    let toggle=e.target;
+    if (!toggle) return;
+    let run_lbl=document.getElementById('lbl_run_daemon');
+    let stop_lbl=document.getElementById('lbl_stop_daemon');
+    let health=localStorage.getItem('health_status');
+    let button=document.getElementById('btn_save_status');
+    if (toggle.checked== true){
+        run_lbl.classList.remove('hidden');
+        stop_lbl.classList.add('hidden');
+        health==="OK" ? DisableButton(button): EnableButton(button);              
+    }else{
+        run_lbl.classList.add('hidden');
+        stop_lbl.classList.remove('hidden');
+        health==="OK" ? EnableButton(button): DisableButton(button);                  
+    }
 }
 
 function CreateRuleForDevice(alterator_row) {

@@ -5,9 +5,26 @@
   <link type="text/css" rel="stylesheet" href="/design/styles/alt_usb_mount.css" />
   <script src="/design/scripts/alt_usb_mount.js" />
 </head>
-
 <body>
-  <form method="POST">
+    <table id="daemon_status">
+     <tr> 
+      <td class="td_vertical_center">
+        <label class="switch">
+        <input id="checkbox_daemon_status" type="checkbox"/>
+        <span class="slider round"></span>    
+      </label>    
+      </td>
+      <td class="td_vertical_center" id="run_daemon_label">
+        <span class="hidden" id="lbl_run_daemon"  translate="_">Run the UsbMount daemon</span>
+        <span class="hidden" id="lbl_stop_daemon" translate="_">Stop the UsbMount daemon</span>
+      </td>
+      <td class="td_vertical_center">
+        <input type="button" class="like_btn" value="SAVE" id="btn_save_status" />
+      </td>
+     </tr>
+    </table>
+  <div id="interface_wrap">  
+    <form method="POST">
     <table id="devices_list_table" class="alterator-listbox single-select" align="center" name="list_prsnt_devices">
       <p><span translate="_">Connnected usb devices:</span></p>
       <caption><span translate="_">List of devices</span></caption>
@@ -81,6 +98,7 @@
   </div>
 <!--  </form> -->
 <form class=".hidden"><input type="hidden" name="new_rules_data" id="hidden_inp_data_to_save"/></form> 
+</div>
 </body>
 
 </html>

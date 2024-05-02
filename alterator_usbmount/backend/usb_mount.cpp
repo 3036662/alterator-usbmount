@@ -48,24 +48,37 @@ std::vector<ActiveDevice> UsbMount::ListDevices() const noexcept {
   return res;
 }
 
-std::string UsbMount::GetStringNoParams(const std::string &method_name) const {
+std::string
+UsbMount::GetStringNoParams(const std::string &method_name) const noexcept {
   std::string res;
   if (!dbus_proxy_)
     return res;
-  auto method = dbus_proxy_->createMethodCall(kInterfaceName, method_name);
-  auto reply = dbus_proxy_->callMethod(method);
-  reply >> res;
+  try {
+    auto method = dbus_proxy_->createMethodCall(kInterfaceName, method_name);
+    auto reply = dbus_proxy_->callMethod(method);
+    reply >> res;
+  } catch (const std::exception &ex) {
+    Log::Error() << "[GetStringResponse] " << method_name;
+    Log::Error() << ex.what();
+  }
+
   return res;
 }
 
-std::string UsbMount::GetStringResponse(const DbusOneParam &param) const {
+std::string
+UsbMount::GetStringResponse(const DbusOneParam &param) const noexcept {
   std::string res;
   if (!dbus_proxy_)
     return res;
-  auto method = dbus_proxy_->createMethodCall(kInterfaceName, param.method);
-  method << param.param;
-  auto reply = dbus_proxy_->callMethod(method);
-  reply >> res;
+  try {
+    auto method = dbus_proxy_->createMethodCall(kInterfaceName, param.method);
+    method << param.param;
+    auto reply = dbus_proxy_->callMethod(method);
+    reply >> res;
+  } catch (const std::exception &ex) {
+    Log::Error() << "[GetStringResponse] " << param.method;
+    Log::Error() << ex.what();
+  }
   return res;
 }
 
@@ -79,6 +92,13 @@ std::string UsbMount::GetUsersGroups() const noexcept {
 
 std::string UsbMount::SaveRules(const std::string &data) const noexcept {
   return GetStringResponse({"SaveRules", data});
+}
+
+bool UsbMount::Health() const noexcept {
+  if (!dbus_proxy_)
+    return false;
+  auto response = GetStringNoParams("health");
+  return response == "OK";
 }
 
 } // namespace alterator::usbmount
