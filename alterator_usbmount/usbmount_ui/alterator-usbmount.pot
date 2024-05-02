@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-04-26 15:06+0300\n"
+"POT-Creation-Date: 2024-05-02 08:43+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -103,6 +103,10 @@ msgstr ""
 
 #: стандартный ввод:25
 msgid "SAVE"
+msgstr ""
+
+#: ajax.scm:30
+msgid "Save rules operation FAILED"
 msgstr ""
 
 #: стандартный ввод:1
