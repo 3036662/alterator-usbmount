@@ -19,14 +19,12 @@
         <span class="hidden" id="lbl_stop_daemon" translate="_">Stop the UsbMount daemon</span>
       </td>
       <td class="td_vertical_center">
-        <input type="button" class="like_btn" value="SAVE" id="btn_save_status" />
+        <input type="button" name="btn_save_status" class="like_btn" value="SAVE" id="btn_save_status" />
       </td>
      </tr>
     </table>
     <div class="tip_wrapper hidden" id="id_tip_run_service">
-      <span translate="_">
-        The service is not currently active, but you can turn it on to start using it.
-      </span>
+      <span translate="_">The service is not currently active, but you can turn it on to start using it.</span>
     </div>
   <div id="interface_wrap">  
     <form method="POST">
@@ -61,9 +59,6 @@
     <div name="usb_buttons" class="right_buttons">
       <input type="button" name="btn_prsnt_scan" class="btn" value="Scan plugged-in USB devices" />&nbsp;&nbsp;
       <input type="button" value="Create a rule" class="like_btn" id="btn_create_rule"/>
-      <!-- <input type="button" id="btn_prsnt_dev_add" name="btn_prsnt_dev_add" class="btn" value="Allow device" />
-                  <input type="button" id="btn_prsnt_dev_block" name="btn_prsnt_dev_block" class="btn" value="Block device" />
-                  -->
     </div>
  </form> 
 <div class="rules_wrap">

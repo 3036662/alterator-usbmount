@@ -35,6 +35,13 @@ bool DispatcherImpl::Dispatch(const LispMessage &msg) const noexcept {
   if (msg.action == "read" && msg.objects == "health") {
     return Health();
   }
+  if (msg.action == "read" && msg.objects == "run") {
+    return RunDaemon();
+  }
+  if (msg.action == "read" && msg.objects == "stop") {
+    return StopDaemon();
+  }
+
   std::cout << kMessBeg << kMessEnd;
   return true;
 }
@@ -86,6 +93,20 @@ bool DispatcherImpl::Health() const noexcept {
   std::cout << kMessBeg;
   std::cout << common_utils::WrapWithQuotes(
       (usbmount_.Health() ? "OK" : "DEAD"));
+  std::cout << kMessEnd;
+  return true;
+}
+
+bool DispatcherImpl::RunDaemon() const noexcept {
+  std::cout << kMessBeg;
+  std::cout << common_utils::WrapWithQuotes(usbmount_.Run() ? "OK" : "FAIL");
+  std::cout << kMessEnd;
+  return true;
+}
+
+bool DispatcherImpl::StopDaemon() const noexcept {
+  std::cout << kMessBeg;
+  std::cout << common_utils::WrapWithQuotes(usbmount_.Stop() ? "OK" : "FAIL");
   std::cout << kMessEnd;
   return true;
 }

@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-03-26 15:47+0300\n"
+"POT-Creation-Date: 2024-05-03 11:03+0300\n"
 "PO-Revision-Date: 2024-03-26 15:55+0300\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -242,7 +242,7 @@ msgstr "Процесс  АКТИВЕН"
 msgid "Process is STOPPED"
 msgstr "Процесс  НЕАКТИВЕН"
 
-#: ajax.scm:153
+#: ajax.scm:154
 msgid ""
 "Error while trying to unblock a selected device. You can unblock it by "
 "creating a hash rule or interface rule."
@@ -250,11 +250,11 @@ msgstr ""
 "Ошибка при попытке разблокировать выбранное устройство. Вы можете "
 "разблокировать его, добавив правило по хэшу или интерфейсу."
 
-#: ajax.scm:166
+#: ajax.scm:167
 msgid "Error while trying to block a selected device"
 msgstr "Ошибка при попытке заблокировать выбранное устройство"
 
-#: ajax.scm:179 ajax.scm:190
+#: ajax.scm:180 ajax.scm:191
 msgid ""
 "An error occurred when starting the USB Guard with new rules. We recommend "
 "checking the rules and configuration files for correctness."
@@ -262,11 +262,11 @@ msgstr ""
 "Произошла ошибка при запуске USBGuard с новыми правилами. Мы рекомендуем "
 "проверить правила и файлы конфигурации на корректность."
 
-#: ajax.scm:213
+#: ajax.scm:214
 msgid "An empty csv file. Parsed 0 rules."
 msgstr "Пустой csv-файл. Загружено 0 правил."
 
-#: ajax.scm:214
+#: ajax.scm:215
 msgid "An error occured while parsing csv file"
 msgstr "Произошла ошибка при разборе csv-файла"
 

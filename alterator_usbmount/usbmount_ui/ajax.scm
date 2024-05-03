@@ -31,18 +31,37 @@
      ); //if
 )
 
+(define (update_ui)
+        (js "SetHealthStatus" "OK")
+        (js "SetUsersAndGroups" (car(removeFirstElement(woo-read "/usbmount/get_users_groups"))))
+        (ls-rules)
+        (ls-devices)
+)
+
+(define (run_service)
+    (if (string=? "OK" (caar(removeFirstElement(woo-read "/usbmount/run"))))
+      (update_ui)
+      (woo-error (_ "Error starting the service"))
+    )
+)
+
+(define (stop_service)
+    (if (string=? "OK" (caar(removeFirstElement(woo-read "/usbmount/stop"))))
+      (js "SetHealthStatus" "DEAD")
+      (woo-error (_ "Error stop the service"))
+    )
+)
+
 
 (define (init)
  (let ((health (caar(removeFirstElement(woo-read "/usbmount/health" ))) )) 
     (js "InitUi" health)
     (if (string=? "OK" health)
-      (begin
-        (js "SetUsersAndGroups" (car(removeFirstElement(woo-read "/usbmount/get_users_groups"))))
-        (ls-rules)
-        (ls-devices)
-      )
+      (update_ui)
     ) 
   )  
  (form-bind "btn_prsnt_scan" "click" ls-devices)
  (form-bind "btn_save" "rules_data_ready" save-rules)
+ (form-bind "btn_save_status" "btn_run_service" run_service)
+ (form-bind "btn_save_status" "btn_stop_service" stop_service)
 )

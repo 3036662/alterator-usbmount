@@ -19,11 +19,14 @@ public:
   std::string GetUsersGroups() const noexcept;
   std::string SaveRules(const std::string &) const noexcept;
   bool Health() const noexcept;
+  bool Run() noexcept;
+  bool Stop() noexcept;
 
 private:
   const std::string kDest = "ru.alterator.usbd";
   const std::string kObjectPath = "/ru/alterator/altusbd";
   const std::string kInterfaceName = "ru.alterator.Usbd";
+  const std::string kServiceUnitName = "altusbd.service";
 
   std::string GetStringNoParams(const std::string &method_name) const noexcept;
   std::string GetStringResponse(const DbusOneParam &) const noexcept;

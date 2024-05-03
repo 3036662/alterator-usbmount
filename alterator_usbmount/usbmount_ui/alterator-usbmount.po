@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-05-02 08:43+0300\n"
-"PO-Revision-Date: 2024-05-02 08:43+0300\n"
+"POT-Creation-Date: 2024-05-03 11:04+0300\n"
+"PO-Revision-Date: 2024-05-03 11:06+0300\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: ru\n"
@@ -19,98 +19,122 @@ msgstr ""
 "X-Generator: Poedit 3.4.2\n"
 
 #: стандартный ввод:1
+msgid "Run the UsbMount daemon"
+msgstr "Запустить службу UsbMount"
+
+#: стандартный ввод:2
+msgid "Stop the UsbMount daemon"
+msgstr "Остановить службу UsbMount"
+
+#: стандартный ввод:3 ввод:29
+msgid "SAVE"
+msgstr "Сохранить"
+
+#: стандартный ввод:4
+msgid ""
+"The service is not currently active, but you can turn it on to start using "
+"it."
+msgstr ""
+"Служба в данный момент не активна, вы можете включить ее, чтобы начать "
+"использование."
+
+#: стандартный ввод:5
 msgid "Connnected usb devices:"
 msgstr "Подключенные блочные устройства:"
 
-#: стандартный ввод:2
+#: стандартный ввод:6
 msgid "List of devices"
 msgstr "Список утсройств"
 
-#: стандартный ввод:3
+#: стандартный ввод:7
 msgid "Block"
 msgstr "Утсройство"
 
-#: стандартный ввод:4
+#: стандартный ввод:8
 msgid "Filesystem"
 msgstr "Файловая система"
 
-#: стандартный ввод:5 ввод:13
+#: стандартный ввод:9 ввод:17
 msgid "VID"
 msgstr "VID"
 
-#: стандартный ввод:6 ввод:14
+#: стандартный ввод:10 ввод:18
 msgid "PID"
 msgstr "PID"
 
-#: стандартный ввод:7 ввод:15
+#: стандартный ввод:11 ввод:19
 msgid "SN"
 msgstr "Серийный номер"
 
-#: стандартный ввод:8
+#: стандартный ввод:12
 msgid "Status"
 msgstr "Статус"
 
-#: стандартный ввод:9
+#: стандартный ввод:13
 msgid "Mount"
 msgstr "Точка монтирования"
 
-#: стандартный ввод:10
+#: стандартный ввод:14
 msgid "Scan plugged-in USB devices"
 msgstr "Обновить список блочных устройств"
 
-#: стандартный ввод:11
+#: стандартный ввод:15
 msgid "Create a rule"
 msgstr "Назначить владельца"
 
-#: стандартный ввод:12
+#: стандартный ввод:16
 msgid "List of rules"
 msgstr "Список владельцев"
 
-#: стандартный ввод:16
+#: стандартный ввод:20
 msgid "User"
 msgstr "Пользователь"
 
-#: стандартный ввод:17
+#: стандартный ввод:21
 msgid "Group"
 msgstr "Группа"
 
-#: стандартный ввод:18
+#: стандартный ввод:22
 msgid "Some invalid values were provided,please check the red cells"
 msgstr ""
 "Введены некорректные значения, обратите внимание на ячейки, отмеченные "
 "красным"
 
-#: стандартный ввод:19
+#: стандартный ввод:23
 msgid "Delete checked rows"
 msgstr "Удалить выбранные строки"
 
-#: стандартный ввод:20
+#: стандартный ввод:24
 msgid "Reset all"
 msgstr "Сбросить все"
 
-#: стандартный ввод:21
+#: стандартный ввод:25
 msgid "Edit"
 msgstr "Изменить"
 
-#: стандартный ввод:22
+#: стандартный ввод:26
 msgid "Reset row"
 msgstr "Сбросить"
 
-#: стандартный ввод:23
+#: стандартный ввод:27
 msgid "Delete current"
 msgstr "Удалить"
 
-#: стандартный ввод:24
+#: стандартный ввод:28
 msgid "Add"
 msgstr "Добавить"
-
-#: стандартный ввод:25
-msgid "SAVE"
-msgstr "Сохранить"
 
 #: ajax.scm:30
 msgid "Save rules operation FAILED"
 msgstr "Не удалось сохранить новые правила"
+
+#: ajax.scm:44
+msgid "Error starting the service"
+msgstr "Не удалось запустить службу"
+
+#: ajax.scm:51
+msgid "Error stop the service"
+msgstr "Не удалось остановить службу"
 
 #: стандартный ввод:1
 msgid "USBMount"

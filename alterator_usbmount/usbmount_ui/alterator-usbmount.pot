@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-05-02 08:43+0300\n"
+"POT-Creation-Date: 2024-05-03 11:04+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -18,95 +18,117 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 
 #: стандартный ввод:1
-msgid "Connnected usb devices:"
+msgid "Run the UsbMount daemon"
 msgstr ""
 
 #: стандартный ввод:2
-msgid "List of devices"
+msgid "Stop the UsbMount daemon"
 msgstr ""
 
-#: стандартный ввод:3
-msgid "Block"
+#: стандартный ввод:3 ввод:29
+msgid "SAVE"
 msgstr ""
 
 #: стандартный ввод:4
-msgid "Filesystem"
+msgid ""
+"The service is not currently active, but you can turn it on to start using "
+"it."
 msgstr ""
 
-#: стандартный ввод:5 ввод:13
-msgid "VID"
+#: стандартный ввод:5
+msgid "Connnected usb devices:"
 msgstr ""
 
-#: стандартный ввод:6 ввод:14
-msgid "PID"
+#: стандартный ввод:6
+msgid "List of devices"
 msgstr ""
 
-#: стандартный ввод:7 ввод:15
-msgid "SN"
+#: стандартный ввод:7
+msgid "Block"
 msgstr ""
 
 #: стандартный ввод:8
-msgid "Status"
+msgid "Filesystem"
 msgstr ""
 
-#: стандартный ввод:9
-msgid "Mount"
+#: стандартный ввод:9 ввод:17
+msgid "VID"
 msgstr ""
 
-#: стандартный ввод:10
-msgid "Scan plugged-in USB devices"
+#: стандартный ввод:10 ввод:18
+msgid "PID"
 msgstr ""
 
-#: стандартный ввод:11
-msgid "Create a rule"
+#: стандартный ввод:11 ввод:19
+msgid "SN"
 msgstr ""
 
 #: стандартный ввод:12
-msgid "List of rules"
+msgid "Status"
+msgstr ""
+
+#: стандартный ввод:13
+msgid "Mount"
+msgstr ""
+
+#: стандартный ввод:14
+msgid "Scan plugged-in USB devices"
+msgstr ""
+
+#: стандартный ввод:15
+msgid "Create a rule"
 msgstr ""
 
 #: стандартный ввод:16
-msgid "User"
-msgstr ""
-
-#: стандартный ввод:17
-msgid "Group"
-msgstr ""
-
-#: стандартный ввод:18
-msgid "Some invalid values were provided,please check the red cells"
-msgstr ""
-
-#: стандартный ввод:19
-msgid "Delete checked rows"
+msgid "List of rules"
 msgstr ""
 
 #: стандартный ввод:20
-msgid "Reset all"
+msgid "User"
 msgstr ""
 
 #: стандартный ввод:21
-msgid "Edit"
+msgid "Group"
 msgstr ""
 
 #: стандартный ввод:22
-msgid "Reset row"
+msgid "Some invalid values were provided,please check the red cells"
 msgstr ""
 
 #: стандартный ввод:23
-msgid "Delete current"
+msgid "Delete checked rows"
 msgstr ""
 
 #: стандартный ввод:24
-msgid "Add"
+msgid "Reset all"
 msgstr ""
 
 #: стандартный ввод:25
-msgid "SAVE"
+msgid "Edit"
+msgstr ""
+
+#: стандартный ввод:26
+msgid "Reset row"
+msgstr ""
+
+#: стандартный ввод:27
+msgid "Delete current"
+msgstr ""
+
+#: стандартный ввод:28
+msgid "Add"
 msgstr ""
 
 #: ajax.scm:30
 msgid "Save rules operation FAILED"
+msgstr ""
+
+#: ajax.scm:44
+msgid "Error starting the service"
+msgstr ""
+
+#: ajax.scm:51
+msgid "Error stop the service"
 msgstr ""
 
 #: стандартный ввод:1

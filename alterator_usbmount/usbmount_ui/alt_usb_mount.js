@@ -54,25 +54,44 @@ function InitUi(health) {
     DisableButton(document.getElementById('btn_save'));
     document.getElementById('btn_save').addEventListener('click',SaveRules);
 
+    document.getElementById('checkbox_daemon_status').addEventListener('change',ShowLableForTooggle);
+
     // toggle status switch
+    SetHealthStatus(health);
+    // run the service
+    document.getElementById('btn_save_status').addEventListener('click',(e)=>{
+        let toggle_daemon=document.getElementById('checkbox_daemon_status');
+        if (toggle_daemon.checked){
+            e.target.dispatchEvent(new Event("btn_run_service"));
+        } else{
+            e.target.dispatchEvent(new Event("btn_stop_service"));
+        }
+    });
+}
+
+function SetHealthStatus(health){
     let toggle_daemon=document.getElementById('checkbox_daemon_status');
-    toggle_daemon.addEventListener('change',ShowLableForTooggle);
     if (health==="OK") toggle_daemon.checked=true;
-    else toggle_daemon.checked=false;         
-    toggle_daemon.dispatchEvent(new Event('change'));
-    window.health_status=health;    
+    else toggle_daemon.checked=false;
+    localStorage.setItem("health_status",health);
+    toggle_daemon.dispatchEvent(new Event('change')); 
     if (health!=="OK"){
         document.getElementById('id_tip_run_service').classList.remove('hidden');
         document.getElementById('interface_wrap').classList.add('hidden');       
-    }
+    }else{
+        document.getElementById('id_tip_run_service').classList.add('hidden');
+        document.getElementById('interface_wrap').classList.remove('hidden');    
+    }         
 }
+
+
 
 function ShowLableForTooggle(e){
     let toggle=e.target;
     if (!toggle) return;
     let run_lbl=document.getElementById('lbl_run_daemon');
     let stop_lbl=document.getElementById('lbl_stop_daemon');
-    let health= window.health_status;
+    let health= localStorage.getItem('health_status');
     let button=document.getElementById('btn_save_status');
     if (toggle.checked== true){
         run_lbl.classList.remove('hidden');

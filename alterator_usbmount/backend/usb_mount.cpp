@@ -1,6 +1,7 @@
 #include "usb_mount.hpp"
 #include "active_device.hpp"
 #include "log.hpp"
+#include "systemd_dbus.hpp"
 #include <boost/json.hpp>
 #include <boost/json/array.hpp>
 #include <boost/json/object.hpp>
@@ -99,6 +100,72 @@ bool UsbMount::Health() const noexcept {
     return false;
   auto response = GetStringNoParams("health");
   return response == "OK";
+}
+
+bool UsbMount::Run() noexcept {
+  dbus_bindings::Systemd systemd;
+  auto enabled = systemd.IsUnitEnabled(kServiceUnitName);
+  if (!enabled.has_value()) {
+    Log::Error() << "[Run] Can't check if service is enabled";
+    return false;
+  }
+  if (!enabled.value_or(false)) {
+    auto success = systemd.EnableUnit(kServiceUnitName);
+    if (!success.value_or(false)) {
+      Log::Error() << "[Run] Can't enable service";
+      return false;
+    }
+  }
+  auto active = systemd.IsUnitActive(kServiceUnitName);
+  if (!active.has_value()) {
+    Log::Error() << "[Run] Can't check if unit is active";
+    return false;
+  }
+  if (!active.value_or(false)) {
+    auto success = systemd.StartUnit(kServiceUnitName);
+    if (!success.value_or(false)) {
+      Log::Error() << "[Run] Can't start the service";
+      return false;
+    }
+  }
+  try {
+    dbus_proxy_ = sdbus::createProxy(kDest, kObjectPath);
+  } catch (const std::exception &ex) {
+    Log::Warning() << "[Usbmount][Run] Can't create dbus proxy ";
+    return false;
+  }
+  return true;
+}
+
+bool UsbMount::Stop() noexcept {
+  dbus_bindings::Systemd systemd;
+
+  auto active = systemd.IsUnitActive(kServiceUnitName);
+  if (!active.has_value()) {
+    Log::Error() << "[Stop] Can't check if the unit is active";
+    return false;
+  }
+  if (active.value_or(false)) {
+    auto success = systemd.StopUnit(kServiceUnitName);
+    if (!success.value_or(false)) {
+      Log::Error() << "[Stop] Can't stop the service";
+      return false;
+    }
+  }
+  auto enabled = systemd.IsUnitEnabled(kServiceUnitName);
+  if (!enabled.has_value()) {
+    Log::Error() << "[Stop] Can't check if the service is enabled";
+    return false;
+  }
+  if (enabled.value_or(false)) {
+    auto success = systemd.DisableUnit(kServiceUnitName);
+    if (!success.value_or(false)) {
+      Log::Error() << "[Stop] Can't disable the service";
+      return false;
+    }
+  }
+  dbus_proxy_ = nullptr;
+  return true;
 }
 
 } // namespace alterator::usbmount

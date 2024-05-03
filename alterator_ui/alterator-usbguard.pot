@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-03-26 15:47+0300\n"
+"POT-Creation-Date: 2024-05-03 11:03+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -241,27 +241,27 @@ msgstr ""
 msgid "Process is STOPPED"
 msgstr ""
 
-#: ajax.scm:153
+#: ajax.scm:154
 msgid ""
 "Error while trying to unblock a selected device. You can unblock it by "
 "creating a hash rule or interface rule."
 msgstr ""
 
-#: ajax.scm:166
+#: ajax.scm:167
 msgid "Error while trying to block a selected device"
 msgstr ""
 
-#: ajax.scm:179 ajax.scm:190
+#: ajax.scm:180 ajax.scm:191
 msgid ""
 "An error occurred when starting the USB Guard with new rules. We recommend "
 "checking the rules and configuration files for correctness."
 msgstr ""
 
-#: ajax.scm:213
+#: ajax.scm:214
 msgid "An empty csv file. Parsed 0 rules."
 msgstr ""
 
-#: ajax.scm:214
+#: ajax.scm:215
 msgid "An error occured while parsing csv file"
 msgstr ""
 
