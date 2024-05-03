@@ -238,7 +238,12 @@ void UdevMonitor::ApplyMountRulesIfNotMounted() noexcept {
     device->SetAction("add");
     logger_->debug("[ApplyMountRulesIfNotMounted] found {}",
                    device->block_name());
-    ProcessDevice(std::move(device));
+    auto mountpoints = utils::GetSystemMountedDevices(logger_);
+    // if not mounted yet
+    if (mountpoints.count(device->block_name()) == 0) {
+      logger_->debug("process {}", device->block_name());
+      ProcessDevice(std::move(device));
+    }
   }
 }
 
