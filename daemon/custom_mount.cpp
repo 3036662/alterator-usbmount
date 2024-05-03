@@ -356,7 +356,7 @@ void CustomMount::SetMountOptions(MountOptions &opts) const noexcept {
   } else if (ptr_device_->filesystem() == "ntfs") {
     opts.fs += "3";
     opts.mount_data += uid_gid;
-    opts.mount_data += ",fmask=0007,dmask=0007,iocharset=utf8";
+    //  opts.mount_data += ",fmask=0007,dmask=0007,iocharset=utf8";
     opts.mount_data += ",iocharset=utf8";
   } else if (ptr_device_->filesystem() == "udf") {
     opts.mount_flags = opts.mount_flags | MS_RDONLY;
