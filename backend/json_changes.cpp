@@ -251,7 +251,9 @@ void JsonChanges::AddBlockUsbStorages() {
 void JsonChanges::AddAllowHid() {
   try {
     rules_to_add_.emplace_back("allow with-interface 03:*:*");
+    rules_to_add_.emplace_back("allow with-interface 09:*:*");
     added_by_preset_.emplace_back("allow with-interface 03:*:*");
+    added_by_preset_.emplace_back("allow with-interface 09:*:*");
   } catch (const std::logic_error &ex) {
     Log::Error() << "Can't add a rules for HID devices";
     Log::Error() << ex.what();
