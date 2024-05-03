@@ -143,7 +143,17 @@
     border: 1px solid gray;
     margin-top: 20px;
     margin-bottom: 20px;
-  }
+}
+
+.tip_wrapper {
+    background-color: white;
+    color: black;
+    padding: 5px;
+    border-radius: 5px;
+    border: 2px solid gray;
+    margin-top: 20px;
+    margin-bottom: 20px;
+}
 
   .separator{
     display: block;

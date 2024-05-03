@@ -60,8 +60,9 @@ function InitUi(health) {
     if (health==="OK") toggle_daemon.checked=true;
     else toggle_daemon.checked=false;         
     toggle_daemon.dispatchEvent(new Event('change'));
-    localStorage.setItem('health_status',health);    
+    window.health_status=health;    
     if (health!=="OK"){
+        document.getElementById('id_tip_run_service').classList.remove('hidden');
         document.getElementById('interface_wrap').classList.add('hidden');       
     }
 }
@@ -71,7 +72,7 @@ function ShowLableForTooggle(e){
     if (!toggle) return;
     let run_lbl=document.getElementById('lbl_run_daemon');
     let stop_lbl=document.getElementById('lbl_stop_daemon');
-    let health=localStorage.getItem('health_status');
+    let health= window.health_status;
     let button=document.getElementById('btn_save_status');
     if (toggle.checked== true){
         run_lbl.classList.remove('hidden');
