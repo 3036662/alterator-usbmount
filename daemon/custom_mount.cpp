@@ -192,9 +192,9 @@ bool CustomMount::CreateMountEndpoint() noexcept {
         endpoint += "_0";
         continue;
       }
+      ++index;
       endpoint.erase(endpoint.size() - 1);
       endpoint += std::to_string(index);
-      ++index;
     }
     if (!fs::exists(endpoint) && !fs::create_directory(endpoint)) {
       logger_->error("Can't create directory {}", endpoint);
