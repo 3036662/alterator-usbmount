@@ -69,24 +69,69 @@ void MountDevice(std::shared_ptr<UsbUdevDevice> ptr_device,
   }
 }
 
-bool ReviewMountPoints(const std::shared_ptr<spdlog::logger> &logger) noexcept {
-  auto dbase = dal::LocalStorage::GetStorage();
+std::unordered_set<std::string>
+GetSystemMountPoints(const std::shared_ptr<spdlog::logger> &logger) noexcept {
+  std::unordered_set<std::string> mtab_mountpoints;
   // get all system mountpoints
   FILE *p_file = setmntent("/etc/mtab", "r");
   if (p_file == NULL) {
     logger->error("[UnMount] Error opening /etc/mtab");
     logger->flush();
-    return false;
+    return mtab_mountpoints;
   }
   mntent *entry;
-  std::unordered_set<std::string> mtab_mountpoints;
   while ((entry = getmntent(p_file)) != NULL) {
     if (boost::contains(entry->mnt_dir, CustomMount::mount_root)) {
       mtab_mountpoints.emplace(entry->mnt_dir);
     }
   }
   endmntent(p_file);
+  return mtab_mountpoints;
+}
+
+std::unordered_set<std::string> GetSystemMountedDevices(
+    const std::shared_ptr<spdlog::logger> &logger) noexcept {
+  std::unordered_set<std::string> mtab_devs;
+  // get all system mountpoints
+  FILE *p_file = setmntent("/etc/mtab", "r");
+  if (p_file == NULL) {
+    logger->error("[UnMount] Error opening /etc/mtab");
+    logger->flush();
+    return mtab_devs;
+  }
+  mntent *entry;
+  while ((entry = getmntent(p_file)) != NULL) {
+    mtab_devs.emplace(entry->mnt_fsname);
+  }
+  endmntent(p_file);
+  return mtab_devs;
+}
+
+bool ReviewMountPoints(const std::shared_ptr<spdlog::logger> &logger) noexcept {
+  auto dbase = dal::LocalStorage::GetStorage();
+  auto mtab_mountpoints = GetSystemMountPoints(logger);
   dbase->mount_points.RemoveExpired(mtab_mountpoints);
+  // remove empty folders
+  const std::string mount_folder = "/run/alt-usb-mount/";
+  namespace fs = std::filesystem;
+  try {
+    logger->debug("[ReviewMountPoints] Inspect folders");
+    for (const auto &entry : fs::directory_iterator(mount_folder)) {
+      if (fs::is_directory(entry.path()) && !fs::is_empty(entry.path())) {
+        for (const auto &sub_entry : fs::directory_iterator(entry.path())) {
+          if (fs::is_directory(sub_entry.path()) &&
+              fs::is_empty(sub_entry.path()) &&
+              mtab_mountpoints.count(sub_entry.path().string()) == 0) {
+            logger->info("Removing empty {}", sub_entry.path().string());
+            fs::remove(sub_entry.path());
+          }
+        }
+      }
+    }
+  } catch (const std::exception &ex) {
+    logger->warn("Error while inpecting folders in " + mount_folder);
+    logger->warn(ex.what());
+  }
   return true;
 }
 

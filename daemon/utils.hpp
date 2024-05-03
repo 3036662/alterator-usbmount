@@ -38,6 +38,12 @@ std::shared_ptr<spdlog::logger> InitLogFile(const std::string &path) noexcept;
 void MountDevice(std::shared_ptr<UsbUdevDevice> ptr_device,
                  const std::shared_ptr<spdlog::logger> &logger) noexcept;
 
+std::unordered_set<std::string>
+GetSystemMountPoints(const std::shared_ptr<spdlog::logger> &logger) noexcept;
+
+std::unordered_set<std::string>
+GetSystemMountedDevices(const std::shared_ptr<spdlog::logger> &logger) noexcept;
+
 /**
  * @brief Check for expired mountpoints in local table
  */
