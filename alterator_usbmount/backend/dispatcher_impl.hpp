@@ -18,6 +18,7 @@ private:
   bool Health() const noexcept;
   bool RunDaemon() const noexcept;
   bool StopDaemon() const noexcept;
+  static bool ReadLog(const LispMessage &) noexcept;
 
   static constexpr const char *kMessBeg = "(";
   static constexpr const char *kMessEnd = ")";

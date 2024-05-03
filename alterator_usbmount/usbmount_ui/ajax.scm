@@ -52,6 +52,11 @@
     )
 )
 
+(define (load_recent_log)
+ ; (woo-error (object->string (caar(removeFirstElement(woo-read "/usbmount/read_log" 'page "0" 'filter "")))))
+  (js "SetLogData"  (caar(removeFirstElement(woo-read "/usbmount/read_log" 'page "0" 'filter ""))))
+)
+
 
 (define (init)
  (let ((health (caar(removeFirstElement(woo-read "/usbmount/health" ))) )) 
@@ -60,6 +65,7 @@
       (update_ui)
     ) 
   )  
+ (load_recent_log)
  (form-bind "btn_prsnt_scan" "click" ls-devices)
  (form-bind "btn_save" "rules_data_ready" save-rules)
  (form-bind "btn_save_status" "btn_run_service" run_service)

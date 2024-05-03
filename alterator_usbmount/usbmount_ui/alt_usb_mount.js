@@ -67,6 +67,18 @@ function InitUi(health) {
             e.target.dispatchEvent(new Event("btn_stop_service"));
         }
     });
+
+    document.getElementById('show_logs_button').addEventListener('click',e=>{
+        document.getElementById('logs_table').classList.remove('hidden');
+        e.target.classList.add('hidden');
+        document.getElementById('hide_logs_button').classList.remove('hidden');
+    });
+
+    document.getElementById('hide_logs_button').addEventListener('click',e=>{
+        document.getElementById('logs_table').classList.add('hidden');
+        e.target.classList.add('hidden');
+        document.getElementById('show_logs_button').classList.remove('hidden');
+    });
 }
 
 function SetHealthStatus(health){
@@ -82,6 +94,18 @@ function SetHealthStatus(health){
         document.getElementById('id_tip_run_service').classList.add('hidden');
         document.getElementById('interface_wrap').classList.remove('hidden');    
     }         
+}
+
+function SetLogData(data){
+    try{
+      let obj_data=JSON.parse(data);
+      window.log_current_page=obj_data.current_page;
+      window.log_total_pages=obj_data.total_pages;
+      document.getElementById('log_textarea').textContent=obj_data.data.join('\n');
+    }
+    catch(e){
+        console.log(e.message);
+    }
 }
 
 

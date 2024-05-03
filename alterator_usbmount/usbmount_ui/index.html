@@ -62,7 +62,6 @@
     </div>
  </form> 
 <div class="rules_wrap">
-  <!--  <form method="POST" onsubmit="return false;"> --> 
     <table id="rules_list_table" class="rules_list" align="center" name="list_rules">
       <caption><span translate="_">List of rules</span></caption>
       <thead>
@@ -96,9 +95,36 @@
       <input type="button" class="like_btn" value="SAVE" id="btn_save" name="btn_save"/>      
     </div>
   </div>
-<!--  </form> -->
 <form class=".hidden"><input type="hidden" name="new_rules_data" id="hidden_inp_data_to_save"/></form> 
 </div>
+<div class="separator"></div>
+<form id="logs_form" onsubmit="return false;">
+      <input type="button" class="like_btn" id="show_logs_button" name="show_logs_button" value="SHOW LOG" />
+      <input type="button" class="like_btn hidden" id="hide_logs_button" name="hide_logs_button" value="HIDE LOG" />
+      <table style="width:100%" name="logs_table" id="logs_table" class="hidden">
+        <tbody>
+          <tr>
+          <td colspan="1" class="td_vertical_center">
+            <input name="log_search_input" id="log_search_input"/>            
+            <input name="log_search_button" type="button" class="like_btn" value="FILTER"/>
+          </td>            
+          </tr>
+          <tr>
+          <td colspan="2">
+            <textarea  name="log_textarea" id="log_textarea" readonly="readonly"></textarea>
+          </td>
+          </tr>
+          <tr>
+          <td colspan="2" class="cell_center">
+            <input type="button" name="prev_page" class="btn" value="PREVIOS" />
+            <input type="button" name="next_page" class="btn" value="NEXT " />
+            <input type="hidden"  name="current_page" value="0" />
+            <input type="hidden" name="audit_type" value="" />
+          </td>
+        </tr>
+        </tbody>
+      </table>
+    </form>  
 </body>
 
 </html>
