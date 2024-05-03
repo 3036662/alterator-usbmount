@@ -20,6 +20,14 @@ public:
   GuardAudit(GuardAudit &&) = delete;
   GuardAudit &operator=(const GuardAudit &) = delete;
   GuardAudit &operator=(GuardAudit &&) = delete;
+
+  /**
+   * @brief Construct a new Guard Audit object
+   *
+   * @param type type of autdit
+   * @param path path to file
+   * @throws  std::logic_error
+   */
   explicit GuardAudit(AuditType type, const std::string &path);
 
   std::vector<std::string> GetAll() const noexcept;
