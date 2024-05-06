@@ -57,6 +57,10 @@
   (js "SetLogData"  (caar(removeFirstElement(woo-read "/usbmount/read_log" 'page "0" 'filter ""))))
 )
 
+(define (update_log)
+  (js "SetLogData"  (caar(removeFirstElement(woo-read "/usbmount/read_log" 'page (form-value "current_page")  'filter (form-value "log_filter") ) )))
+)
+
 
 (define (init)
  (let ((health (caar(removeFirstElement(woo-read "/usbmount/health" ))) )) 
@@ -70,4 +74,5 @@
  (form-bind "btn_save" "rules_data_ready" save-rules)
  (form-bind "btn_save_status" "btn_run_service" run_service)
  (form-bind "btn_save_status" "btn_stop_service" stop_service)
+ (form-bind "current_page" "page_change" update_log)
 )

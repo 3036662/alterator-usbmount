@@ -128,7 +128,7 @@ bool DispatcherImpl::ReadLog(const LispMessage &msg) noexcept {
     uint page_number =
         common_utils::StrToUint(msg.params.at("page")).value_or(0);
     std::string filter = msg.params.at("filter");
-    ::usbmount::LogReader reader("/var/log/alt-usb-automount/log.txt");
+    common_utils::LogReader reader("/var/log/alt-usb-automount/log.txt");
     auto res = reader.GetByPage({filter}, page_number, 22);
     boost::json::object json_result;
     json_result["total_pages"] = res.pages_number;

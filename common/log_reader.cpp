@@ -9,7 +9,7 @@
 #include <stdexcept>
 #include <string>
 
-namespace usbmount {
+namespace common_utils {
 
 namespace fs = std::filesystem;
 using common_utils::Log;

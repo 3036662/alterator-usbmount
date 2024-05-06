@@ -99,14 +99,14 @@
 </div>
 <div class="separator"></div>
 <form id="logs_form" onsubmit="return false;">
-      <input type="button" class="like_btn" id="show_logs_button" name="show_logs_button" value="SHOW LOG" />
-      <input type="button" class="like_btn hidden" id="hide_logs_button" name="hide_logs_button" value="HIDE LOG" />
+      <input type="button" class="like_btn" id="show_logs_button" name="show_logs_button" value="Show log" />
+      <input type="button" class="like_btn hidden" id="hide_logs_button" name="hide_logs_button" value="Hide log" />
       <table style="width:100%" name="logs_table" id="logs_table" class="hidden">
         <tbody>
           <tr>
           <td colspan="1" class="td_vertical_center">
             <input name="log_search_input" id="log_search_input"/>            
-            <input name="log_search_button" type="button" class="like_btn" value="FILTER"/>
+            <input name="log_search_button" id="log_search_button" type="button" class="like_btn" value="Filter"/>
           </td>            
           </tr>
           <tr>
@@ -116,11 +116,14 @@
           </tr>
           <tr>
           <td colspan="2" class="cell_center">
-            <input type="button" name="prev_page" class="btn" value="PREVIOS" />
-            <input type="button" name="next_page" class="btn" value="NEXT " />
-            <input type="hidden"  name="current_page" value="0" />
-            <input type="hidden" name="audit_type" value="" />
+            <input type="button" id="btn_prev_page" name="prev_page" class="like_btn" value="&#9665; Previous" />
+            <input type="button" id="btn_next_page" name="next_page" class="like_btn" value="Next &#9655;" />
+            <input type="hidden"  id="hidd_inp_curr_page" name="current_page" value="0" />
+            <input type="hidden"  id="hidd_inp_filter" name="log_filter" value="" />
           </td>
+        </tr>
+        <tr>
+          <td colspan="2" class="log_page_info cell_center"><span translate="_">Page</span><span id="span_curr_page">0</span><span translate="_">of</span><span id="span_total_pages"></span></td>
         </tr>
         </tbody>
       </table>

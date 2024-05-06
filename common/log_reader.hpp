@@ -2,7 +2,7 @@
 #include <string>
 #include <vector>
 
-namespace usbmount {
+namespace common_utils {
 
 using vecstring = std::vector<std::string>;
 
