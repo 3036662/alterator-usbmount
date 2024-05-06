@@ -1345,6 +1345,7 @@ Log::Info() <<"Sleep ...";
 }
 
 void Test::Run18(){
+  std::this_thread::sleep_for(std::chrono::milliseconds(1000));
   Log::Test() <<"TEST18 ... Audit reading";
   {
     guard::Guard  guard;
@@ -1365,14 +1366,15 @@ void Test::Run18(){
       throw std::logic_error("wrond-ex");
     }
     catch (const std::exception& ex){
-      assert( std::string(ex.what())=="The path to audit file is empty");  
+      Log::Test()<<ex.what();
+      assert( std::string(ex.what())=="Empty filepath");  
     }
   }
 
   Log::Test() <<"undefined audit type";
   {
     try{  
-      guard::GuardAudit audit=guard::GuardAudit(guard::AuditType::kUndefined,"");
+      guard::GuardAudit audit=guard::GuardAudit(guard::AuditType::kUndefined," /var/log/usbguard/usbguard-audit.log");
       throw std::logic_error("wrond-ex");
     }
     catch (const std::exception& ex){

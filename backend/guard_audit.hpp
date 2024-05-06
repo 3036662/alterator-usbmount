@@ -1,4 +1,5 @@
 #pragma once
+#include "log_reader.hpp"
 #include <string>
 #include <vector>
 
@@ -13,7 +14,7 @@ enum class AuditType { kFileAudit, kLinuxAudit, kUndefined };
  * @brief Represents guard logger
  *
  */
-class GuardAudit {
+class GuardAudit : public common_utils::LogReader {
 public:
   GuardAudit() = delete;
   GuardAudit(const GuardAudit &) = delete;
@@ -30,18 +31,10 @@ public:
    */
   explicit GuardAudit(AuditType type, const std::string &path);
 
-  std::vector<std::string> GetAll() const noexcept;
   std::vector<std::string>
   GetByFilter(const std::vector<std::string> &filters) const noexcept;
 
-  std::vector<std::string> GetByPage(const std::vector<std::string> &filters,
-                                     uint page_number,
-                                     uint pages_size) const noexcept;
-
 private:
-  std::vector<std::string>
-  GetFromFile(const std::vector<std::string> &filters) const;
-
   AuditType audit_type_;
   std::string audit_file_path_;
 };

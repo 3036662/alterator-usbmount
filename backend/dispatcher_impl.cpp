@@ -3,6 +3,8 @@
 #include "guard.hpp"
 #include "guard_utils.hpp"
 #include "log.hpp"
+#include <algorithm>
+#include <boost/algorithm/string/replace.hpp>
 
 namespace guard {
 
@@ -54,7 +56,7 @@ bool DispatcherImpl::Dispatch(const LispMessage &msg) const noexcept {
   }
 
   // read logs
-  if (msg.action == "read" && msg.objects == "read_logs") {
+  if (msg.action == "read" && msg.objects == "read_log") {
     return ReadUsbGuardLogs(msg);
   }
   // empty response
@@ -67,19 +69,33 @@ bool DispatcherImpl::ReadUsbGuardLogs(const LispMessage &msg) const noexcept {
     Log::Error() << "Wrong parameters for log reading";
     return false;
   }
-  uint page_number = StrToUint(msg.params.at("page")).value_or(0);
-  std::string filter = msg.params.at("filter");
-  auto audit = guard_.GetConfigStatus().GetAudit();
-  std::vector<std::string> log_lines;
-  if (audit.has_value()) {
-    log_lines = audit->GetByPage({filter}, page_number, 10);
+  std::cout << kMessBeg;
+  try {
+    uint page_number =
+        common_utils::StrToUint(msg.params.at("page")).value_or(0);
+    std::string filter = msg.params.at("filter");
+    // common_utils::LogReader reader("/var/log/alt-usb-automount/log.txt");
+    auto audit = guard_.GetConfigStatus().GetAudit();
+    if (audit.has_value()) {
+      auto res = audit->GetByPage({filter}, page_number, 5);
+      std::for_each(res.data.begin(), res.data.end(), [](std::string &str) {
+        boost::replace_all(str, "\"", "\'");
+        boost::replace_all(str, "\\", "\\\\");
+      });
+      boost::json::object json_result;
+      json_result["total_pages"] = res.pages_number;
+      json_result["current_page"] = res.curr_page;
+      json_result["data"] = boost::json::array();
+      for (auto &str : res.data)
+        json_result["data"].as_array().emplace_back(std::move(str));
+      std::cout << common_utils::WrapWithQuotes(
+          common_utils::EscapeQuotes(boost::json::serialize(json_result)));
+    }
+  } catch (const std::exception &ex) {
+    Log::Error() << "[ReadLog] Error reading logs";
+    Log::Error() << "[ReadLog] " << ex.what();
   }
-  std::string res;
-
-  if (!log_lines.empty()) {
-    res = boost::join(log_lines, "\n\n");
-  }
-  std::cout << ToLisp({"log_data", EscapeQuotes(res)});
+  std::cout << kMessEnd;
   return true;
 }
 

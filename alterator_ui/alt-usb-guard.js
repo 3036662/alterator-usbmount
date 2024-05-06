@@ -183,7 +183,7 @@ $(document).ready(function () {
  CatchTableHeaderCheckbok('list_interface_rules');
  CatchTableHeaderCheckbok('list_unsorted_rules');
 
-
+ InitLogs();
 
 }); // .ready
 
@@ -566,5 +566,112 @@ function UpdateTextArrea(id,data){
   var textareaElement = $('textarea[name="'+id+'"]');
   if (textareaElement.length > 0) {
     textareaElement.val(data);
+  }
+}
+
+// --------- Logs -------------
+
+/**
+ * @brief Disable a button
+ * @param {HtmlElement} button 
+ */
+function DisableButton(button) {
+  if (!button) return;
+  button.disabled = true;
+  button.classList.add('like_btn_disabled');
+  button.classList.remove('like_btn');
+}
+
+
+/**
+ * @brief Enable a button
+ * @param {HtmlElement} button 
+ */
+function EnableButton(button) {
+  if (!button) return;
+  button.disabled = false;
+  button.classList.remove('like_btn_disabled');
+  button.classList.add('like_btn');
+}
+
+function LockLogPagination(){
+  DisableButton(document.getElementById('btn_prev_page'));
+  DisableButton(document.getElementById('btn_next_page'));
+}
+
+function InitLogs(){
+  document.getElementById('show_logs_button').addEventListener('click',e=>{
+      document.getElementById('logs_table').classList.remove('hidden');
+      e.target.classList.add('hidden');
+      document.getElementById('hide_logs_button').classList.remove('hidden');
+  });
+
+  document.getElementById('hide_logs_button').addEventListener('click',e=>{
+      document.getElementById('logs_table').classList.add('hidden');
+      e.target.classList.add('hidden');
+      document.getElementById('show_logs_button').classList.remove('hidden');
+  });
+
+  document.getElementById('btn_prev_page').addEventListener('click',e=>{
+      if (window.log_current_page<window.log_total_pages){
+          ++window.log_current_page;
+          document.getElementById('hidd_inp_curr_page').value=window.log_current_page;
+          LockLogPagination();
+          document.getElementById('hidd_inp_curr_page').dispatchEvent(new Event("page_change"));
+      }        
+  });
+
+  document.getElementById('btn_next_page').addEventListener('click',e=>{
+      if (window.log_current_page>0){
+       --window.log_current_page;
+       document.getElementById('hidd_inp_curr_page').value=window.log_current_page;
+       LockLogPagination();
+       document.getElementById('hidd_inp_curr_page').dispatchEvent(new Event("page_change"));
+      }
+  });
+
+  document.getElementById('log_search_button').addEventListener('click',e=>{
+      window.log_current_page=0;
+      document.getElementById('hidd_inp_curr_page').value=window.log_current_page;
+      let input_val=document.getElementById('log_search_input').value.replace(/[&<>"']/g, "");
+      document.getElementById('log_search_input').value=input_val;
+      document.getElementById('hidd_inp_filter').value=input_val;
+      DisableButton(e.target);
+      LockLogPagination();
+      document.getElementById('hidd_inp_curr_page').dispatchEvent(new Event("page_change"));
+  });
+
+  document.getElementById('log_search_input').addEventListener('keydown', function(event) {
+    if (event.key === 'Enter') {
+      document.getElementById('log_search_button').dispatchEvent(new Event('click'));
+    }
+  });
+}
+
+
+
+function SetLogData(data){
+  try{
+    let obj_data=JSON.parse(data);
+    window.log_current_page=obj_data.current_page;
+    window.log_total_pages=obj_data.total_pages;
+    document.getElementById('log_textarea').textContent=obj_data.data.join('\n\n');
+    document.getElementById('hidd_inp_curr_page').value=obj_data.current_page;
+    document.getElementById('span_curr_page').textContent=" "+(window.log_current_page+1)+" ";
+    document.getElementById('span_total_pages').textContent=" "+(window.log_total_pages+1);
+    if ( window.log_current_page===0){
+      DisableButton(document.getElementById('btn_next_page'));
+    } else if (window.log_current_page>0){
+      EnableButton(document.getElementById('btn_next_page'));
+    }
+    if (window.log_current_page>= window.log_total_pages){
+      DisableButton(document.getElementById('btn_prev_page'));
+    } else {
+      EnableButton(document.getElementById('btn_prev_page'));
+    }
+    EnableButton(document.getElementById('log_search_button'));
+  }
+  catch(e){
+      console.log(e.message);
   }
 }

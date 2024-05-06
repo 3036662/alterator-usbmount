@@ -15,6 +15,8 @@ add_executable(usbguard
 
 
 
+
+
 if(CMAKE_BUILD_TYPE STREQUAL "Debug")
 
 include(Format)
@@ -41,8 +43,10 @@ target_include_directories(usbguard PRIVATE ${CMAKE_SOURCE_DIR}/common)
 target_link_libraries(usbguard PRIVATE boost_json)
 target_link_libraries(usbguard PRIVATE systemd_dbus)
 target_link_libraries(usbguard PRIVATE lisp_bindings)
+target_link_libraries(usbguard PRIVATE log_reader)
 target_link_libraries(usbguard PRIVATE PkgConfig::USBGUARD)
 target_link_libraries(usbguard PRIVATE SDBusCpp::sdbus-c++)
+
 
 install(TARGETS usbguard
     RUNTIME DESTINATION "/usr/lib/alterator/backend3"

@@ -24,6 +24,7 @@ target_include_directories(test PUBLIC ${CMAKE_SOURCE_DIR}/thirdparty/cppcodec/c
 target_include_directories(test PUBLIC  ${CMAKE_SOURCE_DIR}/thirdparty/rapidcsv/src)
 
 target_link_libraries(test PRIVATE boost_json)
+target_link_libraries(test PRIVATE log_reader)
 target_link_libraries(test PRIVATE systemd_dbus)
 target_link_libraries(test PRIVATE PkgConfig::USBGUARD)
 target_link_libraries(test PRIVATE SDBusCpp::sdbus-c++)
