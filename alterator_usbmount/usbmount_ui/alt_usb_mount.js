@@ -88,6 +88,12 @@ function SetHealthStatus(health){
     }         
 }
 
+function LockLogPagination(){
+    DisableButton(document.getElementById('btn_prev_page'));
+    DisableButton(document.getElementById('btn_next_page'));
+}
+  
+
 function InitLogs(){
     document.getElementById('show_logs_button').addEventListener('click',e=>{
         document.getElementById('logs_table').classList.remove('hidden');
@@ -105,6 +111,7 @@ function InitLogs(){
         if (window.log_current_page<window.log_total_pages){
             ++window.log_current_page;
             document.getElementById('hidd_inp_curr_page').value=window.log_current_page;
+            LockLogPagination();
             document.getElementById('hidd_inp_curr_page').dispatchEvent(new Event("page_change"));
         }        
     });
@@ -113,6 +120,7 @@ function InitLogs(){
         if (window.log_current_page>0){
          --window.log_current_page;
          document.getElementById('hidd_inp_curr_page').value=window.log_current_page;
+         LockLogPagination();
          document.getElementById('hidd_inp_curr_page').dispatchEvent(new Event("page_change"));
         }
     });
@@ -123,7 +131,15 @@ function InitLogs(){
         let input_val=document.getElementById('log_search_input').value.replace(/[&<>"']/g, "");
         document.getElementById('log_search_input').value=input_val;
         document.getElementById('hidd_inp_filter').value=input_val;
+        DisableButton(e.target);
+        LockLogPagination();
         document.getElementById('hidd_inp_curr_page').dispatchEvent(new Event("page_change"));
+    });
+
+    document.getElementById('log_search_input').addEventListener('keydown', function(event) {
+        if (event.key === 'Enter') {
+          document.getElementById('log_search_button').dispatchEvent(new Event('click'));
+        }
     });
 }
 
@@ -146,6 +162,7 @@ function SetLogData(data){
       } else {
         EnableButton(document.getElementById('btn_prev_page'));
       }
+      EnableButton(document.getElementById('log_search_button'));
     }
     catch(e){
         console.log(e.message);
