@@ -653,6 +653,15 @@ function InitLogs(){
 function SetLogData(data){
   try{
     let obj_data=JSON.parse(data);
+    // disable all id type is audit , just show a message
+    if (obj_data.audit_type!=="file"){
+      LockLogPagination();
+      DisableButton(document.getElementById('log_search_button'));
+      document.getElementById('log_textarea').textContent=document.getElementById('span_audit_message').textContent;
+      document.getElementById('tr_page_info').classList.add('hidden');
+      document.getElementById('log_search_input').disabled=true;
+      return;
+    }
     window.log_current_page=obj_data.current_page;
     window.log_total_pages=obj_data.total_pages;
     document.getElementById('log_textarea').textContent=obj_data.data.join('\n\n');

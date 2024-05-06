@@ -86,8 +86,17 @@ bool DispatcherImpl::ReadUsbGuardLogs(const LispMessage &msg) const noexcept {
       json_result["total_pages"] = res.pages_number;
       json_result["current_page"] = res.curr_page;
       json_result["data"] = boost::json::array();
+      json_result["audit_type"] = "file";
       for (auto &str : res.data)
         json_result["data"].as_array().emplace_back(std::move(str));
+      std::cout << common_utils::WrapWithQuotes(
+          common_utils::EscapeQuotes(boost::json::serialize(json_result)));
+    } else {
+      boost::json::object json_result;
+      json_result["total_pages"] = 0;
+      json_result["current_page"] = 0;
+      json_result["audit_type"] = "linux";
+      json_result["data"] = boost::json::array();
       std::cout << common_utils::WrapWithQuotes(
           common_utils::EscapeQuotes(boost::json::serialize(json_result)));
     }

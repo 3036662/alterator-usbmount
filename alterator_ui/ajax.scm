@@ -232,11 +232,11 @@
 
 
 (define (load_recent_log)
-  (js "SetLogData"  (caar(removeFirstElement(woo-read "/usbguard/read_log" 'page "0" 'filter ""))))
+    (js "SetLogData"  (caar(removeFirstElement(woo-read "/usbguard/read_log" 'page "0" 'filter ""))))
 )
 
 (define (update_log)
-  (js "SetLogData"  (caar(removeFirstElement(woo-read "/usbguard/read_log" 'page (form-value "current_page")  'filter (form-value "log_filter") ) )))
+   (js "SetLogData"  (caar(removeFirstElement(woo-read "/usbguard/read_log" 'page (form-value "current_page")  'filter (form-value "log_filter") ) )))
 )
 
 
