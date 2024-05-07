@@ -20,7 +20,7 @@ using common_utils::Log;
 DispatcherImpl::DispatcherImpl(UsbMount &usbmount) : usbmount_(usbmount) {}
 
 bool DispatcherImpl::Dispatch(const LispMessage &msg) const noexcept {
-  Log::Debug() << msg;
+  //Log::Debug() << msg;
   if (msg.action == "list" && msg.objects == "list_block") {
     return ListBlockDevices();
   }
