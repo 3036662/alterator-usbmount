@@ -88,7 +88,6 @@
   <!-- Devices list -->
   <form method="POST">
     <table id="devices_list_table" class="alterator-listbox single-select" align="center" name="list_prsnt_devices">
-      <p><span translate="_">Connnected usb devices:</span></p>
       <caption><span translate="_">List of devices</span></caption>
       <thead>
         <tr>
@@ -127,24 +126,18 @@
       <input type="button" id="btn_prsnt_dev_block" name="btn_prsnt_dev_block" class="btn" value="Block device" />
     </div>
   </form>
-
-
   <!-- Radio buttons -->
-
-
-
-
   <form name="form_presets" id="form_presets">
     <fieldset>
       <legend><span translate="_">Presets</span></legend>
 
       <p><span translate="_">White list:</span></p>
       <p><input type="radio" id="preset1" name="presets" value="put_connected_to_white_list" />
-        <label for="preset1"><span translate="_">Block everything except connected devices.</span></label>
+        <label for="preset1"><span translate="_">Block everything except connected devices</span></label>
       </p>
 
       <p><input type="radio" id="preset2" name="presets" value="put_connected_to_white_list_plus_HID" />
-        <label for="preset2"><span translate="_">Block everything except connected and HID/HUB devices.</span></label>
+        <label for="preset2"><span translate="_">Block everything except connected and HID/HUB devices</span></label>
       </p>
 
       <p><input type="radio" id="preset_manual_white" name="presets" value="radio_white_list" />
@@ -153,25 +146,18 @@
       <hr />
       <p><span translate="_">Black list:</span></p>
       <p><input type="radio" id="preset3" name="presets" value="put_disks_and_mtp_to_black" />
-        <label for="preset3"><span translate="_">Block devices by classes of interface descriptors: 06 Image and 08 Mass
-            Storage (example).</span></label>
+        <label for="preset3"><span translate="_">Block devices by classes of interface descriptors: 06 Image and 08 Mass Storage</span></label>
       </p>
-
       <p><input type="radio" id="preset4" name="presets" value="block_and_reject_android" />
-        <label for="preset4"><span translate="_">Block devices by a list of known PIDs and VIDs using Android Debug Bus
-            (example).</span></label>
+        <label for="preset4"><span translate="_">Block devices by a list of known PIDs and VIDs using Android Debug Bus</span></label>
       </p>
-
       <p><input type="radio" id="preset_manual_black" name="presets" value="radio_black_list" />
         <label for="preset_manual_black"><span translate="_">Manual mode</span></label>
       </p>
-
       <input type="hidden" name="presets_input_hidden" id="presets_input_hidden" />
       <input type="hidden" name="hidden_list_type" id="hidden_list_type" />
     </fieldset>
   </form>
-
-
 
   <!-- Rules non-strict(non sorted) -->
   <form name="form_list_unsorted_rules" id="form_list_unsorted_rules" class="form_rules" method="POST"
@@ -298,10 +284,8 @@
       <input type="button" name="" class="btn manual_mode_button" value="Delete" id="delete_rules_from_hash_level"
         translate="_" />
       <span id="alert_empty_file" name="alert_empty_file" style="display:none" translate="_">This file is empty.</span>
-      <span id="alert_huge_file" name="alert_huge_file" style="display:none" translate="_">This file is too big. Limit 1
-        MB.</span>
-      <span id="alert_conflicts_in_file" name="alert_conflicts_in_file" style="display:none" translate="_">Error. The
-        file contains rules with conflicting targets.</span>
+      <span id="alert_huge_file" name="alert_huge_file" style="display:none" translate="_">This file is too big. Limit is 1 MB.</span>
+      <span id="alert_conflicts_in_file" name="alert_conflicts_in_file" style="display:none" translate="_">Error. The file contains rules with conflicting targets.</span>
     </div>
   </form>
   <div id="module_footer">
@@ -309,10 +293,10 @@
     <form onsubmit="return false;">
       <input type="hidden" name="hidden_manual_changes_data" id="hidden_manual_changes_data" />
       <input type="hidden" name="hidden_manual_changes_response" id="hidden_manual_changes_response" />
-      <input class="right_buttons btn" type="button" name="save_rules" id="save_rules_button" value="SAVE ALL RULES"
+      <input class="right_buttons btn" type="button" name="save_rules" id="save_rules_button" value="Save"
         translate="_" />
       <input class="right_buttons btn" type="button" name="validate_rules" id="validate_rules_button"
-        value="CHECK THE RULES" translate="_" />
+        value="Check" translate="_" />
     </form>
   </div>
   <div class="separator"></div>
@@ -339,17 +323,17 @@
             <input type="hidden" id="hidd_inp_curr_page" name="current_page" value="0" />
             <input type="hidden" id="hidd_inp_filter" name="log_filter" value="" />
             <input type="hidden" id="audit_type" name="audit_type" value="" />
-            <span class="hidden" id="span_audit_message" name="audit message" translate="_">A Linux audit is used for logging. You can inspect it with ausearch -ts recent -m USER_DEVICE"</span>
+            <span class="hidden" id="span_audit_message" name="audit message" translate="_">A Linux audit is used for logging. You can inspect it with ausearch -ts recent -m USER_DEVICE</span>
           </td>
         </tr>
         <tr id="tr_page_info">
-          <td colspan="2"  class="log_page_info cell_center"><span translate="_">Page</span><span
+          <td colspan="2" class="log_page_info cell_center"><span translate="_">Page</span><span
               id="span_curr_page">0</span><span translate="_">of</span><span id="span_total_pages"></span></td>
         </tr>
       </tbody>
     </table>
   </form>
-  
+
 
 
 </body>
