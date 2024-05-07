@@ -110,6 +110,8 @@ std::string EscapeQuotes(const std::string &str) noexcept;
 
 std::string EscapeAll(const std::string &str) noexcept;
 
+std::string HtmlEscape(const std::string& str) noexcept;
+
 /**
  * @brief Utility function for timing
  */

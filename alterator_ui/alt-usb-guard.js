@@ -648,6 +648,15 @@ function InitLogs(){
   });
 }
 
+function UnEscape(htmlStr) {
+  htmlStr = htmlStr.replace(/&#9;/g , "\t");	 
+  htmlStr = htmlStr.replace(/&#10;/g , "\n");     
+  htmlStr = htmlStr.replace(/&#34;/g , "\"");  
+  htmlStr = htmlStr.replace(/&#39;/g , "\'");   
+  htmlStr = htmlStr.replace(/&#92;/g , "\\");
+  return htmlStr;
+}
+
 
 
 function SetLogData(data){
@@ -664,7 +673,7 @@ function SetLogData(data){
     }
     window.log_current_page=obj_data.current_page;
     window.log_total_pages=obj_data.total_pages;
-    document.getElementById('log_textarea').textContent=obj_data.data.join('\n\n');
+    document.getElementById('log_textarea').textContent=UnEscape(obj_data.data.join('\n\n'));
     document.getElementById('hidd_inp_curr_page').value=obj_data.current_page;
     document.getElementById('span_curr_page').textContent=" "+(window.log_current_page+1)+" ";
     document.getElementById('span_total_pages').textContent=" "+(window.log_total_pages+1);

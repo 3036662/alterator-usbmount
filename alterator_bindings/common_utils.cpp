@@ -7,6 +7,7 @@
 #include <optional>
 #include <stdexcept>
 #include <string>
+#include <unordered_set>
 #include <utility>
 
 namespace common_utils {
@@ -146,6 +147,30 @@ std::string EscapeAll(const std::string &str) noexcept {
       res.push_back('\\');
     }
     res.push_back(*it);
+  }
+  return res;
+}
+
+std::string HtmlEscape(const std::string& str) noexcept{
+  std::string res;
+  std::unordered_map<char,std::string> escape_map{
+    {'\t',"&#9;"},
+    {'\n',"&#10;"},
+    {'\"',"&#34;"},
+    {'\\',"&#92"},
+    {'\'',"&#39;"}
+  };
+  for (auto it=str.cbegin();it<str.cend();++it){
+    if (escape_map.count(*it)==0){
+      res.push_back(*it);
+    }
+    else {
+      try {
+        res+=escape_map.at(*it); 
+      } catch (const std::exception& ex){
+        res+=*it;
+      }
+    }
   }
   return res;
 }

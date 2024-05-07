@@ -135,7 +135,8 @@ bool DispatcherImpl::ReadLog(const LispMessage &msg) noexcept {
     json_result["current_page"] = res.curr_page;
     json_result["data"] = boost::json::array();
     for (auto &str : res.data)
-      json_result["data"].as_array().emplace_back(std::move(str));
+      json_result["data"].as_array().emplace_back(
+          common_utils::HtmlEscape(str));
     std::cout << common_utils::WrapWithQuotes(
         common_utils::EscapeQuotes(boost::json::serialize(json_result)));
   } catch (const std::exception &ex) {
