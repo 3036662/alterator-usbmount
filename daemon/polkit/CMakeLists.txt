@@ -15,7 +15,7 @@ target_link_libraries(altusbmount_askdbus PRIVATE SDBusCpp::sdbus-c++)
 
 
 install(TARGETS altusbmount_askdbus
-    RUNTIME DESTINATION "/usr/bin"
+    RUNTIME DESTINATION "/usr/libexec"
 )
 
 

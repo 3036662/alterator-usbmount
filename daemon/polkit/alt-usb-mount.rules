@@ -4,7 +4,7 @@ polkit.addRule(function(action, subject) {
         //polkit.log("action=" + action);
         //polkit.log("subject=" + subject);  
         //polkit.log(action.lookup("device")); 
-        var response =polkit.spawn(["/usr/bin/altusbmount_askdbus",action.lookup("device"),"unmount"]);
+        var response =polkit.spawn(["/usr/libexec/altusbmount_askdbus",action.lookup("device"),"unmount"]);
         polkit.log("dbus response="+ response);
         if (response==="YES"){
             return polkit.Result.YES;
@@ -18,7 +18,7 @@ polkit.addRule(function(action, subject) {
         && action.lookup("drive.removable.bus")==="usb") {
         polkit.log("action=" + action);
         polkit.log("subject=" + subject);      
-        var response =polkit.spawn(["/usr/bin/altusbmount_askdbus",action.lookup("device"),"mount"]);
+        var response =polkit.spawn(["/usr/libexec/altusbmount_askdbus",action.lookup("device"),"mount"]);
         polkit.log("dbus response="+ response);
         if (response==="NO"){
             return polkit.Result.NO;
