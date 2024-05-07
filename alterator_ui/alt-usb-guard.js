@@ -193,6 +193,27 @@ $(document).ready(function () {
 // show validation result in tables
 function ValidationResponseCallback(data){
   $(".validator_appended").remove();
+  try{
+     let crossed=document.getElementById('list_hash_rules').tBodies[0].querySelectorAll('tr.crossed-out');
+     crossed.forEach(tr=>{
+        tr.classList.remove('crossed-out');
+     });
+     crossed=document.getElementById('list_unsorted_rules').tBodies[0].querySelectorAll('tr.crossed-out');
+     crossed.forEach(tr=>{
+        tr.classList.remove('crossed-out');
+     });
+     crossed=document.getElementById('list_vidpid_rules').tBodies[0].querySelectorAll('tr.crossed-out');
+     crossed.forEach(tr=>{
+        tr.classList.remove('crossed-out');
+     });
+     crossed=document.getElementById('list_interface_rules').tBodies[0].querySelectorAll('tr.crossed-out');
+     crossed.forEach(tr=>{
+        tr.classList.remove('crossed-out');
+     });
+  }
+  catch (e){
+    console.log(e.message);
+  }
   if ( data==="") return;  
   let response=JSON.parse(data);
   if (response["STATUS"] ==="OK" && response["ACTION"]==="apply"){
