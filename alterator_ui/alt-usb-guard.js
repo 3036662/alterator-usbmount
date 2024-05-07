@@ -187,6 +187,8 @@ $(document).ready(function () {
 
 }); // .ready
 
+//buttons[i].disabled = false;
+//buttons[i].classList.remove("ui-state-disabled");
 
 // show validation result in tables
 function ValidationResponseCallback(data){
@@ -493,6 +495,8 @@ function DisableManualModeButtons(){
 
 
 
+
+
 // check all appended rules if checkbox in table header is checked
 function CatchTableHeaderCheckbok(table_id){
   let checkboxTh = $("#"+table_id+" th input[type='checkbox']:first");
@@ -511,23 +515,30 @@ function CatchTableHeaderCheckbok(table_id){
   }
 }
 
+function HideButtonsByPolicy(policy){
+ if (policy==="block"){
+  document.getElementById('btn_prsnt_dev_block').classList.add('hidden');
+  document.getElementById('btn_prsnt_dev_add').classList.remove('hidden');
+ }else{
+  document.getElementById('btn_prsnt_dev_block').classList.remove('hidden');
+  document.getElementById('btn_prsnt_dev_add').classList.add('hidden');
+ }
+}
+
 // disable block button if already blocked
 // prevent blocking already block (and unblocking already unblocked)
 function CatchDeviceSelection(){ 
- // enable block button
- if ($("#btn_prsnt_dev_block").hasClass("disabled_by_block_rule")){
-  $("#btn_prsnt_dev_block").removeClass("disabled_by_block_rule");
-  $("#btn_prsnt_dev_block").removeClass("ui-state-disabled");
-  document.getElementById('btn_prsnt_dev_block').disabled=false; 
-}
-// enable allow button
- if ($("#btn_prsnt_dev_add").hasClass("disabled_by_allow_rule")){
-  $("#btn_prsnt_dev_add").removeClass("disabled_by_allow_rule");
-  $("#btn_prsnt_dev_add").removeClass("ui-state-disabled");
-  document.getElementById('btn_prsnt_dev_add').disabled=false;
-}
-
-// bind click
+ // disable both buttons  
+ let button_block=document.getElementById('btn_prsnt_dev_block');
+ button_block.classList.add('disabled_by_block_rule');
+ button_block.classList.add('ui-state-disabled');
+ button_block.disabled=true; 
+ // enable allow button
+ let button_allow=document.getElementById('btn_prsnt_dev_add');
+ button_allow.classList.add('disabled_by_allow_rule');
+ button_allow.classList.add('ui-state-disabled');
+ button_allow.disabled=true;
+ // bind click
  $('#devices_list_table tr').bind('click',(function() {
   var status = $(this).find('span[name="label_prsnt_usb_status"]').text();
   if (status==="allow"){

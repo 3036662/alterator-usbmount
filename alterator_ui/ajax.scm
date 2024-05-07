@@ -102,17 +102,7 @@
                 (form-update-visibility "warning_file_permissions" #t)
            ) ; endif            
 
-           ; disable block button if default policy is block
-           (if (string=? "block" (get-value 'implicit_policy status))
-                    (begin        
-                        (form-update-activity "btn_prsnt_dev_block"  #f)
-                        (form-update-activity "btn_prsnt_dev_add"  #t) 
-                    )
-                    (begin
-                        (form-update-activity "btn_prsnt_dev_block"  #t)
-                        (form-update-activity "btn_prsnt_dev_add"  #f)
-                    )
-           ) ; endif     
+           (js "HideButtonsByPolicy" (get-value 'implicit_policy status))     
 
 
            ;show allowed users and groups
