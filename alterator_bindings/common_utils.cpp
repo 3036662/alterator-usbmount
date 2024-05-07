@@ -157,7 +157,7 @@ std::string HtmlEscape(const std::string& str) noexcept{
     {'\t',"&#9;"},
     {'\n',"&#10;"},
     {'\"',"&#34;"},
-    {'\\',"&#92"},
+    {'\\',"&#92;"},
     {'\'',"&#39;"}
   };
   for (auto it=str.cbegin();it<str.cend();++it){
