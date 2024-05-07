@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-05-03 11:04+0300\n"
-"PO-Revision-Date: 2024-05-03 11:06+0300\n"
+"POT-Creation-Date: 2024-05-07 13:42+0300\n"
+"PO-Revision-Date: 2024-05-07 13:45+0300\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: ru\n"
@@ -26,7 +26,7 @@ msgstr "Запустить службу UsbMount"
 msgid "Stop the UsbMount daemon"
 msgstr "Остановить службу UsbMount"
 
-#: стандартный ввод:3 ввод:29
+#: стандартный ввод:3 ввод:28
 msgid "SAVE"
 msgstr "Сохранить"
 
@@ -39,90 +39,114 @@ msgstr ""
 "использование."
 
 #: стандартный ввод:5
-msgid "Connnected usb devices:"
-msgstr "Подключенные блочные устройства:"
-
-#: стандартный ввод:6
 msgid "List of devices"
 msgstr "Список утсройств"
 
-#: стандартный ввод:7
+#: стандартный ввод:6
 msgid "Block"
 msgstr "Утсройство"
 
-#: стандартный ввод:8
+#: стандартный ввод:7
 msgid "Filesystem"
 msgstr "Файловая система"
 
-#: стандартный ввод:9 ввод:17
+#: стандартный ввод:8 ввод:16
 msgid "VID"
 msgstr "VID"
 
-#: стандартный ввод:10 ввод:18
+#: стандартный ввод:9 ввод:17
 msgid "PID"
 msgstr "PID"
 
-#: стандартный ввод:11 ввод:19
+#: стандартный ввод:10 ввод:18
 msgid "SN"
 msgstr "Серийный номер"
 
-#: стандартный ввод:12
+#: стандартный ввод:11
 msgid "Status"
 msgstr "Статус"
 
-#: стандартный ввод:13
+#: стандартный ввод:12
 msgid "Mount"
 msgstr "Точка монтирования"
 
-#: стандартный ввод:14
+#: стандартный ввод:13
 msgid "Scan plugged-in USB devices"
 msgstr "Обновить список блочных устройств"
 
-#: стандартный ввод:15
+#: стандартный ввод:14
 msgid "Create a rule"
 msgstr "Назначить владельца"
 
-#: стандартный ввод:16
+#: стандартный ввод:15
 msgid "List of rules"
 msgstr "Список владельцев"
 
-#: стандартный ввод:20
+#: стандартный ввод:19
 msgid "User"
 msgstr "Пользователь"
 
-#: стандартный ввод:21
+#: стандартный ввод:20
 msgid "Group"
 msgstr "Группа"
 
-#: стандартный ввод:22
+#: стандартный ввод:21
 msgid "Some invalid values were provided,please check the red cells"
 msgstr ""
 "Введены некорректные значения, обратите внимание на ячейки, отмеченные "
 "красным"
 
-#: стандартный ввод:23
+#: стандартный ввод:22
 msgid "Delete checked rows"
 msgstr "Удалить выбранные строки"
 
-#: стандартный ввод:24
+#: стандартный ввод:23
 msgid "Reset all"
 msgstr "Сбросить все"
 
-#: стандартный ввод:25
+#: стандартный ввод:24
 msgid "Edit"
 msgstr "Изменить"
 
-#: стандартный ввод:26
+#: стандартный ввод:25
 msgid "Reset row"
 msgstr "Сбросить"
 
-#: стандартный ввод:27
+#: стандартный ввод:26
 msgid "Delete current"
 msgstr "Удалить"
 
-#: стандартный ввод:28
+#: стандартный ввод:27
 msgid "Add"
 msgstr "Добавить"
+
+#: стандартный ввод:29
+msgid "Show log"
+msgstr "Журнал"
+
+#: стандартный ввод:30
+msgid "Hide log"
+msgstr "Свернуть"
+
+#: стандартный ввод:31
+msgid "Filter"
+msgstr "Фильтровать"
+
+#: стандартный ввод:32
+msgid "◁ Previous"
+msgstr "◁ Назад"
+
+#: стандартный ввод:33
+msgid "Next ▷"
+msgstr "Вперед  ▷"
+
+#: стандартный ввод:34
+msgid "Page"
+msgstr "Страница"
+
+#: стандартный ввод:35
+msgid "of"
+msgstr "из"
 
 #: ajax.scm:30
 msgid "Save rules operation FAILED"
@@ -139,6 +163,9 @@ msgstr "Не удалось остановить службу"
 #: стандартный ввод:1
 msgid "USBMount"
 msgstr "USBMount"
+
+#~ msgid "Connnected usb devices:"
+#~ msgstr "Подключенные блочные устройства:"
 
 #~ msgid "Rules:"
 #~ msgstr "Владельцы:"
