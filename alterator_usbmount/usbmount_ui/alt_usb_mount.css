@@ -2,6 +2,10 @@
     display: none;
 }
 
+#interface_wrap{
+    margin-top: 12px;
+}
+
 /* Alterator-like table */
 
 
