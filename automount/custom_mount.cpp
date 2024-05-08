@@ -26,10 +26,10 @@ CustomMount::CustomMount(std::shared_ptr<UsbUdevDevice> &ptr_device,
 bool CustomMount::Mount(const UidGid &uid_gid) noexcept {
   uid_ = uid_gid.user_id;
   gid_ = uid_gid.group_id;
-  logger_->debug(ptr_device_->toString());
+  logger_->info(ptr_device_->toString());
   if (ptr_device_->dev_type() == "disk" &&
       ptr_device_->filesystem() != "ntfs") {
-    logger_->debug("Skipped with device type disk");
+    logger_->info("Skipped with device type disk");
     return true;
   }
   if (!CreateAclMountPoint())

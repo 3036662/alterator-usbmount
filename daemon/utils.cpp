@@ -38,7 +38,7 @@ std::shared_ptr<spdlog::logger> InitLogFile(const std::string &path) noexcept {
   try {
     fs::path file_path(path);
     fs::create_directories(file_path.parent_path());
-    spdlog::set_level(spdlog::level::debug);
+    // spdlog::set_level(spdlog::level::debug);
     // return spdlog::basic_logger_mt("usb-automount", path);
     return spdlog::basic_logger_mt<spdlog::async_factory>("usb-automount",
                                                           path);
@@ -56,11 +56,11 @@ void MountDevice(std::shared_ptr<UsbUdevDevice> ptr_device,
       return;
     CustomMount mounter(ptr_device, logger);
     if (ptr_device->action() == Action::kAdd) {
-      logger->debug("Mount {} ", ptr_device->block_name());
+      logger->info("Mount {} ", ptr_device->block_name());
       if (!mounter.Mount())
         logger->error("Mount failed");
     } else if (ptr_device->action() == Action::kRemove) {
-      logger->debug("Unmounting {}", ptr_device->block_name());
+      logger->info("Unmounting {}", ptr_device->block_name());
       mounter.UnMount();
     }
     logger->flush();
