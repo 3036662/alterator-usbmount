@@ -323,5 +323,5 @@ void CustomMount::SetMountOptions(MountOptions &opts) const noexcept {
     logger_->info("Filesystem {}, mounting with default parameters",
                   ptr_device_->filesystem());
   }
-  logger_->debug("Mount data = {}", opts.mount_data);
+  logger_->info("Mount data = {}", opts.mount_data);
 }

@@ -42,7 +42,7 @@ public:
    */
   bool UnMount() noexcept;
 
-  static constexpr const char *mount_root = "/run/alt-usb-mount/";
+  static constexpr const char *mount_root = "/run/media/";
 
 private:
   /**
