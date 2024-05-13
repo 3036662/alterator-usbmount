@@ -178,9 +178,9 @@ bool CustomMount::CreateMountEndpoint() noexcept {
   try {
     if (!ptr_device_->fs_label().empty() &&
         !fs::exists(endpoint + ptr_device_->fs_label())) {
-      endpoint += ptr_device_->fs_label();
+      endpoint += utils::SanitizeMount(ptr_device_->fs_label());
     } else if (!ptr_device_->fs_uid().empty()) {
-      endpoint += ptr_device_->fs_uid();
+      endpoint += utils::SanitizeMount(ptr_device_->fs_uid());
     } else { // just in case
       endpoint += "usb";
     }

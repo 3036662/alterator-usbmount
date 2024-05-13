@@ -321,6 +321,17 @@ bool ValidVid(const std::string &str) {
   return true;
 }
 
+std::string SanitizeMount(const std::string &str) noexcept {
+  std::string res;
+  for (const auto symbol : str) {
+    if (symbol == '\\' || symbol == '/' || symbol == '\'' || symbol == '\"')
+      res.push_back('_');
+    else
+      res.push_back(symbol);
+  }
+  return res;
+}
+
 namespace udev {
 void UdevEnumerateFree(udev_enumerate *udev_en) noexcept {
   if (udev_en != NULL)
