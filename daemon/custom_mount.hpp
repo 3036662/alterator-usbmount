@@ -42,7 +42,7 @@ public:
    */
   bool UnMount() noexcept;
 
-  static constexpr const char *mount_root = "/run/media/";
+  static constexpr const char *mount_root = "/media/";
 
 private:
   /**

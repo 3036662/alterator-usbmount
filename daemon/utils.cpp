@@ -112,7 +112,7 @@ bool ReviewMountPoints(const std::shared_ptr<spdlog::logger> &logger) noexcept {
   auto mtab_mountpoints = GetSystemMountPoints(logger);
   dbase->mount_points.RemoveExpired(mtab_mountpoints);
   // remove empty folders
-  const std::string mount_folder = "/run/media/";
+  const std::string mount_folder = "/media/";
   namespace fs = std::filesystem;
   try {
     logger->debug("[ReviewMountPoints] Inspect folders");
