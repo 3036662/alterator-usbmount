@@ -68,9 +68,34 @@ function InitUi(health) {
         }
     });
 
-
+    ChooseBtnStyle();
     InitLogs();
    
+}
+
+// switch button style for mate 
+function ChooseBtnStyle(){
+    try {
+        const sourceElement = document.getElementById('main').querySelector('.btn'); 
+        const sourceStyles = window.getComputedStyle(sourceElement);
+        let color =sourceStyles.getPropertyValue('background-color');        
+        if (color==="rgb(255, 150, 49)"){
+            let buttons=document.querySelectorAll('.like_btn');        
+            buttons.forEach(btn => {                
+                btn.classList.remove('like_btn');
+                btn.classList.add('like_btn_y');                    
+            });
+            buttons=document.querySelectorAll('.like_btn_disabled');
+            buttons.forEach(btn => {
+                let buttons=document.querySelectorAll('.like_btn');        
+                btn.classList.remove('like_btn_disabled');
+                btn.classList.add('like_btn_disabled_y');                    
+            });
+        }
+    }
+    catch (e){
+        console.log(e);
+    };
 }
 
 function SetHealthStatus(health){
@@ -599,8 +624,14 @@ function DisableButtonDeleteIfNoRowsCkecked() {
 function DisableButton(button) {
     if (!button) return;
     button.disabled = true;
-    button.classList.add('like_btn_disabled');
-    button.classList.remove('like_btn');
+    if (button.classList.contains('like_btn')){
+        button.classList.add('like_btn_disabled');
+        button.classList.remove('like_btn');
+    }
+    if (button.classList.contains('like_btn_y')){
+        button.classList.add('like_btn_disabled_y');
+        button.classList.remove('like_btn_y');
+    }
 }
 
 /**
@@ -610,8 +641,14 @@ function DisableButton(button) {
 function EnableButton(button) {
     if (!button) return;
     button.disabled = false;
-    button.classList.remove('like_btn_disabled');
-    button.classList.add('like_btn');
+    if (button.classList.contains('like_btn_disabled')){
+        button.classList.remove('like_btn_disabled');
+        button.classList.add('like_btn');
+    }
+    if (button.classList.contains('like_btn_disabled_y')){
+        button.classList.remove('like_btn_disabled_y');
+        button.classList.add('like_btn_y');
+    }
 }
 
 
