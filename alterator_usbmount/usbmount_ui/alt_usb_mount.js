@@ -68,6 +68,11 @@ function InitUi(health) {
         }
     });
 
+    //disable create_rule_btn after list update
+    document.getElementById('btn_prsnt_scan').addEventListener('click',function(e){
+        DisableButton(document.getElementById('btn_create_rule'));
+    });
+
     ChooseBtnStyle();
     InitLogs();
    
