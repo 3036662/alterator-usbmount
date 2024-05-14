@@ -55,10 +55,10 @@ install(TARGETS altusbd
     RUNTIME DESTINATION "/usr/sbin"
 )
 
-install(FILES 
-    ${CMAKE_SOURCE_DIR}/daemon/service_files/alterator-usb-automount.conf
-    DESTINATION "/lib/tmpfiles.d/"
-)
+#install(FILES 
+#    ${CMAKE_SOURCE_DIR}/daemon/service_files/alterator-usb-automount.conf
+#    DESTINATION "/lib/tmpfiles.d/"
+#)
 
 install(FILES 
     ${CMAKE_SOURCE_DIR}/daemon/service_files/altusbd.service
