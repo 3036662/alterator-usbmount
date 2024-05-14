@@ -1,4 +1,5 @@
 #include "utils.hpp"
+#include "config.hpp"
 #include "custom_mount.hpp"
 #include "dal/dto.hpp"
 #include "dal/local_storage.hpp"
@@ -112,21 +113,25 @@ bool ReviewMountPoints(const std::shared_ptr<spdlog::logger> &logger) noexcept {
   auto mtab_mountpoints = GetSystemMountPoints(logger);
   dbase->mount_points.RemoveExpired(mtab_mountpoints);
   // remove empty folders
-  const std::string mount_folder = "/media/";
+  const std::string mount_folder = BASE_MOUNT_POINT;
   namespace fs = std::filesystem;
   try {
-    logger->debug("[ReviewMountPoints] Inspect folders");
-    for (const auto &entry : fs::directory_iterator(mount_folder)) {
-      if (fs::is_directory(entry.path()) && !fs::is_empty(entry.path())) {
-        for (const auto &sub_entry : fs::directory_iterator(entry.path())) {
-          if (fs::is_directory(sub_entry.path()) &&
-              fs::is_empty(sub_entry.path()) &&
-              mtab_mountpoints.count(sub_entry.path().string()) == 0) {
-            logger->info("Removing empty {}", sub_entry.path().string());
-            fs::remove(sub_entry.path());
+    if (fs::exists(mount_folder)) {
+      logger->debug("[ReviewMountPoints] Inspect folders");
+      for (const auto &entry : fs::directory_iterator(mount_folder)) {
+        if (fs::is_directory(entry.path()) && !fs::is_empty(entry.path())) {
+          for (const auto &sub_entry : fs::directory_iterator(entry.path())) {
+            if (fs::is_directory(sub_entry.path()) &&
+                fs::is_empty(sub_entry.path()) &&
+                mtab_mountpoints.count(sub_entry.path().string()) == 0) {
+              logger->info("Removing empty {}", sub_entry.path().string());
+              fs::remove(sub_entry.path());
+            }
           }
         }
       }
+    } else {
+      fs::create_directories(mount_folder);
     }
   } catch (const std::exception &ex) {
     logger->warn("Error while inpecting folders in " + mount_folder);
