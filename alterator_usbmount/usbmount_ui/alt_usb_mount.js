@@ -843,7 +843,13 @@ function DblClickOnUserOrGroup(event, storage_name) {
         td_el.classList.toggle('padding_td');
         td_el.appendChild(dropdown);
         td_el.style.width = target_width;
-        dropdown.focus();
+        dropdown.focus();        
+        dropdown.addEventListener('change',function(e){
+                document.getElementById('reset_rule_btn').focus();
+        });
+        dropdown.addEventListener('input',function(e){
+                document.getElementById('reset_rule_btn').focus();
+        });        
     }
 }
 
@@ -938,7 +944,7 @@ function DblClickOnEditable(event) {
         td_el.classList.toggle('padding_td');
         td_el.appendChild(input);
         td_el.style.width = target_width;
-        input.focus();
+        input.focus();        
     }
 }
 
@@ -1121,7 +1127,16 @@ function MakeTheRowEditable(row) {
                 td.classList.toggle('padding_td');
                 span_el.classList.toggle('hidden');
                 td.appendChild(select);
-                td.style.width = target_width;
+                td.style.width = target_width;                
+                // finish editing when last selested changed
+                if (td.classList.contains('rule_group')){
+                    select.addEventListener('change',function(e){
+                        document.getElementById('reset_rule_btn').focus();
+                    });
+                    select.addEventListener('input',function(e){
+                        document.getElementById('reset_rule_btn').focus();
+                    });
+                }
             }
         }
     });
