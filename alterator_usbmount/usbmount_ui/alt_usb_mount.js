@@ -981,6 +981,7 @@ function SaveInputValueToSpan(input, do_not_save) {
     if (parent_td.parentElement.classList.contains('row_appended_by_user') && input_val.length == 0) {
         parent_td.classList.add('td_value_changed');
         parent_td.classList.add('td_value_bad');
+        sibling_span.textContent="";
     }
     if (!do_not_save && input_val != "" && input_val != sibling_span.textContent) {
         sibling_span.textContent = input_val;
