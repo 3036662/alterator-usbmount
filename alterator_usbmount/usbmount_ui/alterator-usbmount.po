@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-05-07 13:42+0300\n"
-"PO-Revision-Date: 2024-05-17 12:06+0300\n"
+"POT-Creation-Date: 2024-05-20 11:50+0300\n"
+"PO-Revision-Date: 2024-05-20 11:51+0300\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: ru\n"
@@ -26,7 +26,7 @@ msgstr "Запустить службу UsbMount"
 msgid "Stop the UsbMount daemon"
 msgstr "Остановить службу UsbMount"
 
-#: стандартный ввод:3 ввод:28
+#: стандартный ввод:3 ввод:25
 msgid "SAVE"
 msgstr "Сохранить"
 
@@ -91,60 +91,52 @@ msgid "Group"
 msgstr "Группа"
 
 #: стандартный ввод:21
+msgid "Edit"
+msgstr "Изменить"
+
+#: стандартный ввод:22
+msgid "Reset row"
+msgstr "Сбросить"
+
+#: стандартный ввод:23
+msgid "Delete rule"
+msgstr "Удалить"
+
+#: стандартный ввод:24
+msgid "Add"
+msgstr "Добавить"
+
+#: стандартный ввод:26
 msgid "Some invalid values were provided,please check the red cells"
 msgstr ""
 "Введены некорректные значения, обратите внимание на ячейки, отмеченные "
 "красным"
 
-#: стандартный ввод:22
-msgid "Delete checked rows"
-msgstr "Удалить выбранные строки"
-
-#: стандартный ввод:23
-msgid "Reset all"
-msgstr "Сбросить все"
-
-#: стандартный ввод:24
-msgid "Edit"
-msgstr "Изменить"
-
-#: стандартный ввод:25
-msgid "Reset row"
-msgstr "Сбросить"
-
-#: стандартный ввод:26
-msgid "Delete current"
-msgstr "Удалить"
-
 #: стандартный ввод:27
-msgid "Add"
-msgstr "Добавить"
-
-#: стандартный ввод:29
 msgid "Show log"
 msgstr "Журнал"
 
-#: стандартный ввод:30
+#: стандартный ввод:28
 msgid "Hide log"
 msgstr "Свернуть"
 
-#: стандартный ввод:31
+#: стандартный ввод:29
 msgid "Filter"
 msgstr "Фильтровать"
 
-#: стандартный ввод:32
+#: стандартный ввод:30
 msgid "◁ Previous"
 msgstr "◁ Назад"
 
-#: стандартный ввод:33
+#: стандартный ввод:31
 msgid "Next ▷"
 msgstr "Вперед  ▷"
 
-#: стандартный ввод:34
+#: стандартный ввод:32
 msgid "Page"
 msgstr "Страница"
 
-#: стандартный ввод:35
+#: стандартный ввод:33
 msgid "of"
 msgstr "из"
 
@@ -163,6 +155,12 @@ msgstr "Не удалось остановить службу"
 #: стандартный ввод:1
 msgid "USBMount"
 msgstr "USBMount"
+
+#~ msgid "Delete checked rows"
+#~ msgstr "Удалить выбранные строки"
+
+#~ msgid "Reset all"
+#~ msgstr "Сбросить все"
 
 #~ msgid "Connnected usb devices:"
 #~ msgstr "Подключенные блочные устройства:"
