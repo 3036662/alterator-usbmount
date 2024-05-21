@@ -1049,17 +1049,24 @@ function SaveInputValueToSpan(input, do_not_save) {
 }
 
 function ShowToolTipIfSomeInvalid() {
+    CheckNoDublicateRows();
     let table = document.getElementById('rules_list_table');
     let not_valid_cells = table.tBodies[0].querySelectorAll('td.td_value_bad');
-    let warinig = document.getElementById('validation_warning');
+    let dublcate_rows = table.tBodies[0].querySelectorAll('tr.bad_duplicate');
+    let warning = document.getElementById('validation_warning');
+    let all_ok = true;
     if (not_valid_cells.length > 0) {
-        warinig.style.display = 'block';
+        warning.style.display = 'block';
         DisableButton(document.getElementById('btn_save'));
-    }
-    else {
-        warinig.style.display = 'none';
-        ShowSaveButtonIfSomethigChaged();
-    }
+        all_ok = false;
+    } else { warning.style.display = 'none';}
+    let warning_duplicates = document.getElementById('validation_warning_duplicate');
+    if (dublcate_rows.length > 0) {
+        warning_duplicates.style.display = 'block';
+        DisableButton(document.getElementById('btn_save'));
+        all_ok = false;
+    } else { warning_duplicates.style.display = 'none'; }
+    if (all_ok) ShowSaveButtonIfSomethigChaged();
 }
 
 function ShowSaveButtonIfSomethigChaged() {
@@ -1261,10 +1268,53 @@ function ValidateGroup(group) {
     return some;
 }
 
+
+
+
+function CheckNoDublicateRows() {
+    try {
+        let tbody = document.getElementById('rules_list_table').tBodies[0];
+        let rows = tbody.querySelectorAll('tr');
+        let seen = new Map();
+        let duplicates = [];
+        rows.forEach(function callback(row, index, array) {
+            row.classList.remove('bad_duplicate');
+            row.classList.remove('td_value_bad');
+            vid = row.querySelector('span.rule_vid_val').textContent.trim();
+            pid = row.querySelector('span.rule_pid_val').textContent.trim();
+            serial = row.querySelector('span.rule_serial_val').textContent.trim();
+            let key = vid + pid + serial;
+            if (!row.classList.contains('tr_deleted_rule')) {
+                if (seen.has(key)) {
+                    duplicates.push(index);
+                    duplicates.push(seen.get(key));
+                } else {
+                    seen.set(key, index);
+                }
+            }
+        });
+        if (duplicates.length === 0) return true;
+        duplicates.forEach(dup_row => {
+            rows[dup_row].classList.add("bad_duplicate");
+            rows[dup_row].classList.add('td_value_bad');
+            let tds = rows[dup_row].querySelectorAll('td.td_value_good');
+            tds.forEach(td => { td.classList.remove('td_value_good') });
+        });
+        return false;
+    }
+    catch (e) {
+        console.log(e.message);
+    }
+}
+
 // ------------------- Save -------------
 
 // Save -send to the backend
 function SaveRules() {
+    if (!CheckNoDublicateRows()) {
+        ShowToolTipIfSomeInvalid();
+        return;
+    }
     let tbody = document.getElementById('rules_list_table').tBodies[0];
     let rows = tbody.querySelectorAll('tr');
     let res = {

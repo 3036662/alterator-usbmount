@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-05-21 08:27+0300\n"
-"PO-Revision-Date: 2024-05-21 08:29+0300\n"
+"POT-Creation-Date: 2024-05-21 14:04+0300\n"
+"PO-Revision-Date: 2024-05-21 14:04+0300\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: ru\n"
@@ -113,30 +113,36 @@ msgstr ""
 "красным"
 
 #: стандартный ввод:27
+msgid "Some duplicate rules were provided,please check the red cells"
+msgstr ""
+"Обнаружены дублирующие правила, обратите внимание на строки, отмеченные "
+"красным"
+
+#: стандартный ввод:28
 msgid "Show log"
 msgstr "Журнал"
 
-#: стандартный ввод:28
+#: стандартный ввод:29
 msgid "Hide log"
 msgstr "Свернуть"
 
-#: стандартный ввод:29
+#: стандартный ввод:30
 msgid "Filter"
 msgstr "Фильтровать"
 
-#: стандартный ввод:30
+#: стандартный ввод:31
 msgid "◁ Previous"
 msgstr "◁ Назад"
 
-#: стандартный ввод:31
+#: стандартный ввод:32
 msgid "Next ▷"
 msgstr "Вперед  ▷"
 
-#: стандартный ввод:32
+#: стандартный ввод:33
 msgid "Page"
 msgstr "Страница"
 
-#: стандартный ввод:33
+#: стандартный ввод:34
 msgid "of"
 msgstr "из"
 
