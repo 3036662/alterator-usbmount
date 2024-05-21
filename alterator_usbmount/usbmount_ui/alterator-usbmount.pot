@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-05-20 11:50+0300\n"
+"POT-Creation-Date: 2024-05-21 08:27+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -18,11 +18,11 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 
 #: стандартный ввод:1
-msgid "Run the UsbMount daemon"
+msgid "The USBMount service is active"
 msgstr ""
 
 #: стандартный ввод:2
-msgid "Stop the UsbMount daemon"
+msgid "The USBMount service is inactive"
 msgstr ""
 
 #: стандартный ввод:3 ввод:25

@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-05-20 11:50+0300\n"
-"PO-Revision-Date: 2024-05-20 11:51+0300\n"
+"POT-Creation-Date: 2024-05-21 08:27+0300\n"
+"PO-Revision-Date: 2024-05-21 08:29+0300\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: ru\n"
@@ -19,12 +19,12 @@ msgstr ""
 "X-Generator: Poedit 3.4.4\n"
 
 #: стандартный ввод:1
-msgid "Run the UsbMount daemon"
-msgstr "Запустить службу UsbMount"
+msgid "The USBMount service is active"
+msgstr "Служба USBMount активна"
 
 #: стандартный ввод:2
-msgid "Stop the UsbMount daemon"
-msgstr "Остановить службу UsbMount"
+msgid "The USBMount service is inactive"
+msgstr "Служба USBMount остановлена"
 
 #: стандартный ввод:3 ввод:25
 msgid "SAVE"
@@ -155,6 +155,12 @@ msgstr "Не удалось остановить службу"
 #: стандартный ввод:1
 msgid "USBMount"
 msgstr "USBMount"
+
+#~ msgid "Run the UsbMount daemon"
+#~ msgstr "Запустить службу UsbMount"
+
+#~ msgid "Stop the UsbMount daemon"
+#~ msgstr "Остановить службу UsbMount"
 
 #~ msgid "Delete checked rows"
 #~ msgstr "Удалить выбранные строки"
