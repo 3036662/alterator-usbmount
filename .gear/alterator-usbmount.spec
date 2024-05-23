@@ -6,7 +6,7 @@ Release: alt1
 Summary: Alterator module to control mountpoints of USB block devices
 Group: System/Configuration/Other
 License: %gpl2plus
-Url: https://gitlab.basealt.space/proskurinov/alterator_usbguard
+Url: https://gitlab.basealt.space/proskurinov/alterator_usbmount
 
 Source: %name-%version.tar
 
