@@ -379,7 +379,11 @@ function AppendTheRule(item, index) {
     InsertCell(new_row, item.perm.device.vid, 'rule_vid');
     InsertCell(new_row, item.perm.device.pid, 'rule_pid');
     InsertCell(new_row, item.perm.device.serial, 'rule_serial');
-    InsertCell(new_row, item.perm.users[0].name, "rule_user");
+    if (item.perm.users[0].name !== "root"){
+        InsertCell(new_row, item.perm.users[0].name, "rule_user");
+    } else {
+        InsertCell(new_row, "--", "rule_user");
+    }
     InsertCell(new_row, item.perm.groups[0].name, "rule_group");
     BindEditableRowKeys(new_row);
     return new_row;
@@ -931,7 +935,7 @@ function SaveSelectValueToSpan(select, do_not_save) {
     let sibling_span = select.parentElement.querySelector('span.span_val');
     let parent_td = select.parentElement;
     if (!sibling_span || !parent_td || parent_td.nodeName != 'TD') return;
-    let empty_val = !select.value || select.value == '-';
+    let empty_val = !select.value || select.value==="-";
     let sibling_span_empty = sibling_span.textContent.length == 0;
     if (parent_td.parentElement.classList.contains('row_appended_by_user') && empty_val && sibling_span_empty) {
         parent_td.classList.add('td_value_changed');
@@ -1256,7 +1260,7 @@ function ValidateVidPid(str) {
 
 function ValidateUser(user) {
     let us = user.trim();
-    let arr = JSON.parse(localStorage.getItem('groups_list'));
+    let arr = JSON.parse(localStorage.getItem('users_list'));
     let some = arr.some(el => el.name == us);
     return some;
 }

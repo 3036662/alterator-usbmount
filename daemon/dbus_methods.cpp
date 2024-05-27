@@ -173,6 +173,7 @@ void DbusMethods::GetSystemUsersAndGroups(const sdbus::MethodCall &call) {
   const auto id_limits = utils::GetSystemUidMinMax(logger_);
   if (id_limits.has_value()) {
     auto users = utils::GetHumanUsers(id_limits.value(), logger_);
+    users.emplace_back(0, "--");
     if (!std::empty(users)) {
       res["users"] = json::array();
       for (const auto &usr : users)
@@ -242,6 +243,7 @@ void DbusMethods::CreateRules(const boost::json::array &arr_created) {
   std::vector<dal::Group> system_groups;
   if (id_limits) {
     system_users = utils::GetHumanUsers(id_limits.value(), logger_);
+    system_users.emplace_back(0, "root");
     system_groups = utils::GetHumanGroups(id_limits.value(), logger_);
   }
 
@@ -251,6 +253,8 @@ void DbusMethods::CreateRules(const boost::json::array &arr_created) {
     std::string pid = obj.at("pid").as_string().c_str();
     std::string serial = obj.at("serial").as_string().c_str();
     std::string user = obj.at("user").as_string().c_str();
+    if (user == "--")
+      user = "root";
     std::string group = obj.at("group").as_string().c_str();
     auto it_system_user = std::find_if(
         system_users.cbegin(), system_users.cend(),
@@ -284,6 +288,7 @@ void DbusMethods::UpdateRules(const boost::json::array &arr_updated) {
   std::vector<dal::Group> system_groups;
   if (id_limits) {
     system_users = utils::GetHumanUsers(id_limits.value(), logger_);
+    system_users.emplace_back(0, "root");
     system_groups = utils::GetHumanGroups(id_limits.value(), logger_);
   }
   for (const auto &element : arr_updated) {
@@ -294,6 +299,8 @@ void DbusMethods::UpdateRules(const boost::json::array &arr_updated) {
     std::string pid = obj.at("pid").as_string().c_str();
     std::string serial = obj.at("serial").as_string().c_str();
     std::string user = obj.at("user").as_string().c_str();
+    if (user == "--")
+      user = "root";
     std::string group = obj.at("group").as_string().c_str();
     // get original  perm copy
     json::object original =
