@@ -210,6 +210,7 @@ bool CustomMount::CreateMountEndpoint() noexcept {
     while (fs::exists(endpoint) && !fs::is_empty(endpoint)) {
       if (index == 0) {
         endpoint += "_0";
+        ++index;
         continue;
       }
       ++index;
