@@ -1,0 +1,5 @@
+Summary: Alt Linux Alterator module to control mountpoints of USB block devices
+
+Package home: https://gitlab.basealt.space/proskurinov/alterator_usbmount
+
+License:  	LGPL-2.0-or-later (see the COPYING file)
