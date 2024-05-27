@@ -1126,7 +1126,13 @@ function ResetRow(row) {
         let serial_span = row.querySelector('td.rule_serial').querySelector('span.span_val');
         if (serial_span) serial_span.textContent = rule_obj.perm.device.serial;
         let user_span = row.querySelector('td.rule_user').querySelector('span.span_val');
-        if (user_span) user_span.textContent = rule_obj.perm.users[0].name;
+        if (user_span){
+            if (rule_obj.perm.users[0].name!=="root"){
+             user_span.textContent = rule_obj.perm.users[0].name;
+            } else {
+                user_span.textContent = "--";
+            }
+        }    
         let group_span = row.querySelector('td.rule_group').querySelector('span.span_val');
         if (group_span) group_span.textContent = rule_obj.perm.groups[0].name;
         let td_elements = row.querySelectorAll('td');
