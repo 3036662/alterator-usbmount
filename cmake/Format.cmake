@@ -8,9 +8,11 @@ function(Format target directory)
     add_custom_command(TARGET ${target} PRE_BUILD COMMAND
         ${CLANG-FORMAT_PATH} -i --style=file ${SOURCE_FILES}
     )
-endfunction()    
+endfunction()   
+ 
+    
 
-function(FormatDir directory)
+function(FormatDir target directory)
     find_program(CLANG-FORMAT_PATH clang-format REQUIRED)  
     set(EXPRESSION h hpp hh c cc cxx cpp)  
     list(TRANSFORM EXPRESSION PREPEND "${directory}/*.")  
@@ -20,5 +22,5 @@ function(FormatDir directory)
     add_custom_command(OUTPUT formatted COMMAND
         ${CLANG-FORMAT_PATH} -i --style=file ${SOURCE_FILES}
     )
-    add_custom_target(run_clang_format DEPENDS formatted)
+    add_custom_target(${target} DEPENDS formatted)
 endfunction()  

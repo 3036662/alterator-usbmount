@@ -10,12 +10,8 @@ target_include_directories(log_reader PRIVATE ${CMAKE_SOURCE_DIR}/alterator_bind
 
 if(CMAKE_BUILD_TYPE STREQUAL "Debug")
 include(Format)
-FormatDir(.)
-add_dependencies(log_reader run_clang_format )
-
-include(CppCheck)
-AddCppCheck(log_reader_cppcheck)
-add_dependencies(log_reader log_reader_cppcheck )
+FormatDir(log_reader_pre .)
+add_dependencies(log_reader log_reader_pre)
 
 include(ClangTidy)
 AddClangTidy(log_reader)
