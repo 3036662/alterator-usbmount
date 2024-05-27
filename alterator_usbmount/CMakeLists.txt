@@ -22,6 +22,10 @@ install(FILES
     DESTINATION "/usr/share/alterator/design/scripts"
 )
 
+install(FILES
+    ${CMAKE_CURRENT_SOURCE_DIR}/usbmount_ui/usbmount.html
+    DESTINATION "/usr/share/alterator/help/ru_RU/"
+)
 
 set(BUILD_MO_COMMAND "msgfmt --output-file=${CMAKE_BINARY_DIR}/alterator-usbmount.mo ${CMAKE_SOURCE_DIR}/alterator_usbmount/usbmount_ui/alterator-usbmount.po)")
 message("Command ${BUILD_MO_COMMAND}")
