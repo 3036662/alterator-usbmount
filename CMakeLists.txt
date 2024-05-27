@@ -30,7 +30,7 @@ add_subdirectory(daemon)
 add_subdirectory(alterator_usbmount)
 
 # only for debug
-if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+if(DEFINED BUILD_EXPERIMENTAL)
     add_subdirectory(experimental)
 endif()
 

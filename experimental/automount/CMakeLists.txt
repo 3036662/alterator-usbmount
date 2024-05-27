@@ -34,11 +34,11 @@ install(TARGETS alterator_usb_automount
 )
 
 install(FILES 
-    ${CMAKE_SOURCE_DIR}/automount/service_files/alterator-usb-mount@.service
+    ${CMAKE_SOURCE_DIR}/experimental/automount/service_files/alterator-usb-mount@.service
     DESTINATION "/lib/systemd/system/"
 )
 install(FILES 
-    ${CMAKE_SOURCE_DIR}/automount/service_files/alterator-usb-automount.conf
+    ${CMAKE_SOURCE_DIR}/experimental/automount/service_files/alterator-usb-automount.conf
     DESTINATION "/lib/tmpfiles.d/"
 )
 
