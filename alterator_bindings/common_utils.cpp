@@ -1,8 +1,8 @@
-/* File: common_utils.cpp  
+/* File: common_utils.cpp
 
   Copyright (C)   2024
   Author: Oleg Proskurin, <proskurinov@basealt.ru>
-  
+
   This program is free software; you can redistribute it and/or
   modify it under the terms of the GNU Lesser General Public
   License as published by the Free Software Foundation; either
@@ -14,7 +14,7 @@
   Lesser General Public License for more details.
 
   You should have received a copy of the GNU Lesser General Public
-  License along with this program; if not, see <https://www.gnu.org/licenses/>. 
+  License along with this program; if not, see <https://www.gnu.org/licenses/>.
 
 */
 
@@ -171,24 +171,21 @@ std::string EscapeAll(const std::string &str) noexcept {
   return res;
 }
 
-std::string HtmlEscape(const std::string& str) noexcept{
+std::string HtmlEscape(const std::string &str) noexcept {
   std::string res;
-  std::unordered_map<char,std::string> escape_map{
-    {'\t',"&#9;"},
-    {'\n',"&#10;"},
-    {'\"',"&#34;"},
-    {'\\',"&#92;"},
-    {'\'',"&#39;"}
-  };
-  for (auto it=str.cbegin();it<str.cend();++it){
-    if (escape_map.count(*it)==0){
+  std::unordered_map<char, std::string> escape_map{{'\t', "&#9;"},
+                                                   {'\n', "&#10;"},
+                                                   {'\"', "&#34;"},
+                                                   {'\\', "&#92;"},
+                                                   {'\'', "&#39;"}};
+  for (auto it = str.cbegin(); it < str.cend(); ++it) {
+    if (escape_map.count(*it) == 0) {
       res.push_back(*it);
-    }
-    else {
+    } else {
       try {
-        res+=escape_map.at(*it); 
-      } catch (const std::exception& ex){
-        res+=*it;
+        res += escape_map.at(*it);
+      } catch (const std::exception &ex) {
+        res += *it;
       }
     }
   }

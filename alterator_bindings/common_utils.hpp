@@ -1,8 +1,8 @@
-/* File: common_utils.hpp  
+/* File: common_utils.hpp
 
   Copyright (C)   2024
   Author: Oleg Proskurin, <proskurinov@basealt.ru>
-  
+
   This program is free software; you can redistribute it and/or
   modify it under the terms of the GNU Lesser General Public
   License as published by the Free Software Foundation; either
@@ -14,7 +14,7 @@
   Lesser General Public License for more details.
 
   You should have received a copy of the GNU Lesser General Public
-  License along with this program; if not, see <https://www.gnu.org/licenses/>. 
+  License along with this program; if not, see <https://www.gnu.org/licenses/>.
 
 */
 
@@ -130,7 +130,7 @@ std::string EscapeQuotes(const std::string &str) noexcept;
 
 std::string EscapeAll(const std::string &str) noexcept;
 
-std::string HtmlEscape(const std::string& str) noexcept;
+std::string HtmlEscape(const std::string &str) noexcept;
 
 /**
  * @brief Utility function for timing

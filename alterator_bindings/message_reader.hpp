@@ -1,8 +1,8 @@
-/* File: message_reader.hpp  
+/* File: message_reader.hpp
 
   Copyright (C)   2024
   Author: Oleg Proskurin, <proskurinov@basealt.ru>
-  
+
   This program is free software; you can redistribute it and/or
   modify it under the terms of the GNU Lesser General Public
   License as published by the Free Software Foundation; either
@@ -14,7 +14,7 @@
   Lesser General Public License for more details.
 
   You should have received a copy of the GNU Lesser General Public
-  License along with this program; if not, see <https://www.gnu.org/licenses/>. 
+  License along with this program; if not, see <https://www.gnu.org/licenses/>.
 
 */
 
@@ -33,7 +33,6 @@
  */
 class MessageReader {
 public:
-
   /**
    * @brief Construct a new Message Reader object
    * @param Function bool(*)(const LispMessage&) as dispatcher implementation

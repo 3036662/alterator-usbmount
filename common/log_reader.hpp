@@ -1,8 +1,8 @@
-/* File: log_reader.hpp  
+/* File: log_reader.hpp
 
   Copyright (C)   2024
   Author: Oleg Proskurin, <proskurinov@basealt.ru>
-  
+
   This program is free software; you can redistribute it and/or
   modify it under the terms of the GNU Lesser General Public
   License as published by the Free Software Foundation; either
@@ -14,7 +14,7 @@
   Lesser General Public License for more details.
 
   You should have received a copy of the GNU Lesser General Public
-  License along with this program; if not, see <https://www.gnu.org/licenses/>. 
+  License along with this program; if not, see <https://www.gnu.org/licenses/>.
 
 */
 
@@ -27,10 +27,10 @@ namespace common_utils {
 
 using vecstring = std::vector<std::string>;
 
-struct PageData{
-    uint curr_page=0;
-    uint pages_number=0;
-    vecstring data;
+struct PageData {
+  uint curr_page = 0;
+  uint pages_number = 0;
+  vecstring data;
 };
 
 class LogReader {
@@ -47,7 +47,8 @@ public:
   vecstring GetAll() const noexcept;
   vecstring GetByFilter(const vecstring &filters) const noexcept;
   PageData GetByPage(const vecstring &filters, uint page_number,
-                      uint pages_size) const noexcept; 
+                     uint pages_size) const noexcept;
+
 protected:
   /**
    * @brief Get the From File object
@@ -57,11 +58,10 @@ protected:
    * @throws std::logic_error if file doesn't exist or std::runtime_error if
    * can't open
    */
-  vecstring GetFromFile(const vecstring &filters) const;                   
+  vecstring GetFromFile(const vecstring &filters) const;
 
 private:
-
   std::string log_file_path_;
 };
 
-} // namespace usbmount
+} // namespace common_utils
