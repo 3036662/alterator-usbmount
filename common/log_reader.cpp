@@ -1,8 +1,8 @@
-/* File: log_reader.cpp  
+/* File: log_reader.cpp
 
   Copyright (C)   2024
   Author: Oleg Proskurin, <proskurinov@basealt.ru>
-  
+
   This program is free software; you can redistribute it and/or
   modify it under the terms of the GNU Lesser General Public
   License as published by the Free Software Foundation; either
@@ -14,7 +14,7 @@
   Lesser General Public License for more details.
 
   You should have received a copy of the GNU Lesser General Public
-  License along with this program; if not, see <https://www.gnu.org/licenses/>. 
+  License along with this program; if not, see <https://www.gnu.org/licenses/>.
 
 */
 
@@ -72,26 +72,27 @@ vecstring LogReader::GetByFilter(const vecstring &filters) const noexcept {
     Log::Error() << ex.what();
     return {};
   }
-  return {};
 }
 
 vecstring LogReader::GetAll() const noexcept { return GetByFilter({}); }
 
 PageData LogReader::GetByPage(const vecstring &filters, uint page_number,
-                               uint pages_size) const noexcept {
+                              uint pages_size) const noexcept {
   PageData data;
-  data.curr_page=page_number;
-  data.pages_number=0;
+  data.curr_page = page_number;
+  data.pages_number = 0;
   try {
     std::vector<std::string> all_lines = GetFromFile(filters);
-    if (pages_size>0)
-      data.pages_number=static_cast<uint>(all_lines.size()/pages_size);
+    if (pages_size > 0)
+      data.pages_number = static_cast<uint>(all_lines.size() / pages_size);
     int lines_size = static_cast<int>(all_lines.size());
     int index_last = lines_size - static_cast<int>(page_number * pages_size);
     int index_first =
         lines_size - static_cast<int>((page_number + 1) * pages_size);
     if (index_first < 0)
       index_first = 0;
+    if (index_last < 0)
+      index_last = 0;
     if (index_last > lines_size)
       index_last = lines_size;
     if (index_first >= index_last)
@@ -106,4 +107,4 @@ PageData LogReader::GetByPage(const vecstring &filters, uint page_number,
   return data;
 }
 
-} // namespace usbmount
+} // namespace common_utils
