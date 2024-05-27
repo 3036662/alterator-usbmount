@@ -193,8 +193,8 @@ void DbusMethods::GetSystemUsersAndGroups(const sdbus::MethodCall &call) {
   const auto id_limits = utils::GetSystemUidMinMax(logger_);
   if (id_limits.has_value()) {
     auto users = utils::GetHumanUsers(id_limits.value(), logger_);
-    users.emplace_back(0, "--");
     if (!std::empty(users)) {
+      users.emplace_back(0, "--");
       res["users"] = json::array();
       for (const auto &usr : users)
         res["users"].as_array().emplace_back(usr.ToJson());
