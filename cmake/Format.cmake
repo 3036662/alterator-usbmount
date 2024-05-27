@@ -9,3 +9,16 @@ function(Format target directory)
         ${CLANG-FORMAT_PATH} -i --style=file ${SOURCE_FILES}
     )
 endfunction()    
+
+function(FormatDir directory)
+    find_program(CLANG-FORMAT_PATH clang-format REQUIRED)  
+    set(EXPRESSION h hpp hh c cc cxx cpp)  
+    list(TRANSFORM EXPRESSION PREPEND "${directory}/*.")  
+    file(GLOB_RECURSE SOURCE_FILES FOLLOW_SYMLINKS 
+         LIST_DIRECTORIES false ${EXPRESSION}  
+    )  
+    add_custom_command(OUTPUT formatted COMMAND
+        ${CLANG-FORMAT_PATH} -i --style=file ${SOURCE_FILES}
+    )
+    add_custom_target(run_clang_format DEPENDS formatted)
+endfunction()  
