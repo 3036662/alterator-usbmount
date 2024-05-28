@@ -76,9 +76,7 @@ private:
   void DataFromRawJson() override;
 
   // no cloning
-  inline std::shared_ptr<Dto> Clone() const noexcept override {
-    return nullptr;
-  };
+  std::shared_ptr<Dto> Clone() const noexcept override { return nullptr; };
 };
 
 } // namespace usbmount::dal

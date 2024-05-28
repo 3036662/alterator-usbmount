@@ -22,7 +22,10 @@
 
 #include <memory>
 #include <optional>
+#include <sdbus-c++/IConnection.h>
+#include <sdbus-c++/IProxy.h>
 #include <sdbus-c++/sdbus-c++.h>
+#include <string>
 
 namespace dbus_bindings {
 
@@ -34,6 +37,11 @@ namespace dbus_bindings {
 class Systemd {
 public:
   Systemd() noexcept; /// constructor - creates connection to DBus
+  Systemd(const Systemd &) = delete;
+  Systemd(Systemd &&) = delete;
+  Systemd &operator=(Systemd &&) = delete;
+  Systemd &operator=(const Systemd &) = delete;
+  ~Systemd() = default;
 
   /**
    * @brief Check whether unit.service is enabled

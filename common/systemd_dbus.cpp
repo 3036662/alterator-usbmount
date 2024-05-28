@@ -21,8 +21,17 @@
 #include "systemd_dbus.hpp"
 #include "log.hpp"
 #include <boost/algorithm/string/predicate.hpp>
+#include <chrono>
 #include <exception>
+#include <memory>
+#include <optional>
+#include <sdbus-c++/Error.h>
+#include <sdbus-c++/IConnection.h>
+#include <sdbus-c++/IProxy.h>
+#include <sdbus-c++/Types.h>
+#include <string>
 #include <thread>
+#include <vector>
 
 namespace dbus_bindings {
 
@@ -32,8 +41,9 @@ Systemd::Systemd() noexcept : connection_{nullptr} { ConnectToSystemDbus(); }
 
 std::optional<bool>
 Systemd::IsUnitEnabled(const std::string &unit_name) noexcept {
-  if (!Health())
+  if (!Health()) {
     return std::nullopt;
+  }
   std::string result;
   try {
     auto proxy = CreateProxyToSystemd(kObjectPath);
@@ -52,8 +62,9 @@ Systemd::IsUnitEnabled(const std::string &unit_name) noexcept {
 
 std::optional<bool>
 Systemd::IsUnitActive(const std::string &unit_name) noexcept {
-  if (!Health())
+  if (!Health()) {
     return std::nullopt;
+  }
   std::string result;
   try {
     // get unit dbus path
@@ -79,8 +90,9 @@ Systemd::IsUnitActive(const std::string &unit_name) noexcept {
 }
 
 std::optional<bool> Systemd::StartUnit(const std::string &unit_name) noexcept {
-  if (!Health())
+  if (!Health()) {
     return std::nullopt;
+  }
   try {
     std::this_thread::sleep_for(std::chrono::milliseconds(200));
     auto proxy = CreateProxyToSystemd(kObjectPath);
@@ -96,8 +108,9 @@ std::optional<bool> Systemd::StartUnit(const std::string &unit_name) noexcept {
       Log::Info() << "Waiting for systemd starts the sevice ...";
       std::this_thread::sleep_for(std::chrono::milliseconds(300));
       isActive = IsUnitActive(unit_name);
-      if (isActive.has_value() && isActive.value())
+      if (isActive.has_value() && isActive.value()) {
         return true;
+      }
     }
 
   } catch (const std::exception &ex) {
@@ -108,12 +121,12 @@ std::optional<bool> Systemd::StartUnit(const std::string &unit_name) noexcept {
 }
 
 std::optional<bool> Systemd::EnableUnit(const std::string &unit_name) noexcept {
-  if (!Health())
+  if (!Health()) {
     return std::nullopt;
-
+  }
   try {
     std::this_thread::sleep_for(std::chrono::milliseconds(200));
-    std::vector<std::string> arr_unit_names{unit_name};
+    const std::vector<std::string> arr_unit_names{unit_name};
     auto proxy = CreateProxyToSystemd(kObjectPath);
     auto method =
         proxy->createMethodCall(kSystemdInterfaceManager, "EnableUnitFiles");
@@ -127,8 +140,9 @@ std::optional<bool> Systemd::EnableUnit(const std::string &unit_name) noexcept {
       Log::Info() << "Waiting for systemd starts the sevice ...";
       std::this_thread::sleep_for(std::chrono::milliseconds(300));
       isEnabled = IsUnitEnabled(unit_name);
-      if (isEnabled.has_value() && isEnabled.value())
+      if (isEnabled.has_value() && isEnabled.value()) {
         return true;
+      }
     }
 
   } catch (const std::exception &ex) {
@@ -140,11 +154,12 @@ std::optional<bool> Systemd::EnableUnit(const std::string &unit_name) noexcept {
 
 std::optional<bool>
 Systemd::DisableUnit(const std::string &unit_name) noexcept {
-  if (!Health())
+  if (!Health()) {
     return std::nullopt;
+  }
   try {
     std::this_thread::sleep_for(std::chrono::milliseconds(200));
-    std::vector<std::string> arr_unit_names{unit_name};
+    const std::vector<std::string> arr_unit_names{unit_name};
     auto proxy = CreateProxyToSystemd(kObjectPath);
     auto method =
         proxy->createMethodCall(kSystemdInterfaceManager, "DisableUnitFiles");
@@ -158,8 +173,9 @@ Systemd::DisableUnit(const std::string &unit_name) noexcept {
       Log::Info() << "Waiting for systemd starts the sevice ...";
       std::this_thread::sleep_for(std::chrono::milliseconds(300));
       isEnabled = IsUnitEnabled(unit_name);
-      if (isEnabled.has_value() && !isEnabled.value())
+      if (isEnabled.has_value() && !isEnabled.value()) {
         return true;
+      }
     }
   } catch (const std::exception &ex) {
     Log::Error() << "Can't disable " << unit_name << " unit is active";
@@ -170,9 +186,9 @@ Systemd::DisableUnit(const std::string &unit_name) noexcept {
 
 std::optional<bool>
 Systemd::RestartUnit(const std::string &unit_name) noexcept {
-  if (!Health())
+  if (!Health()) {
     return std::nullopt;
-
+  }
   try {
     std::this_thread::sleep_for(std::chrono::milliseconds(200));
     auto proxy = CreateProxyToSystemd(kObjectPath);
@@ -188,8 +204,9 @@ Systemd::RestartUnit(const std::string &unit_name) noexcept {
       Log::Info() << "Waiting for systemd restarts the sevice ...";
       std::this_thread::sleep_for(std::chrono::milliseconds(300));
       isActive = IsUnitActive(unit_name);
-      if (isActive.has_value() && isActive.value())
+      if (isActive.has_value() && isActive.value()) {
         return true;
+      }
     }
   } catch (const std::exception &ex) {
     Log::Error() << "Can't restart " << unit_name << " unit is active";
@@ -199,8 +216,9 @@ Systemd::RestartUnit(const std::string &unit_name) noexcept {
 }
 
 std::optional<bool> Systemd::StopUnit(const std::string &unit_name) noexcept {
-  if (!Health())
+  if (!Health()) {
     return std::nullopt;
+  }
   try {
     std::this_thread::sleep_for(std::chrono::milliseconds(200));
     // if a unit is already stopped
@@ -220,8 +238,9 @@ std::optional<bool> Systemd::StopUnit(const std::string &unit_name) noexcept {
       Log::Info() << "Waiting for systemd stops the sevice ...";
       std::this_thread::sleep_for(std::chrono::milliseconds(300));
       isActive = IsUnitActive(unit_name);
-      if (isActive.has_value() && !isActive.value())
+      if (isActive.has_value() && !isActive.value()) {
         return true;
+      }
     }
   } catch (const std::exception &ex) {
     Log::Error() << "Can't stop " << unit_name << " unit is active";
@@ -241,8 +260,9 @@ void Systemd::ConnectToSystemDbus() noexcept {
 }
 
 bool Systemd::Health() noexcept {
-  if (!connection_)
+  if (!connection_) {
     ConnectToSystemDbus();
+  }
   return static_cast<bool>(connection_);
 }
 

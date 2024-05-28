@@ -42,7 +42,7 @@ public:
    * @param fpath
    * @throws std::invalid argument if empty path
    */
-  explicit LogReader(const std::string &fpath);
+  explicit LogReader(std::string fpath);
 
   vecstring GetAll() const noexcept;
   vecstring GetByFilter(const vecstring &filters) const noexcept;

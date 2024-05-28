@@ -26,7 +26,6 @@
 #include <boost/json/value.hpp>
 #include <cstddef>
 #include <cstdint>
-#include <iostream>
 #include <stdexcept>
 #include <string>
 #include <sys/types.h>
