@@ -369,6 +369,18 @@ std::string SanitizeMount(const std::string &str) noexcept {
   return res;
 }
 
+std::string SafeErrorNoToStr() noexcept {
+  std::vector<char> buf;
+  buf.reserve(300);
+  std::memset(buf.data(), 0, 300);
+  // NOLINTNEXTLINE
+  const char *str_err = strerror_r(errno, buf.data(), 256);
+  if (str_err != nullptr) {
+    return str_err;
+  }
+  return "";
+}
+
 namespace udev {
 void UdevEnumerateFree(udev_enumerate *udev_en) noexcept {
   if (udev_en != NULL)

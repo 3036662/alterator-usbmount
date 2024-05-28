@@ -21,30 +21,29 @@
 #include "custom_mount.hpp"
 #include "dal/dto.hpp"
 #include "dal/local_storage.hpp"
+#include "usb_udev_device.hpp"
 #include "utils.hpp"
 #include <acl/libacl.h>
-#include <boost/algorithm/string/predicate.hpp>
 #include <cerrno>
-#include <cstddef>
-#include <cstdint>
 #include <cstdio>
 #include <cstring>
 #include <exception>
 #include <filesystem>
-#include <functional>
 #include <grp.h>
 #include <memory>
 #include <mntent.h>
+#include <optional>
 #include <pwd.h>
+#include <spdlog/logger.h>
 #include <stdexcept>
 #include <string>
 #include <sys/acl.h>
 #include <sys/mount.h>
 #include <sys/stat.h>
 #include <sys/types.h>
-#include <unordered_map>
-#include <unordered_set>
+#include <unistd.h>
 #include <utility>
+#include <vector>
 
 namespace usbmount {
 
@@ -55,11 +54,12 @@ CustomMount::CustomMount(std::shared_ptr<UsbUdevDevice> &ptr_device,
 
 bool CustomMount::Mount() noexcept {
   // get permissions for this device
-  dal::Device dto_device(
+  const dal::Device dto_device(
       {ptr_device_->vid(), ptr_device_->pid(), ptr_device_->serial()});
   auto db_index = dbase_->permissions.Find(dto_device);
-  if (!db_index.has_value())
+  if (!db_index.has_value()) {
     return false;
+  }
   auto perms = dbase_->permissions.Read(db_index.value());
   // for now, only one user and group is allowed, though db stores users and
   // groups as array
@@ -78,15 +78,17 @@ bool CustomMount::Mount() noexcept {
     logger_->debug("Skipped with device type disk");
     return true;
   }
-  if (!CreateAclMountPoint())
+  if (!CreateAclMountPoint()) {
     return false;
+  }
   // create endpoint
-  if (!CreateMountEndpoint())
+  if (!CreateMountEndpoint()) {
     return false;
+  }
   // mount and save to local storage
   if (PerfomMount()) {
     try {
-      dal::MountEntry entry(dal::MountEntryParams(
+      const dal::MountEntry entry(dal::MountEntryParams(
           {ptr_device_->block_name(), end_mount_point_.value_or(""),
            ptr_device_->filesystem()}));
       dbase_->mount_points.Create(entry);
@@ -104,22 +106,46 @@ bool CustomMount::CreateAclMountPoint() noexcept {
   std::string mount_point = mount_root;
   // get user name
   std::optional<std::string> user_name;
-  const passwd *pwd = getpwuid(uid_.value_or(0));
-  if (pwd->pw_name != NULL)
-    user_name = pwd->pw_name;
+  passwd pwd{};
+  passwd *result_usr = nullptr;
+  std::vector<char> buf_usr;
+  buf_usr.reserve(1200);
+  std::memset(buf_usr.data(), 0, 1200);
+  if (getpwuid_r(uid_.value_or(0), &pwd, buf_usr.data(), 1200, &result_usr) ==
+          0 &&
+      result_usr != nullptr) {
+    user_name = pwd.pw_name;
+  }
+  // const passwd *pwd = getpwuid(uid_.value_or(0));
+  // if (pwd->pw_name != nullptr){
+  //   user_name = pwd->pw_name;
+  // }
   mount_point += user_name.value_or(std::to_string(uid_.value_or(0)));
   mount_point += '_';
   // get group name
   std::optional<std::string> group_name;
-  const group *grp = getgrgid(gid_.value_or(0));
-  if (grp->gr_name != NULL)
-    group_name = grp->gr_name;
+
+  group grp{};
+  group *result_grp = nullptr;
+  std::vector<char> buf_grp;
+  buf_grp.reserve(1200);
+  std::memset(buf_grp.data(), 0, 1200);
+  if (getgrgid_r(gid_.value_or(0), &grp, buf_grp.data(), 1200, &result_grp) ==
+          0 &&
+      result_grp != nullptr) {
+    group_name = grp.gr_name;
+  }
+  // const group *grp = getgrgid(gid_.value_or(0));
+  // if (grp->gr_name != nullptr){
+  //   group_name = grp->gr_name;
+  // }
   mount_point += group_name.value_or(std::to_string(gid_.value_or(0)));
   // create acl dir if no exists
   try {
     std::filesystem::create_directories(mount_point);
-    if (chmod(mount_point.c_str(), 0750) != 0)
+    if (chmod(mount_point.c_str(), 0750) != 0) {
       throw std::runtime_error("Chmod 0750 failed");
+    }
     // process ACL
     SetAcl(mount_point);
 
@@ -134,44 +160,51 @@ bool CustomMount::CreateAclMountPoint() noexcept {
 
 void CustomMount::SetAcl(const std::string &mount_point) {
   // read acl
-  using namespace utils::acl;
   acl_t acl = acl_get_file(mount_point.c_str(), ACL_TYPE_ACCESS);
   acl_t acl_old = acl_get_file(mount_point.c_str(), ACL_TYPE_ACCESS);
-  if (acl == NULL)
+  if (acl == nullptr) {
     throw std::runtime_error("Cant read ACL for mountpoint");
+  }
   // delete all ACL_USER and ACL_GROUP
-  DeleteACLUserGroupMask(acl);
-  acl_entry_t entry;
-  acl_permset_t permset;
+  utils::acl::DeleteACLUserGroupMask(acl);
+  acl_entry_t entry{};
+  acl_permset_t permset{};
   try {
     // add ACL_USER
-    CreateUserAclEntry(acl, uid_.value_or(0));
+    utils::acl::CreateUserAclEntry(acl, uid_.value_or(0));
     // Add ACL_GROUP
-    CreateGroupAclEntry(acl, gid_.value_or(0));
+    utils::acl::CreateGroupAclEntry(acl, gid_.value_or(0));
     // Add ACL_MASK
-    if (acl_create_entry(&acl, &entry) != 0)
+    if (acl_create_entry(&acl, &entry) != 0) {
       throw std::runtime_error("Can't create ACL entry for mask");
-    if (acl_get_permset(entry, &permset) != 0)
+    }
+    if (acl_get_permset(entry, &permset) != 0) {
       throw std::runtime_error("acl_get_permset failed");
-    if (acl_add_perm(permset, ACL_READ | ACL_EXECUTE) != 0)
+    }
+    if (acl_add_perm(permset, ACL_READ | ACL_EXECUTE) != 0) {
       throw std::runtime_error("acl_add_perm failed");
-    if (acl_set_tag_type(entry, ACL_MASK) != 0)
+    }
+    if (acl_set_tag_type(entry, ACL_MASK) != 0) {
       throw std::runtime_error("acl_set_tag_type failed");
-    if (acl_set_permset(entry, permset) != 0)
+    }
+    if (acl_set_permset(entry, permset) != 0) {
       throw std::runtime_error("acl_set_permset failed");
-    logger_->debug(ToString(acl));
+    }
+    logger_->debug(utils::acl::ToString(acl));
     if (acl_valid(acl) != 0) {
       logger_->warn("Acl is invalid");
       int last = 0;
       logger_->warn(acl_error(acl_check(acl, &last)));
       logger_->warn("last entry = {}", last);
     }
-    bool skip_acl = acl_cmp(acl, acl_old) != 1;
-    if (skip_acl)
+    const bool skip_acl = acl_cmp(acl, acl_old) != 1;
+    if (skip_acl) {
       logger_->debug("Skipped setting same ACL");
+    }
     if (!skip_acl &&
         acl_set_file(mount_point.c_str(), ACL_TYPE_ACCESS, acl) != 0) {
-      logger_->error(strerror(errno));
+      // logger_->error(strerror(errno));
+      logger_->error(utils::SafeErrorNoToStr());
       throw std::runtime_error("acl_set_file failed");
     }
   } catch (const std::exception &ex) {
@@ -181,8 +214,9 @@ void CustomMount::SetAcl(const std::string &mount_point) {
     throw;
   }
   // free ACL
-  if (acl_free(acl) != 0 || acl_free(acl_old) != 0)
+  if (acl_free(acl) != 0 || acl_free(acl_old) != 0) {
     logger_->warn("acl_free failed");
+  }
   logger_->debug("ACL for {} successfully set", mount_point);
 }
 
@@ -255,7 +289,8 @@ bool CustomMount::PerfomMount() noexcept {
     logger_->info("Mounted {} to {}", ptr_device_->block_name(),
                   end_mount_point_.value());
   } else {
-    logger_->error("[PerfomMount]{}", strerror(errno));
+    // logger_->error("[PerfomMount]{}", strerror(errno));
+    logger_->error("[PerfomMount]{}", utils::SafeErrorNoToStr());
     logger_->info("Try to mount as READ only");
     // if mount failed try to mount as readonly
     res = mount(ptr_device_->block_name().c_str(),
@@ -288,33 +323,46 @@ bool CustomMount::PerfomMount() noexcept {
 bool CustomMount::UnMount() noexcept {
   // find mount point
   FILE *p_file = setmntent("/etc/mtab", "r");
-  if (p_file == NULL) {
+  if (p_file == nullptr) {
     logger_->error("[UnMount] Error opening /etc/mtab");
     return false;
   }
   std::string mount_point;
   std::string fs_type;
   {
-    mntent *entry;
-    while ((entry = getmntent(p_file)) != NULL) {
-      if (std::string(entry->mnt_fsname) == ptr_device_->block_name()) {
-        mount_point = entry->mnt_dir;
-        fs_type = entry->mnt_type;
+    mntent entry{};
+    std::vector<char> buff;
+    buff.reserve(BUFSIZ);
+    std::memset(buff.data(), 0, BUFSIZ);
+    while (getmntent_r(p_file, &entry, buff.data(), BUFSIZ) != nullptr) {
+      if (std::string(entry.mnt_fsname) == ptr_device_->block_name()) {
+        mount_point = entry.mnt_dir;
+        fs_type = entry.mnt_type;
         break;
       }
     }
+    // mntent *entry;
+    // while ((entry = getmntent(p_file)) != NULL) {
+    //   if (std::string(entry->mnt_fsname) == ptr_device_->block_name()) {
+    //     mount_point = entry->mnt_dir;
+    //     fs_type = entry->mnt_type;
+    //     break;
+    //   }
+    //}
   }
   // just "ntfs" for ntfs3
-  if (fs_type == "ntfs3")
+  if (fs_type == "ntfs3") {
     fs_type.pop_back();
+  }
   endmntent(p_file);
   // perfom unmount
   if (!mount_point.empty()) {
-    int res = umount2(mount_point.c_str(), 0);
+    const int res = umount2(mount_point.c_str(), 0);
     if (res != 0) {
       logger_->error("[UnMount] Error unmounting {}",
                      ptr_device_->block_name());
-      logger_->error(std::strerror(errno));
+      logger_->error(utils::SafeErrorNoToStr());
+      // logger_->error(std::strerror(errno));
       return false;
     }
   } else {
@@ -323,9 +371,8 @@ bool CustomMount::UnMount() noexcept {
 
   // remove from the database
   try {
-    dal::MountEntry entry(dal::MountEntryParams(
+    const dal::MountEntry entry(dal::MountEntryParams(
         {ptr_device_->block_name(), mount_point, fs_type}));
-    // TODO find mount point
     auto index = dbase_->mount_points.Find(entry);
     if (index) {
       // remove mount directory
@@ -354,8 +401,9 @@ void CustomMount::RemoveMountPoint(const std::string &path) noexcept {
 }
 
 void CustomMount::SetMountOptions(MountOptions &opts) const noexcept {
-  if (opts.fs.empty())
+  if (opts.fs.empty()) {
     return;
+  }
   opts.mount_flags = MS_NOSUID | MS_NODEV | MS_RELATIME;
   std::string uid_gid = "uid=";
   uid_gid += std::to_string(uid_.value_or(0));
@@ -391,17 +439,18 @@ void CustomMount::SetMountOptions(MountOptions &opts) const noexcept {
   logger_->info("Mount data = {}", opts.mount_data);
 }
 
-bool CustomMount::FixNtfs(const std::string &block) const noexcept {
-  logger_->info("[FixNtfs] try ro remove a dirty bit");
-  std::string command = "/bin/ntfsfix -d ";
-  command += block;
-  int result = system(command.c_str());
-  if (result != 0) {
-    logger_->error("Error running ntfsfix");
-    return false;
-  }
-  logger_->info("[FixNtfs] OK");
-  return true;
-}
+// unused
+// bool CustomMount::FixNtfs(const std::string &block) const noexcept {
+//   logger_->info("[FixNtfs] try ro remove a dirty bit");
+//   std::string command = "/bin/ntfsfix -d ";
+//   command += block;
+//   int result = system(command.c_str());
+//   if (result != 0) {
+//     logger_->error("Error running ntfsfix");
+//     return false;
+//   }
+//   logger_->info("[FixNtfs] OK");
+//   return true;
+// }
 
 } // namespace usbmount

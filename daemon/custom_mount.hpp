@@ -20,13 +20,13 @@
 
 #pragma once
 #include "config.hpp"
-#include "dal/dto.hpp"
 #include "dal/local_storage.hpp"
 #include "usb_udev_device.hpp"
 #include <memory>
 #include <optional>
 #include <spdlog/logger.h>
 #include <string>
+// NOLINTNEXTLINE
 #include <sys/types.h>
 
 namespace usbmount {
@@ -35,6 +35,7 @@ namespace usbmount {
  * @brief Options for mount() glibc call
  */
 struct MountOptions {
+  // NOLINTNEXTLINE
   unsigned long mount_flags = 0;
   std::string fs;
   std::string mount_data;
@@ -48,6 +49,7 @@ public:
   CustomMount(CustomMount &&) = delete;
   CustomMount &operator=(const CustomMount &) = delete;
   CustomMount &&operator=(CustomMount &&) = delete;
+  ~CustomMount() = default;
 
   explicit CustomMount(std::shared_ptr<UsbUdevDevice> &ptr_device,
                        const std::shared_ptr<spdlog::logger> &logger) noexcept;
@@ -91,14 +93,17 @@ private:
    */
   void SetMountOptions(MountOptions &opts) const noexcept;
 
-  bool FixNtfs(const std::string &block) const noexcept;
+  // unused
+  // bool FixNtfs(const std::string &block) const noexcept;
 
   const std::shared_ptr<spdlog::logger> logger_;
   std::shared_ptr<UsbUdevDevice> ptr_device_;
   std::shared_ptr<dal::LocalStorage> dbase_;
 
+  // NOLINTBEGIN
   std::optional<uid_t> uid_;
   std::optional<gid_t> gid_;
+  // NOLINTEND
   std::optional<std::string> base_mount_point_; // base mount point with acl
   std::optional<std::string> end_mount_point_;  // child dir for mounting
 };

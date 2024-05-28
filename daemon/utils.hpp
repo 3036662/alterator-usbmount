@@ -122,6 +122,13 @@ bool ValidVid(const std::string &);
  */
 std::string SanitizeMount(const std::string &str) noexcept;
 
+/**
+ * @brief ThreadSafe strerror
+ *
+ * @return std::string
+ */
+std::string SafeErrorNoToStr() noexcept;
+
 namespace udev {
 /**
  * @brief A custom deleter for udev_enumerate struct
