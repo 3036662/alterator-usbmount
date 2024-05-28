@@ -22,7 +22,9 @@
 #include "dto.hpp"
 #include "table.hpp"
 #include <cstdint>
+#include <memory>
 #include <optional>
+#include <string>
 #include <unordered_set>
 #include <vector>
 
@@ -43,20 +45,20 @@ public:
    * @brief  Create a new entry for a mountpoint in the local storage
    * @throws bad_cast , runtime_error
    */
-  void Create(const Dto &) override;
+  void Create(const Dto &dto) override;
 
   /**
    * @brief Get entry by index
    * @return const MountEntry&
    * @throws std::invalid_argument (wrong index), out_of_range by std::map
    */
-  const MountEntry &Read(uint64_t) const override;
+  const MountEntry &Read(uint64_t index) const override;
 
   /**
    * @brief Update entry by index
    * @throws bad_cast, invalid_argument (index)
    */
-  void Update(uint64_t, const Dto &) override;
+  void Update(uint64_t index, const Dto &dto) override;
 
   /**
    * @brief Find entry

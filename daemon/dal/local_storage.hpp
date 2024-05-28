@@ -20,12 +20,9 @@
 
 #pragma once
 #include "device_permissions.hpp"
-#include "dto.hpp"
 #include "mount_points.hpp"
-#include "table.hpp"
 #include <memory>
 #include <mutex>
-#include <shared_mutex>
 
 namespace usbmount::dal {
 
@@ -40,6 +37,7 @@ public:
   LocalStorage(LocalStorage &&) = delete;
   LocalStorage &operator=(const LocalStorage &) = delete;
   LocalStorage &operator=(LocalStorage &&) = delete;
+  ~LocalStorage() = default;
 
   /**
    * @brief Get the Storage object

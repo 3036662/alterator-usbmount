@@ -22,9 +22,10 @@
 #include "dto.hpp"
 #include "table.hpp"
 #include <cstdint>
-#include <mutex>
-#include <shared_mutex>
-#include <vector>
+#include <map>
+#include <memory>
+#include <optional>
+#include <string>
 
 namespace usbmount::dal {
 
@@ -43,20 +44,20 @@ public:
    * @brief  Create a new entry for a permisson in the local storage
    * @throws bad_cast , runtime_error
    */
-  void Create(const Dto &) override;
+  void Create(const Dto &dto) override;
 
   /**
    * @brief Get entry by index
    * @return const MountEntry&
    * @throws std::invalid_argument (wrong index), out_of_range by std::map
    */
-  const PermissionEntry &Read(uint64_t) const override;
+  const PermissionEntry &Read(uint64_t index) const override;
 
   /**
    * @brief Update entry by index
    * @throws bad_cast, invalid_argument (index)
    */
-  void Update(uint64_t, const Dto &) override;
+  void Update(uint64_t index, const Dto &dto) override;
 
   /**
    * @brief Find by Device object

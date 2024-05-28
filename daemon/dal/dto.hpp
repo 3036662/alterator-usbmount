@@ -19,14 +19,13 @@
 */
 
 #pragma once
+// NOLINTNEXTLINE
 #include <boost/json.hpp>
 #include <boost/json/array.hpp>
 #include <boost/json/object.hpp>
-#include <cstddef>
-#include <cstdint>
-#include <map>
 #include <memory>
 #include <string>
+// NOLINTNEXTLINE
 #include <sys/types.h>
 #include <vector>
 
@@ -37,9 +36,13 @@ namespace json = boost::json;
 class Dto {
 public:
   Dto() = default;
+  Dto(const Dto &) = default;
+  Dto(Dto &&) = default;
+  Dto &operator=(const Dto &) = default;
+  Dto &operator=(Dto &&) = default;
+  virtual ~Dto() = default;
   std::string Serialize() const noexcept;
   virtual boost::json::value ToJson() const noexcept = 0;
-  virtual ~Dto() = default;
   virtual std::shared_ptr<Dto> Clone() const noexcept = 0;
 };
 
@@ -62,6 +65,7 @@ public:
   Device &operator=(Device &&) noexcept = default;
   Device &operator=(const Device &) noexcept = default;
   bool operator==(const Device &) const noexcept;
+  ~Device() override = default;
 
   json::value ToJson() const noexcept override;
 
@@ -87,7 +91,9 @@ public:
   User() = default;
   User &operator=(const User &) noexcept = default;
   User &operator=(User &&) noexcept = default;
+  // NOLINTNEXTLINE
   User(uid_t uid, const std::string &name);
+  ~User() override = default;
 
   json::value ToJson() const noexcept override;
   inline uid_t uid() const noexcept { return uid_; }
@@ -110,7 +116,9 @@ public:
   Group() = default;
   Group &operator=(const Group &) noexcept = default;
   Group &operator=(Group &&) noexcept = default;
+  // NOLINTNEXTLINE
   Group(gid_t gid, const std::string &name);
+  ~Group() override = default;
 
   json::value ToJson() const noexcept override;
   inline gid_t gid() const noexcept { return gid_; }
@@ -126,9 +134,9 @@ private:
 };
 
 struct MountEntryParams {
-  const std::string &dev_name;
-  const std::string &mount_point;
-  const std::string &fs;
+  std::string dev_name;
+  std::string mount_point;
+  std::string fs;
 };
 
 class MountEntry : public Dto {
@@ -141,6 +149,7 @@ public:
   MountEntry &operator=(MountEntry &&) noexcept = default;
   MountEntry &operator=(const MountEntry &) noexcept = default;
   bool operator==(const MountEntry &other) const noexcept;
+  ~MountEntry() override = default;
 
   json::value ToJson() const noexcept override;
   inline const std::string &dev_name() const noexcept { return dev_name_; }
@@ -163,10 +172,11 @@ public:
   explicit PermissionEntry(const json::object &);
   PermissionEntry(const PermissionEntry &) = default;
   PermissionEntry(PermissionEntry &&) = default;
-  PermissionEntry &operator=(PermissionEntry &) = default;
+  PermissionEntry &operator=(const PermissionEntry &) = default;
   PermissionEntry &operator=(PermissionEntry &&) = default;
   PermissionEntry(Device &&dev, std::vector<User> &&users,
                   std::vector<Group> &&groups);
+  ~PermissionEntry() override = default;
 
   json::value ToJson() const noexcept override;
 

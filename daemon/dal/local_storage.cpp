@@ -29,8 +29,9 @@ std::shared_ptr<LocalStorage> LocalStorage::p_instance_{nullptr};
 std::mutex LocalStorage::mutex_;
 
 std::shared_ptr<LocalStorage> LocalStorage::GetStorage() {
-  std::lock_guard<std::mutex> lock(mutex_);
+  const std::lock_guard<std::mutex> lock(mutex_);
   if (!p_instance_) {
+    // NOLINTNEXTLINE
     p_instance_.reset(new LocalStorage());
   }
   return p_instance_;

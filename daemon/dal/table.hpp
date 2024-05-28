@@ -22,17 +22,23 @@
 #include "dto.hpp"
 #include <boost/json/value.hpp>
 #include <cstdint>
-#include <exception>
+#include <map>
 #include <memory>
 #include <mutex>
 #include <shared_mutex>
+#include <string>
 
 namespace usbmount::dal {
 
 // CRUD table
 class Table : public Dto {
 public:
-  Table(const std::string &data_file_path);
+  explicit Table(const std::string &data_file_path);
+  Table(const Table &) = delete;
+  Table(Table &&) = delete;
+  Table &operator=(const Table &) = delete;
+  Table &operator=(Table &&) = delete;
+  ~Table() override = default;
   json::value ToJson() const noexcept override;
 
   void Clear();
@@ -42,7 +48,6 @@ public:
   virtual const Dto &Read(uint64_t) const = 0;
   virtual void Update(uint64_t, const Dto &) = 0;
   void Delete(uint64_t);
-  virtual ~Table() = default;
 
   /**
    * @brief Transactions can be used for modifing method - CREATE,UPDATE,DELETE
@@ -53,7 +58,7 @@ public:
 protected:
   void CheckIndex(uint64_t index) const;
   void WriteRaw();
-
+  // NOLINTBEGIN
   std::mutex transaction_mutex_;
   bool transaction_started_ = false;
   std::string raw_json_;
@@ -61,6 +66,7 @@ protected:
   std::map<uint64_t, std::shared_ptr<Dto>> data_;
   mutable std::shared_mutex data_mutex_;
   std::shared_mutex file_mutex_;
+  // NOLINTEND
 
 private:
   void ReadRaw();
