@@ -22,7 +22,6 @@
 #include "dto.hpp"
 #include <algorithm>
 #include <cstdint>
-#include <iostream>
 #include <iterator>
 #include <memory>
 #include <mutex>
@@ -72,7 +71,8 @@ void Mountpoints::Create(const Dto &dto) {
     if (!transaction_started_)
       lock = std::unique_lock(data_mutex_);
     index = data_.empty() ? 0 : (data_.rbegin()->first) + 1;
-    data_.emplace(*index, std::make_shared<MountEntry>(entry));
+    if (index)
+      data_.emplace(*index, std::make_shared<MountEntry>(entry));
     if (!transaction_started_) {
       lock.unlock();
       WriteRaw();
