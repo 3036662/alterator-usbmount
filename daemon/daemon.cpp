@@ -25,11 +25,10 @@
 #include "utils.hpp"
 #include <csignal>
 #include <memory>
-#include <sdbus-c++/IObject.h>
-#include <sdbus-c++/Message.h>
-#include <sdbus-c++/StandardInterfaces.h>
 #include <sdbus-c++/sdbus-c++.h>
 #include <thread>
+
+// NOLINTBEGIN(misc-include-cleaner)
 
 namespace usbmount {
 
@@ -54,7 +53,7 @@ void Daemon::SignalHandler(int signal) noexcept {
     Daemon::instance().is_running_ = false;
     break;
   }
-  case SIGHUP: {
+  case SIGHUP: { // NOLINT(misc-include-cleaner)
     Daemon::instance().reload_ = true;
     break;
   }
@@ -66,13 +65,14 @@ void Daemon::SignalHandler(int signal) noexcept {
 void Daemon::Run() {
   dbus_methods_.Run(); // non blocking - Async
   std::thread thread_monitor(&UdevMonitor::Run, udev_.get());
-  sigset_t signal_set;
-  int signal_number;
+  sigset_t signal_set; // NOLINT(misc-include-cleaner)
+  int signal_number = 0;
   sigemptyset(&signal_set);
   sigaddset(&signal_set, SIGINT);
   sigaddset(&signal_set, SIGTERM);
   sigaddset(&signal_set, SIGHUP);
-  sigprocmask(SIG_BLOCK, &signal_set, NULL);
+  // NOLINTNEXTLINE(concurrency-mt-unsafe)
+  sigprocmask(SIG_BLOCK, &signal_set, nullptr);
   while (IsRunning()) {
     sigwait(&signal_set, &signal_number);
     SignalHandler(signal_number);
@@ -81,5 +81,7 @@ void Daemon::Run() {
   thread_monitor.join();
   logger_->info("stopped the Daemon loop");
 }
+
+// NOLINTEND(misc-include-cleaner)
 
 } // namespace usbmount

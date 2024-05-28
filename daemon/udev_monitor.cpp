@@ -44,8 +44,8 @@
 
 namespace usbmount {
 
-UdevMonitor::UdevMonitor(std::shared_ptr<spdlog::logger> &logger)
-    : logger_(logger), future_obj_(stop_signal_.get_future()),
+UdevMonitor::UdevMonitor(std::shared_ptr<spdlog::logger> logger)
+    : logger_(std::move(logger)), future_obj_(stop_signal_.get_future()),
       udev_(udev_new(), udev_unref),
       monitor_(udev_monitor_new_from_netlink(udev_.get(), "udev"),
                udev_monitor_unref),

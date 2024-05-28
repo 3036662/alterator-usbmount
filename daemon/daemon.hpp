@@ -30,6 +30,12 @@ namespace usbmount {
 
 class Daemon {
 public:
+  Daemon(Daemon const &) = delete;
+  Daemon(Daemon const &&) = delete;
+  Daemon &operator=(const Daemon &) = delete;
+  Daemon &operator=(Daemon &&) = delete;
+  ~Daemon() = default;
+
   /**
    * @brief Create a daemon instance
    * @return Daemon&
@@ -46,13 +52,8 @@ public:
 
 private:
   Daemon();
-  Daemon(Daemon const &) = delete;
-  Daemon(Daemon const &&) = delete;
-  Daemon &operator=(const Daemon &) = delete;
-  Daemon &operator=(Daemon &&) = delete;
 
   bool IsRunning() noexcept;
-
   static void SignalHandler(int signal) noexcept;
   static void Reload() noexcept {};
 

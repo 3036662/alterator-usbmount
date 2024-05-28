@@ -23,6 +23,8 @@
 #include "udev_monitor.hpp"
 #include <boost/json/array.hpp>
 #include <memory>
+#include <sdbus-c++/IConnection.h>
+#include <sdbus-c++/IObject.h>
 #include <sdbus-c++/Message.h>
 #include <sdbus-c++/sdbus-c++.h>
 #include <spdlog/logger.h>
@@ -37,6 +39,7 @@ public:
   DbusMethods &operator=(const DbusMethods &) = delete;
   DbusMethods &&operator=(DbusMethods &&) = delete;
   DbusMethods() = delete;
+  ~DbusMethods() = default;
   explicit DbusMethods(std::shared_ptr<UdevMonitor> udev_monitor,
                        std::shared_ptr<spdlog::logger> logger);
 

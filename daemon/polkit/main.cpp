@@ -20,6 +20,7 @@
 
 #include <exception>
 #include <iostream>
+#include <sdbus-c++/IProxy.h>
 #include <sdbus-c++/sdbus-c++.h>
 #include <string>
 
@@ -28,8 +29,10 @@ int main(int argc, const char *argv[]) {
     std::cout << "EMPTY params";
     return 0;
   }
-  std::string dev = argv[1];
-  std::string action = argv[2];
+  // NOLINTBEGIN
+  const std::string dev = argv[1];
+  const std::string action = argv[2];
+  // NOLINTEND
   if (dev.empty() || action.empty()) {
     std::cout << "EMPTY params";
     return 0;

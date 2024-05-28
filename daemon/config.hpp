@@ -20,4 +20,5 @@
 
 #pragma once
 
-#define BASE_MOUNT_POINT "/media/alt-usb-mount/"
+// #define BASE_MOUNT_POINT
+constexpr const char *BASE_MOUNT_POINT = "/media/alt-usb-mount/";

@@ -19,12 +19,9 @@
 */
 
 #include "daemon.hpp"
-#include <chrono>
 #include <exception>
 #include <iostream>
-#include <sdbus-c++/Error.h>
 #include <systemd/sd-daemon.h>
-#include <thread>
 
 // grab a bus name as last step of initialization.
 

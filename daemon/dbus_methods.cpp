@@ -18,6 +18,8 @@
 
 */
 
+// NOLINTBEGIN(misc-include-cleaner)
+
 #include "dbus_methods.hpp"
 #include "dal/dto.hpp"
 #include "dal/local_storage.hpp"
@@ -34,7 +36,11 @@
 #include <cstdint>
 #include <exception>
 #include <iterator>
+#include <memory>
+#include <sdbus-c++/IConnection.h>
 #include <sdbus-c++/Message.h>
+#include <sdbus-c++/sdbus-c++.h>
+#include <spdlog/spdlog.h>
 #include <stdexcept>
 #include <string>
 #include <sys/socket.h>
@@ -51,7 +57,7 @@ DbusMethods::DbusMethods(std::shared_ptr<UdevMonitor> udev_monitor,
       dbus_object_ptr(sdbus::createObject(*connection_, object_path)),
       logger_(std::move(logger)), dbase_(dal::LocalStorage::GetStorage()),
       udev_monitor_(std::move(udev_monitor)) {
-  // Health()
+  // NOLINTEND(misc-include-cleaner)
   dbus_object_ptr->registerMethod(interface_name, "health", "", "s", Health);
   // ListDevices()
   dbus_object_ptr->registerMethod(
@@ -122,8 +128,8 @@ void DbusMethods::CanUserMount(sdbus::MethodCall call) {
   logger_->info("Polkit request for device (CanUserMount)" + dev);
   sdbus::MethodReply reply = call.createReply();
   try {
-    UsbUdevDevice device({dev, "add"});
-    dal::Device dto_device({device.vid(), device.pid(), device.serial()});
+    const UsbUdevDevice device({dev, "add"});
+    const dal::Device dto_device({device.vid(), device.pid(), device.serial()});
     if (dbase_->permissions.Find(dto_device)) {
       logger_->info("daemon reply to polkit = NO");
       reply << "NO";
@@ -156,10 +162,11 @@ void DbusMethods::ListActiveDevices(const sdbus::MethodCall &call) {
     obj["fs"] = dev.filesystem();
     // mount_point
     auto index_mount = dbase_->mount_points.Find(dev.block_name());
-    if (index_mount)
+    if (index_mount) {
       obj["mount"] = dbase_->mount_points.Read(*index_mount).mount_point();
-    else
+    } else {
       obj["mount"] = "";
+    }
     // permissions
     auto perm_index = dbase_->permissions.Find(
         dal::Device({dev.vid(), dev.pid(), dev.serial()}));
@@ -196,14 +203,16 @@ void DbusMethods::GetSystemUsersAndGroups(const sdbus::MethodCall &call) {
     if (!std::empty(users)) {
       users.emplace_back(0, "--");
       res["users"] = json::array();
-      for (const auto &usr : users)
+      for (const auto &usr : users) {
         res["users"].as_array().emplace_back(usr.ToJson());
+      }
     }
     auto groups = utils::GetHumanGroups(id_limits.value(), logger_);
     if (!groups.empty()) {
       res["groups"] = json::array();
-      for (const auto &grp : groups)
+      for (const auto &grp : groups) {
         res["groups"].as_array().emplace_back(grp.ToJson());
+      }
     }
   }
   sdbus::MethodReply reply = call.createReply();
@@ -214,7 +223,6 @@ void DbusMethods::GetSystemUsersAndGroups(const sdbus::MethodCall &call) {
 void DbusMethods::SaveRules(sdbus::MethodCall call) {
   logger_->debug("[DBUS][SaveRules]");
   json::object res;
-  // TODO
   std::string form_data;
   call >> form_data;
   try {
@@ -224,22 +232,23 @@ void DbusMethods::SaveRules(sdbus::MethodCall call) {
     dbase_->permissions.StartTransaction();
     // delete rules
     if (json_data.contains("deleted") && json_data.at("deleted").is_array()) {
-      json::array arr_deleted = json_data.at("deleted").as_array();
+      const json::array arr_deleted = json_data.at("deleted").as_array();
       logger_->debug("[DBUS][SaveRules] Deleted");
       for (const auto &element : arr_deleted) {
-        uint64_t id_to_delete = utils::StrToUint(element.as_string().c_str());
+        const uint64_t id_to_delete =
+            utils::StrToUint(element.as_string().c_str());
         dbase_->permissions.Delete(id_to_delete);
       }
     }
     // update rules
     if (json_data.contains("updated") && json_data.at("updated").is_array()) {
-      json::array arr_updated = json_data.at("updated").as_array();
+      const json::array arr_updated = json_data.at("updated").as_array();
       logger_->debug("[DBUS][SaveRules] Updated");
       UpdateRules(arr_updated);
     }
     // create rules
     if (json_data.contains("created") && json_data.at("created").is_array()) {
-      json::array arr_created = json_data.at("created").as_array();
+      const json::array arr_created = json_data.at("created").as_array();
       logger_->debug("[DBUS][SaveRules] Created");
       CreateRules(arr_created);
     }
@@ -273,25 +282,27 @@ void DbusMethods::CreateRules(const boost::json::array &arr_created) {
     std::string pid = obj.at("pid").as_string().c_str();
     std::string serial = obj.at("serial").as_string().c_str();
     std::string user = obj.at("user").as_string().c_str();
-    if (user == "--")
+    if (user == "--") {
       user = "root";
+    }
     std::string group = obj.at("group").as_string().c_str();
     auto it_system_user = std::find_if(
         system_users.cbegin(), system_users.cend(),
         [&user](const dal::User &usr) { return usr.name() == user; });
-    bool valid_user = it_system_user != system_users.cend();
+    const bool valid_user = it_system_user != system_users.cend();
     auto it_system_group = std::find_if(
         system_groups.cbegin(), system_groups.cend(),
         [&group](const dal::Group &grp) { return grp.name() == group; });
-    bool valid_group = it_system_group != system_groups.cend();
+    const bool valid_group = it_system_group != system_groups.cend();
     if (!utils::ValidVid(vid) || !utils::ValidVid(pid) || serial.empty() ||
         user.empty() || group.empty() || !valid_group || !valid_user) {
       throw std::invalid_argument("invalid arguments for device permissions");
     }
     std::vector<dal::User> new_users{*it_system_user};
     std::vector<dal::Group> new_groups{*it_system_group};
-    dal::PermissionEntry new_entry(dal::Device({vid, pid, serial}),
-                                   std::move(new_users), std::move(new_groups));
+    const dal::PermissionEntry new_entry(dal::Device({vid, pid, serial}),
+                                         std::move(new_users),
+                                         std::move(new_groups));
     if (!dbase_->permissions.Find(dal::Device({vid, pid, serial}))) {
       dbase_->permissions.Create(new_entry);
     } else {
@@ -313,24 +324,29 @@ void DbusMethods::UpdateRules(const boost::json::array &arr_updated) {
   }
   for (const auto &element : arr_updated) {
     const json::object &obj = element.as_object();
-    uint64_t id_to_update = utils::StrToUint(obj.at("id").as_string().c_str());
+    const uint64_t id_to_update =
+        utils::StrToUint(obj.at("id").as_string().c_str());
     // const std::string vid=
-    std::string vid = obj.at("vid").as_string().c_str();
-    std::string pid = obj.at("pid").as_string().c_str();
-    std::string serial = obj.at("serial").as_string().c_str();
+    const std::string vid = obj.at("vid").as_string().c_str();
+    const std::string pid = obj.at("pid").as_string().c_str();
+    const std::string serial = obj.at("serial").as_string().c_str();
     std::string user = obj.at("user").as_string().c_str();
-    if (user == "--")
+    if (user == "--") {
       user = "root";
+    }
     std::string group = obj.at("group").as_string().c_str();
     // get original  perm copy
     json::object original =
         dbase_->permissions.Read(id_to_update).ToJson().as_object();
-    if (!vid.empty())
+    if (!vid.empty()) {
       original.at("device").as_object().at("vid") = vid;
-    if (!pid.empty())
+    }
+    if (!pid.empty()) {
       original.at("device").as_object().at("pid") = pid;
-    if (!serial.empty())
+    }
+    if (!serial.empty()) {
       original.at("device").as_object().at("serial") = serial;
+    }
     if (!user.empty() && !system_users.empty()) {
       auto it_system_user = std::find_if(
           system_users.cbegin(), system_users.cend(),
