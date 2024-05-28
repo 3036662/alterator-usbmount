@@ -37,12 +37,17 @@ public:
    * @param function bool(*)(const LispMessage&) as dispatcher implementation
    */
   explicit MessageDispatcher(DispatchFunc) noexcept;
+  MessageDispatcher(const MessageDispatcher &) = delete;
+  MessageDispatcher(MessageDispatcher &&) = delete;
+  MessageDispatcher &operator=(MessageDispatcher &&) = delete;
+  MessageDispatcher &operator=(const MessageDispatcher &) = delete;
+  ~MessageDispatcher() = default;
 
   /**
    * @brief Perfom an appropriate action for msg
    * @param msg LispMessage from MessageReader
    */
-  bool Dispatch(const LispMessage &msg) const noexcept;
+  [[maybe_unused]] bool Dispatch(const LispMessage &msg) const noexcept;
 
 private:
   const DispatchFunc p_dispatcher_func_;

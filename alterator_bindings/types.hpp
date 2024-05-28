@@ -21,6 +21,7 @@
 #pragma once
 
 #include <string>
+#include <utility>
 #include <vector>
 
 /**
@@ -29,4 +30,4 @@
  */
 
 /// @brief Vector of pairs of string - param : value
-typedef std::vector<std::pair<std::string, std::string>> vecPairs;
+using vecPairs = std::vector<std::pair<std::string, std::string>>;

@@ -21,7 +21,6 @@
 #pragma once
 #include "serializable_for_lisp.hpp"
 #include "types.hpp"
-#include <boost/algorithm/string.hpp>
 #include <chrono>
 #include <cstdint>
 #include <optional>

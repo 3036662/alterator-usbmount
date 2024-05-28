@@ -32,6 +32,10 @@ public:
     }
 
     Debug() noexcept { std::cerr << "[DEBUG] "; }
+    Debug(const Debug &) = delete;
+    Debug &operator=(const Debug &) = delete;
+    Debug &operator=(Debug &&) = delete;
+    Debug(Debug &&) = delete;
     ~Debug() { std::cerr << "\n"; }
   };
 
@@ -42,6 +46,10 @@ public:
       return *this;
     }
     Info() noexcept { std::cerr << "[INFO] "; }
+    Info(const Info &) = delete;
+    Info &operator=(const Info &) = delete;
+    Info &operator=(Info &&) = delete;
+    Info(Info &&) = delete;
     ~Info() { std::cerr << "\n"; }
   };
   class Warning {
@@ -52,6 +60,10 @@ public:
       return *this;
     }
     Warning() noexcept { std::cerr << "[WARNING] "; }
+    Warning(const Warning &) = delete;
+    Warning &operator=(const Warning &) = delete;
+    Warning &operator=(Warning &&) = delete;
+    Warning(Warning &&) = delete;
     ~Warning() { std::cerr << "\n"; }
   };
   class Error {
@@ -61,6 +73,10 @@ public:
       return *this;
     }
     Error() noexcept { std::cerr << "[ERROR] "; }
+    Error(const Error &) = delete;
+    Error &operator=(const Error &) = delete;
+    Error &operator=(Error &&) = delete;
+    Error(Error &&) = delete;
     ~Error() { std::cerr << "\n"; }
   };
 
@@ -71,6 +87,10 @@ public:
       return *this;
     }
     Test() noexcept { std::cerr << "[TEST] "; }
+    Test(const Test &) = delete;
+    Test &operator=(const Test &) = delete;
+    Test &operator=(Test &&) = delete;
+    Test(Test &&) = delete;
     ~Test() { std::cerr << "\n"; }
   };
 };

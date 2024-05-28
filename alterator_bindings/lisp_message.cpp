@@ -19,8 +19,11 @@
 */
 
 #include "lisp_message.hpp"
+#include <ostream>
+#include <string>
+#include <unordered_map>
 
-LispMessage::LispMessage() {}
+LispMessage::LispMessage() = default;
 
 LispMessage::LispMessage(
     const MsgAction &act, const MsgObject &obj,

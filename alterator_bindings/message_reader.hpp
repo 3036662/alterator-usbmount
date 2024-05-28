@@ -37,6 +37,11 @@ public:
    * @param Function bool(*)(const LispMessage&) as dispatcher implementation
    */
   explicit MessageReader(DispatchFunc) noexcept;
+  MessageReader(const MessageReader &) = delete;
+  MessageReader(MessageReader &&) = delete;
+  MessageReader &operator=(MessageReader &&) = delete;
+  MessageReader &operator=(const MessageReader &) = delete;
+  ~MessageReader() = default;
 
   /// @brief Main loop - reades messages and sens them to dispatcher
   void Loop() const noexcept;

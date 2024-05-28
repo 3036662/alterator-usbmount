@@ -21,32 +21,36 @@
 #include "common_utils.hpp"
 #include "log.hpp"
 #include <cstddef>
+#include <cstdint>
 #include <exception>
 #include <filesystem>
 #include <iostream>
 #include <optional>
 #include <stdexcept>
 #include <string>
-#include <unordered_set>
+#include <unordered_map>
 #include <utility>
+#include <vector>
 
 namespace common_utils {
 
 std::string UnUtf8(const std::string &str) noexcept {
   std::string res;
-  std::runtime_error ex_bad_string("Invalid characters in string");
+  const std::runtime_error ex_bad_string("Invalid characters in string");
   try {
-    const uint kMaxIter = 1'000'000;
-    uint iter_counter = 0;
+    const unsigned int kMaxIter = 1'000'000;
+    unsigned int iter_counter = 0;
     size_t ind = 0;
     while (ind < str.size()) {
       ++iter_counter;
-      if (iter_counter > kMaxIter)
+      if (iter_counter > kMaxIter) {
         throw std::runtime_error("Maximal number of iterations was reached");
+      }
       // 1 byte char - skip quotes
       if ((str.at(ind) & 0b10000000) == 0) {
-        if (str.at(ind) != '\"' && str.at(ind) != '\'')
+        if (str.at(ind) != '\"' && str.at(ind) != '\'') {
           res += str.at(ind);
+        }
         ++ind;
         continue;
       }
@@ -95,22 +99,27 @@ std::string UnQuote(const std::string &str) noexcept {
 }
 
 std::string QuoteIfNotQuoted(const std::string &str) noexcept {
-  if (str.empty())
+  if (str.empty()) {
     return "\"\"";
-  if (str[0] != '\"' || str.back() != '\"')
+  }
+  if (str[0] != '\"' || str.back() != '\"') {
     return WrapWithQuotes(str);
+  }
   return str;
 }
 
 std::optional<uint32_t> StrToUint(const std::string &str) noexcept {
   uint32_t res = 0;
   try {
-    if (!str.empty() && str[0] == '-')
+    if (!str.empty() && str[0] == '-') {
       throw std::exception();
+    }
     size_t pos = 0;
-    res = static_cast<uint32_t>(std::stoul(str, &pos, 10));
-    if (pos != str.size())
+    constexpr int kDecimalBase = 10;
+    res = static_cast<uint32_t>(std::stoul(str, &pos, kDecimalBase));
+    if (pos != str.size()) {
       throw std::exception();
+    }
   } catch (std::exception &e) {
     std::cerr << "Error string to number conversion";
     std::cerr << e.what();
@@ -121,16 +130,16 @@ std::optional<uint32_t> StrToUint(const std::string &str) noexcept {
 
 std::vector<std::string> FindAllFilesInDirRecursive(
     const std::pair<std::string, std::string> &path_ext) noexcept {
-  // TODO think about enabling symlinks support
   namespace fs = std::filesystem;
   const int max_depth = 30;
   std::vector<std::string> res;
-  fs::path fs_path(path_ext.first);
+  const fs::path fs_path(path_ext.first);
   if (fs::exists(fs_path)) {
     for (auto it_entry = fs::recursive_directory_iterator(fs_path);
          it_entry != fs::recursive_directory_iterator(); ++it_entry) {
-      if (it_entry.depth() > max_depth)
+      if (it_entry.depth() > max_depth) {
         break;
+      }
       if (it_entry->is_regular_file() &&
           it_entry->path().extension().string() == path_ext.second) {
         res.emplace_back(it_entry->path().string());

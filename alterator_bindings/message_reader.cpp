@@ -21,10 +21,14 @@
 #include "message_reader.hpp"
 #include "lisp_message.hpp"
 #include "message_dispatcher.hpp"
-#include <boost/algorithm/algorithm.hpp>
-#include <boost/algorithm/string.hpp>
+#include <boost/algorithm/string/erase.hpp>
+#include <boost/algorithm/string/predicate.hpp>
+#include <boost/algorithm/string/trim.hpp>
+#include <cstddef>
 #include <iostream>
+#include <string>
 #include <unordered_map>
+#include <utility>
 
 // MessageReader::MessageReader(guard::Guard &guard) noexcept
 //     : dispatcher_(guard) {}
@@ -55,7 +59,7 @@ void MessageReader::Loop() const noexcept {
     if (boost::contains(line, "_message:end")) {
       msg_in_progress = false;
       if (!action.val.empty() && !objects.val.empty()) {
-        LispMessage request_message(action, objects, params);
+        const LispMessage request_message(action, objects, params);
         dispatcher_.Dispatch(request_message);
       }
       params.clear();
@@ -81,7 +85,7 @@ void MessageReader::Loop() const noexcept {
       continue;
     }
     // find parameters
-    size_t pos = line.find(':');
+    const size_t pos = line.find(':');
     if (pos != std::string::npos) {
       params.emplace(line.substr(0, pos), // param
                      line.substr(pos + 1) // value
