@@ -25,6 +25,7 @@
 #include "utils.hpp"
 #include <acl/libacl.h>
 #include <cerrno>
+#include <cstdint>
 #include <cstdio>
 #include <cstring>
 #include <exception>
@@ -371,9 +372,14 @@ bool CustomMount::UnMount() noexcept {
 
   // remove from the database
   try {
-    const dal::MountEntry entry(dal::MountEntryParams(
-        {ptr_device_->block_name(), mount_point, fs_type}));
-    auto index = dbase_->mount_points.Find(entry);
+    std::optional<uint64_t> index;
+    if (!mount_point.empty()) {
+      const dal::MountEntry entry(dal::MountEntryParams(
+          {ptr_device_->block_name(), mount_point, fs_type}));
+      index = dbase_->mount_points.Find(entry);
+    } else {
+      index = dbase_->mount_points.Find(ptr_device_->block_name());
+    }
     if (index) {
       // remove mount directory
       RemoveMountPoint(mount_point);
@@ -383,8 +389,9 @@ bool CustomMount::UnMount() noexcept {
                      ptr_device_->block_name());
     }
   } catch (const std::exception &ex) {
-    logger_->error("[UnMount] Can't  remove {} device mountpoint to database",
+    logger_->error("[UnMount] Can't  remove {} device mountpoint from database",
                    ptr_device_->block_name());
+    logger_->error(ex.what());
   }
   return true;
 }
