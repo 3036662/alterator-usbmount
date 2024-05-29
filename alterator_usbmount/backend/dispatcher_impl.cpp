@@ -84,32 +84,32 @@ bool DispatcherImpl::ListBlockDevices() const noexcept {
 }
 
 bool DispatcherImpl::ListRules() const noexcept {
-  using namespace common_utils;
+  namespace cu = common_utils;
   std::cout << kMessBeg;
-  std::cout << WrapWithQuotes(EscapeQuotes(usbmount_.getRulesJson()));
+  std::cout << cu::WrapWithQuotes(cu::EscapeQuotes(usbmount_.getRulesJson()));
   std::cout << kMessEnd;
   return true;
 }
 
 bool DispatcherImpl::GetUsersGroups() const noexcept {
-  using namespace common_utils;
+  namespace cu = common_utils;
   std::cout << kMessBeg;
-  std::cout << WrapWithQuotes(EscapeQuotes(usbmount_.GetUsersGroups()));
+  std::cout << cu::WrapWithQuotes(cu::EscapeQuotes(usbmount_.GetUsersGroups()));
   std::cout << kMessEnd;
   return true;
 }
 
 bool DispatcherImpl::SaveRules(const LispMessage &msg) const noexcept {
-  using namespace common_utils;
+  namespace cu = common_utils;
   std::cout << kMessBeg;
   if (msg.params.count("data") > 0) {
-    std::string res_str = usbmount_.SaveRules(msg.params.at("data"));
+    const std::string res_str = usbmount_.SaveRules(msg.params.at("data"));
     try {
       auto res_js = boost::json::parse(res_str);
-      std::cout << WrapWithQuotes(
+      std::cout << cu::WrapWithQuotes(
           res_js.as_object().at("STATUS").as_string().c_str());
     } catch (const std::exception &ex) {
-      std::cout << WrapWithQuotes("FAIL");
+      std::cout << cu::WrapWithQuotes("FAIL");
     }
   }
   std::cout << kMessEnd;
@@ -145,18 +145,19 @@ bool DispatcherImpl::ReadLog(const LispMessage &msg) noexcept {
   }
   std::cout << kMessBeg;
   try {
-    uint page_number =
+    const uint page_number =
         common_utils::StrToUint(msg.params.at("page")).value_or(0);
-    std::string filter = msg.params.at("filter");
-    common_utils::LogReader reader("/var/log/alt-usb-automount/log.txt");
+    const std::string filter = msg.params.at("filter");
+    const common_utils::LogReader reader("/var/log/alt-usb-automount/log.txt");
     auto res = reader.GetByPage({filter}, page_number, 22);
     boost::json::object json_result;
     json_result["total_pages"] = res.pages_number;
     json_result["current_page"] = res.curr_page;
     json_result["data"] = boost::json::array();
-    for (auto &str : res.data)
+    for (auto &str : res.data) {
       json_result["data"].as_array().emplace_back(
           common_utils::HtmlEscape(str));
+    }
     std::cout << common_utils::WrapWithQuotes(
         common_utils::EscapeQuotes(boost::json::serialize(json_result)));
   } catch (const std::exception &ex) {

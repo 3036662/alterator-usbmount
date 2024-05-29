@@ -29,8 +29,9 @@ namespace alterator::usbmount {
 ActiveDevice::ActiveDevice(const json::object &obj) {
   if (!obj.contains("device") || !obj.contains("vid") || !obj.contains("pid") ||
       !obj.contains("serial") || !obj.contains("mount") ||
-      !obj.contains("status") || !obj.contains("fs"))
+      !obj.contains("status") || !obj.contains("fs")) {
     throw std::invalid_argument("Error parsing Json object");
+  }
   block = obj.at("device").as_string().c_str();
   fs = obj.at("fs").as_string().c_str();
   vid = obj.at("vid").as_string().c_str();

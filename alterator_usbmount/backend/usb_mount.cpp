@@ -25,10 +25,12 @@
 #include <boost/json.hpp>
 #include <boost/json/array.hpp>
 #include <boost/json/object.hpp>
+#include <cstddef>
 #include <exception>
 #include <sdbus-c++/sdbus-c++.h>
 #include <stdexcept>
 #include <string>
+#include <vector>
 
 namespace alterator::usbmount {
 using common_utils::Log;
@@ -44,8 +46,9 @@ UsbMount::UsbMount() noexcept : dbus_proxy_(nullptr) {
 std::vector<ActiveDevice> UsbMount::ListDevices() const noexcept {
   namespace json = boost::json;
   std::vector<ActiveDevice> res;
-  if (!dbus_proxy_)
+  if (!dbus_proxy_) {
     return res;
+  }
   auto method = dbus_proxy_->createMethodCall(kInterfaceName, "ListDevices");
   auto reply = dbus_proxy_->callMethod(method);
   std::string json_string;
@@ -55,8 +58,9 @@ std::vector<ActiveDevice> UsbMount::ListDevices() const noexcept {
     const json::array &arr = value.as_array();
     size_t counter = 1;
     for (const auto &device : arr) {
-      if (!device.is_object())
+      if (!device.is_object()) {
         throw std::runtime_error("Can't parse a Json strinh");
+      }
       res.emplace_back(device.as_object());
       res.back().index = counter;
       ++counter;
@@ -72,8 +76,9 @@ std::vector<ActiveDevice> UsbMount::ListDevices() const noexcept {
 std::string
 UsbMount::GetStringNoParams(const std::string &method_name) const noexcept {
   std::string res;
-  if (!dbus_proxy_)
+  if (!dbus_proxy_) {
     return res;
+  }
   try {
     auto method = dbus_proxy_->createMethodCall(kInterfaceName, method_name);
     auto reply = dbus_proxy_->callMethod(method);
@@ -89,8 +94,9 @@ UsbMount::GetStringNoParams(const std::string &method_name) const noexcept {
 std::string
 UsbMount::GetStringResponse(const DbusOneParam &param) const noexcept {
   std::string res;
-  if (!dbus_proxy_)
+  if (!dbus_proxy_) {
     return res;
+  }
   try {
     auto method = dbus_proxy_->createMethodCall(kInterfaceName, param.method);
     method << param.param;
@@ -116,8 +122,9 @@ std::string UsbMount::SaveRules(const std::string &data) const noexcept {
 }
 
 bool UsbMount::Health() const noexcept {
-  if (!dbus_proxy_)
+  if (!dbus_proxy_) {
     return false;
+  }
   auto response = GetStringNoParams("health");
   return response == "OK";
 }

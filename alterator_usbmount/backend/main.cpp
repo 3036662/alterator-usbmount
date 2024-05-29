@@ -24,13 +24,13 @@
 #include "usb_mount.hpp"
 
 int main([[maybe_unused]] int argc, [[maybe_unused]] char *argv[]) {
-  using namespace ::alterator::usbmount;
-  UsbMount mount;
-  DispatcherImpl dispatcher(mount);
+  namespace um = ::alterator::usbmount;
+  um::UsbMount mount;
+  um::DispatcherImpl dispatcher(mount);
   auto dispatcher_func = [&dispatcher](const LispMessage &msg) {
     return dispatcher.Dispatch(msg);
   };
-  MessageReader reader(dispatcher_func);
+  const MessageReader reader(dispatcher_func);
   reader.Loop();
   return 0;
 }
