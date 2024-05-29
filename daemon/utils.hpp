@@ -19,23 +19,19 @@
 */
 
 #pragma once
-#include "custom_mount.hpp"
 #include "dal/dto.hpp"
 #include "usb_udev_device.hpp"
-#include <acl/libacl.h>
-#include <chrono>
+#include <acl/libacl.h> //NOLINT(misc-include-cleaner)
 #include <cstdint>
 #include <libudev.h>
 #include <memory>
+#include <optional>
 #include <spdlog/logger.h>
-#include <spdlog/sinks/basic_file_sink.h>
-#include <spdlog/spdlog.h>
-#include <sstream>
+#include <spdlog/spdlog.h> //NOLINT(misc-include-cleaner)
 #include <string>
 #include <sys/acl.h>
-#include <sys/syslog.h>
-#include <sys/types.h>
-#include <unordered_map>
+#include <sys/types.h> //NOLINT(misc-include-cleaner)
+#include <unordered_set>
 #include <vector>
 
 namespace usbmount::utils {
@@ -73,12 +69,14 @@ bool ReviewMountPoints(const std::shared_ptr<spdlog::logger> &logger) noexcept;
  * @brief read /etc/login.defs for UID_MIN,UID_MAX,GID_MIN,GID_MAX
  *
  */
+// NOLINTBEGIN(misc-include-cleaner)
 struct IdMinMax {
   uid_t uid_min = 0;
   uid_t uid_max = 0;
   gid_t gid_min = 0;
   gid_t gid_max = 0;
 };
+// NOLINTEND(misc-include-cleaner)
 
 /**
  * @brief Get the System User ID Min Max

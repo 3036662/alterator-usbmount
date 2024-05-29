@@ -19,13 +19,14 @@
 */
 
 #pragma once
+#include <cstdint>
 #include <libudev.h>
 #include <memory>
 #include <string>
 
 namespace usbmount {
 
-enum class Action { kRemove, kAdd, kChange, kNoAction, kUndefined };
+enum class Action : uint8_t { kRemove, kAdd, kChange, kNoAction, kUndefined };
 /// a  custom deleter for shared_ptr<udev_device>
 void UdevDeviceFree(udev_device *dev) noexcept;
 
@@ -78,7 +79,7 @@ private:
   void FindSerial(UniquePtrUdevDeviceStruct &device) noexcept;
 
   /// @brief find an info about device and fill the member fields
-  void getUdevDeviceInfo(UniquePtrUdevDeviceStruct &device);
+  void getUdevDeviceInfo(UniquePtrUdevDeviceStruct device);
 
   /// @brief find an udev device struct by it's block-name.
   UniquePtrUdevDeviceStruct FindUdevDeviceByBlockName() const;

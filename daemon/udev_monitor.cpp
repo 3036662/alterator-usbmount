@@ -26,43 +26,47 @@
 #include "utils.hpp"
 #include <cerrno>
 #include <chrono>
-#include <cstddef>
 #include <cstdint>
 #include <cstring>
 #include <exception>
 #include <future>
-#include <iostream>
 #include <libudev.h>
-#include <list>
 #include <memory>
 #include <optional>
 #include <sstream>
 #include <stdexcept>
 #include <string>
+#include <sys/select.h>
 #include <thread>
 #include <unordered_set>
+#include <utility>
+#include <vector>
 
 namespace usbmount {
-
+// NOLINTNEXTLINE(misc-include-cleaner)
 UdevMonitor::UdevMonitor(std::shared_ptr<spdlog::logger> logger)
     : logger_(std::move(logger)), future_obj_(stop_signal_.get_future()),
       udev_(udev_new(), udev_unref),
       monitor_(udev_monitor_new_from_netlink(udev_.get(), "udev"),
                udev_monitor_unref),
       dbase_(dal::LocalStorage::GetStorage()), udef_fd_{0} {
-  if (!udev_ || !monitor_)
+  if (!udev_ || !monitor_) {
     throw std::runtime_error("Can't connect to udev");
+  }
   int res = udev_monitor_filter_add_match_subsystem_devtype(monitor_.get(),
-                                                            "usb", NULL);
-  if (res < 0)
+                                                            "usb", nullptr);
+  if (res < 0) {
     throw std::runtime_error("Error modifiing udev filters");
+  }
   res = udev_monitor_filter_add_match_subsystem_devtype(monitor_.get(), "block",
-                                                        NULL);
-  if (res < 0)
+                                                        nullptr);
+  if (res < 0) {
     throw std::runtime_error("Error modifiing udev filters");
+  }
   res = udev_monitor_enable_receiving(monitor_.get());
-  if (res < 0)
+  if (res < 0) {
     throw std::runtime_error("Error enabling udev monitor");
+  }
   udef_fd_ = udev_monitor_get_fd(monitor_.get());
   std::stringstream str_id;
   str_id << std::this_thread::get_id();
@@ -81,13 +85,14 @@ void UdevMonitor::Run() noexcept {
     fd_set fds;
     FD_ZERO(&fds);
     FD_SET(udef_fd_, &fds);
-    struct timeval timeout;
+    // NOLINTNEXTLINE(misc-include-cleaner)
+    timeval timeout{};
     timeout.tv_sec = 0;
     timeout.tv_usec = 1000000; // 1sec
-    int ret = select(udef_fd_ + 1, &fds, NULL, NULL, &timeout);
+    const int ret = select(udef_fd_ + 1, &fds, nullptr, nullptr, &timeout);
     if (ret == -1) {
       logger_->error("select() systemcall returned error");
-      logger_->error(strerror(errno));
+      logger_->error(utils::SafeErrorNoToStr());
       continue;
     }
     // timeout
@@ -117,26 +122,27 @@ void UdevMonitor::ProcessDevice() noexcept {
 
 void UdevMonitor::ProcessDevice(
     std::shared_ptr<UsbUdevDevice> device) noexcept {
-  if (!device)
+  if (!device) {
     return;
+  }
   // there are some rules in db for this device
-  bool device_is_known =
+  const bool device_is_known =
       dbase_->permissions
           .Find(dal::Device({device->vid(), device->pid(), device->serial()}))
           .has_value();
   // the device is added
-  bool device_was_added = device->action() == Action::kAdd;
+  const bool device_was_added = device->action() == Action::kAdd;
   // the device is added + known
-  bool known_device_was_added = device_is_known && device_was_added;
+  const bool known_device_was_added = device_is_known && device_was_added;
   // the device was mounted by this app
-  bool device_was_mounted =
+  const bool device_was_mounted =
       dbase_->mount_points.Find(device->block_name()).has_value();
   // device is removed + was mounted by this app
-  bool device_removed_and_was_mounted =
+  const bool device_removed_and_was_mounted =
       device_was_mounted && device->action() == Action::kRemove;
-  bool fs_is_unsupported = device->filesystem().empty() ||
-                           device->filesystem() == "jfs" ||
-                           device->filesystem() == "LVM2_member";
+  const bool fs_is_unsupported = device->filesystem().empty() ||
+                                 device->filesystem() == "jfs" ||
+                                 device->filesystem() == "LVM2_member";
   if ((known_device_was_added || device_removed_and_was_mounted) &&
       !fs_is_unsupported) {
     utils::MountDevice(std::move(device), logger_);
@@ -165,16 +171,16 @@ std::shared_ptr<UsbUdevDevice> UdevMonitor::RecieveDevice() noexcept {
     } catch (const std::exception &ex) {
       // logger_->debug("Constructor of UsbUdevDevice failed");
       // logger_->debug(ex.what());
-      return std::shared_ptr<UsbUdevDevice>();
+      return {};
     }
   }
-  return std::shared_ptr<UsbUdevDevice>();
+  return {};
 }
 
 std::vector<UsbUdevDevice> UdevMonitor::GetConnectedDevices() const noexcept {
   std::vector<UsbUdevDevice> res;
   using utils::udev::UdevEnumerateFree;
-  std::unique_ptr<udev_enumerate, decltype(&UdevEnumerateFree)> enumerate(
+  const std::unique_ptr<udev_enumerate, decltype(&UdevEnumerateFree)> enumerate(
       udev_enumerate_new(udev_.get()), UdevEnumerateFree);
   if (!enumerate) {
     logger_->error("[GetConnectedDevices] Can't enumerate devices");
@@ -187,9 +193,9 @@ std::vector<UsbUdevDevice> UdevMonitor::GetConnectedDevices() const noexcept {
   udev_enumerate_add_match_property(enumerate.get(), "ID_BUS", "usb");
   udev_enumerate_scan_devices(enumerate.get());
   udev_list_entry *entry = udev_enumerate_get_list_entry(enumerate.get());
-  while (entry != NULL) {
+  while (entry != nullptr) {
     const char *p_path = udev_list_entry_get_name(entry);
-    if (p_path == NULL) {
+    if (p_path == nullptr) {
       logger_->error("[GetConnectedDevices] udev_list_entry_get_name error ");
       continue;
     }
