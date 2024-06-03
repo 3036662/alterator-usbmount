@@ -93,7 +93,7 @@ bool CustomMount::Mount() noexcept {
           {ptr_device_->block_name(), end_mount_point_.value_or(""),
            ptr_device_->filesystem()}));
       dbase_->mount_points.Create(entry);
-      logger_->info("Created mountpouint for {} in the db",
+      logger_->info("Created mountpoint for {} in the db",
                     ptr_device_->block_name());
     } catch (const std::exception &ex) {
       logger_->error("Can't  add {} device mountpoint to database",
