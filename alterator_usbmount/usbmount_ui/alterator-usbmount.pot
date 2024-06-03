@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-05-21 14:04+0300\n"
+"POT-Creation-Date: 2024-06-03 11:35+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -124,18 +124,22 @@ msgid "Filter"
 msgstr ""
 
 #: стандартный ввод:31
-msgid "◁ Previous"
+msgid "Update"
 msgstr ""
 
 #: стандартный ввод:32
-msgid "Next ▷"
+msgid "◁ Previous"
 msgstr ""
 
 #: стандартный ввод:33
-msgid "Page"
+msgid "Next ▷"
 msgstr ""
 
 #: стандартный ввод:34
+msgid "Page"
+msgstr ""
+
+#: стандартный ввод:35
 msgid "of"
 msgstr ""
 

@@ -169,14 +169,7 @@ function InitLogs() {
     });
 
     document.getElementById('log_search_button').addEventListener('click', e => {
-        window.log_current_page = 0;
-        document.getElementById('hidd_inp_curr_page').value = window.log_current_page;
-        let input_val = document.getElementById('log_search_input').value.replace(/[&<>"']/g, "");
-        document.getElementById('log_search_input').value = input_val;
-        document.getElementById('hidd_inp_filter').value = input_val;
-        DisableButton(e.target);
-        LockLogPagination();
-        document.getElementById('hidd_inp_curr_page').dispatchEvent(new Event("page_change"));
+        UpdateLogData(e);
     });
 
     document.getElementById('log_search_input').addEventListener('keydown', function (event) {
@@ -184,6 +177,22 @@ function InitLogs() {
             document.getElementById('log_search_button').dispatchEvent(new Event('click'));
         }
     });
+    
+    document.getElementById('btn_update_log').addEventListener('click',e=>{
+        UpdateLogData(e);
+    });
+}
+
+//  for "filters" and "updated" button
+function UpdateLogData(event){
+    window.log_current_page = 0;
+    document.getElementById('hidd_inp_curr_page').value = window.log_current_page;
+    let input_val = document.getElementById('log_search_input').value.replace(/[&<>"']/g, "");
+    document.getElementById('log_search_input').value = input_val;
+    document.getElementById('hidd_inp_filter').value = input_val;
+    DisableButton(event.target);
+    LockLogPagination();
+    document.getElementById('hidd_inp_curr_page').dispatchEvent(new Event("page_change"));
 }
 
 function SetLogData(data) {
@@ -206,6 +215,7 @@ function SetLogData(data) {
             EnableButton(document.getElementById('btn_prev_page'));
         }
         EnableButton(document.getElementById('log_search_button'));
+        EnableButton(document.getElementById('btn_update_log'));
     }
     catch (e) {
         console.log(e.message);

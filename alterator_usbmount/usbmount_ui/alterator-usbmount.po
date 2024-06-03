@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-05-21 14:04+0300\n"
-"PO-Revision-Date: 2024-05-21 14:04+0300\n"
+"POT-Creation-Date: 2024-06-03 11:35+0300\n"
+"PO-Revision-Date: 2024-06-03 11:41+0300\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: ru\n"
@@ -131,18 +131,22 @@ msgid "Filter"
 msgstr "Фильтровать"
 
 #: стандартный ввод:31
+msgid "Update"
+msgstr "Обновить журнал"
+
+#: стандартный ввод:32
 msgid "◁ Previous"
 msgstr "◁ Назад"
 
-#: стандартный ввод:32
+#: стандартный ввод:33
 msgid "Next ▷"
 msgstr "Вперед  ▷"
 
-#: стандартный ввод:33
+#: стандартный ввод:34
 msgid "Page"
 msgstr "Страница"
 
-#: стандартный ввод:34
+#: стандартный ввод:35
 msgid "of"
 msgstr "из"
 
