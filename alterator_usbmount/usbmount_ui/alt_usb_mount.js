@@ -586,6 +586,21 @@ function BindTableHeaderCheckbox(table) {
 }
 
 
+// return true if some rows in the table-body are selected
+function IsSomeChecked(){
+    let tbody = document.getElementById('rules_list_table').tBodies[0];
+    let inputs = tbody.querySelectorAll('input.list_checkbox');
+    let some = false;
+    for (let i = 0; i < inputs.length; ++i) {
+        if (inputs[i].checked) {
+            some = true;
+            break;
+        }
+    }
+    return some;
+}
+
+
 // Row Checkbox in table body
 // enable "delete" button if some rows are checked, disable if nothing is "checked"
 function BindRowCheckbox() {
@@ -622,17 +637,11 @@ function DisableButtonDeleteResetIfNoRowsCkeckedOrSelected() {
     try {
         let tbody = document.getElementById('rules_list_table').tBodies[0];
         if (!tbody || tbody.nodeName != "TBODY") return;
-
+        
         let selected = tbody.querySelectorAll('tr.tr_selected');
         if (selected.length > 0) return;
         let inputs = tbody.querySelectorAll('input.list_checkbox');
-        let some = false;
-        for (let i = 0; i < inputs.length; ++i) {
-            if (inputs[i].checked) {
-                some = true;
-                break;
-            }
-        }
+        let some = IsSomeChecked();
         // if nothing is checked
         if (!some) {
             DisableButton(document.getElementById('delete_rule_btn'));
@@ -763,6 +772,14 @@ function BindDeleteCheckedRows() {
                 let table = document.getElementById('rules_list_table');
                 let selected_row = table.querySelector('tr.tr_selected');
                 if (selected_row) DeleteRow(selected_row);
+            }
+            // if no rows are checked - uncheck checkbox in header
+            if (!IsSomeChecked()){
+                try{
+                    table.tHead.querySelector('input.list_checkbox').checked =false;
+                } catch (e){
+                    console.log(e);
+                }
             }
         }
         catch (e) {
