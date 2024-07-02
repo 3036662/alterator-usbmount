@@ -169,6 +169,10 @@
 }
 
 
+.warnings_div{
+    display: block;
+    margin-top: 94px;
+}
 
 .validation_warning {
     display: none;
@@ -177,7 +181,6 @@
     padding: 5px;
     border-radius: 5px;
     border: 1px solid gray;
-    margin-top: 94px;
     margin-bottom: 20px;
 }
 
