@@ -60,10 +60,17 @@ install(TARGETS altusbd
 #    DESTINATION "/lib/tmpfiles.d/"
 #)
 
-install(FILES 
-    ${CMAKE_SOURCE_DIR}/daemon/service_files/altusbd.service
-    DESTINATION "/usr/lib/systemd/system/"
-)
+if(DEFINED UNITDIR)
+    install(FILES 
+        ${CMAKE_SOURCE_DIR}/daemon/service_files/altusbd.service
+        DESTINATION ${UNITDIR}
+    )
+else()
+    install(FILES 
+        ${CMAKE_SOURCE_DIR}/daemon/service_files/altusbd.service
+        DESTINATION "/lib/systemd/system/"
+    )
+endif()
 
 install(FILES 
     ${CMAKE_SOURCE_DIR}/daemon/service_files/ru.alterator.usbd.conf
