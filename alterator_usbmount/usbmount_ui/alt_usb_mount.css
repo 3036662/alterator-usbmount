@@ -281,3 +281,35 @@
 color: gray;
 font-size: 8pt;
 }
+
+.pagination_list{
+    list-style-type: none;
+}
+  
+.pagination_list li{
+  display: inline;
+  margin-right: 5px;
+  margin-left: 5px;
+}
+  
+.pag_jump_ten{
+    cursor: pointer;
+}
+  
+.pag_clickable_num{
+    cursor: pointer;
+}
+  
+.pag_curr_page{
+    font-weight: bold;
+    text-decoration: underline;
+}
+  
+#input_curr_page{
+    width: 30px;
+    margin: 10px;
+}
+  
+#input_entries_per_page{
+    margin-left: 5px;
+}

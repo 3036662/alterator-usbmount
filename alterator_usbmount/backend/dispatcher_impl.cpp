@@ -25,6 +25,7 @@
 #include "log_reader.hpp"
 #include "types.hpp"
 #include "usb_mount.hpp"
+#include <algorithm>
 #include <boost/json/array.hpp>
 #include <boost/json/object.hpp>
 #include <boost/json/parse.hpp>
@@ -147,9 +148,14 @@ bool DispatcherImpl::ReadLog(const LispMessage &msg) noexcept {
   try {
     const uint page_number =
         common_utils::StrToUint(msg.params.at("page")).value_or(0);
+    uint per_page = 20;
+    if (msg.params.count("per_page") > 0) {
+      std::cerr << "per page value" << msg.params.at("per_page") << "\n";
+      per_page = common_utils::StrToUint(msg.params.at("per_page")).value_or(5);
+    }
     const std::string filter = msg.params.at("filter");
     const common_utils::LogReader reader("/var/log/alt-usb-automount/log.txt");
-    auto res = reader.GetByPage({filter}, page_number, 22);
+    auto res = reader.GetByPage({filter}, page_number, per_page);
     boost::json::object json_result;
     json_result["total_pages"] = res.pages_number;
     json_result["current_page"] = res.curr_page;
