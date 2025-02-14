@@ -76,35 +76,31 @@ function InitUi(health) {
     document.getElementById('btn_prsnt_scan').addEventListener('click', function (e) {
         DisableButton(document.getElementById('btn_create_rule'));
     });
-    // workaround for mate - change button color to yellow
-    ChooseBtnStyle();
     InitLogs();
+    // copy colors from alterator-brandings
+    CloneColors();
 }
 
-// switch button style for mate 
-function ChooseBtnStyle() {
-    try {
-        const sourceElement = document.getElementById('main').querySelector('.btn');
-        const sourceStyles = window.getComputedStyle(sourceElement);
-        let color = sourceStyles.getPropertyValue('background-color');
-        if (color === "rgb(255, 150, 49)") {
-            let buttons = document.querySelectorAll('.like_btn');
-            buttons.forEach(btn => {
-                btn.classList.remove('like_btn');
-                btn.classList.add('like_btn_y');
-            });
-            buttons = document.querySelectorAll('.like_btn_disabled');
-            buttons.forEach(btn => {
-                let buttons = document.querySelectorAll('.like_btn');
-                btn.classList.remove('like_btn_disabled');
-                btn.classList.add('like_btn_disabled_y');
-            });
-        }
-    }
-    catch (e) {
-        console.log(e);
-    };
-}
+
+/**
+ *  Clone colors from .btn class and aplly .like_btn class
+ */
+function CloneColors(){
+    const sourceElement = document.getElementById('main').querySelector('.btn');
+    if (sourceElement===null) { return; }   
+    const sourceStyles = window.getComputedStyle(sourceElement);
+    //console.warn ( JSON.stringify(sourceStyles))
+    const target_btn_color = sourceStyles.getPropertyValue("color");
+    const target_btn_bg_color = sourceStyles.getPropertyValue("background-color");
+    const target_btn_border_color = sourceStyles.getPropertyValue("border-bottom-color");
+    // apply to all custom buttons
+    const likeButtons = document.querySelectorAll('.like_btn');
+    likeButtons.forEach(button => {
+      button.style.color = target_btn_color;
+      button.style.backgroundColor=target_btn_bg_color;
+      button.style.borderColor = target_btn_border_color;
+    }); 
+  }
 
 function SetHealthStatus(health) {
     let toggle_daemon = document.getElementById('checkbox_daemon_status');
