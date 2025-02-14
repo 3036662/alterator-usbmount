@@ -177,6 +177,12 @@ function InitLogs() {
     document.getElementById('btn_update_log').addEventListener('click',e=>{
         UpdateLogData(e);
     });
+
+    // clear log_search_input on click
+    document.getElementById('clear_filter_button').addEventListener('click', e=>{
+        document.getElementById('log_search_input').value=""
+        document.getElementById('log_search_button').dispatchEvent(new Event('click'));
+    });
 }
 
 //  for "filters" and "updated" button
@@ -189,6 +195,11 @@ function UpdateLogData(event){
     DisableButton(event.target);
     LockLogPagination();
     document.getElementById('hidd_inp_curr_page').dispatchEvent(new Event("page_change"));
+    if (input_val.length>0){
+        document.getElementById('clear_filter_button').classList.remove("hidden");
+    } else{
+        document.getElementById('clear_filter_button').classList.add("hidden");
+    }
 }
 
 function SetLogData(data) {

@@ -265,6 +265,7 @@
     float: left;
     /* margin-top: 2px; */
     height: 18px;
+    margin-right: 5px;
 }
 
 #log_textarea{
