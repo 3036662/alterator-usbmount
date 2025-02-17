@@ -20,7 +20,9 @@
 
 #include <exception>
 #include <iostream>
+#include <sdbus-c++/IConnection.h>
 #include <sdbus-c++/IProxy.h>
+#include <sdbus-c++/Types.h>
 #include <sdbus-c++/sdbus-c++.h>
 #include <string>
 
@@ -40,18 +42,24 @@ int main(int argc, const char *argv[]) {
   const std::string dest = "ru.alterator.usbd";
   const std::string object_path = "/ru/alterator/altusbd";
   const std::string interface_name = "ru.alterator.Usbd";
+  const sdbus::InterfaceName interface_name_obj{interface_name};
+
   try {
-    auto proxy = sdbus::createProxy(dest, object_path);
+    auto proxy = sdbus::createProxy(sdbus::ServiceName{dest},
+                                    sdbus::ObjectPath{object_path});
     if (action == "unmount") {
+      const sdbus::MethodName canunmount_method{"CanAnotherUserUnmount"};
       auto method =
-          proxy->createMethodCall(interface_name, "CanAnotherUserUnmount");
+          proxy->createMethodCall(interface_name_obj, canunmount_method);
       method << dev;
       auto reply = proxy->callMethod(method);
       std::string res;
       reply >> res;
       std::cout << res;
     } else if (action == "mount") {
-      auto method = proxy->createMethodCall(interface_name, "CanUserMount");
+      const sdbus::MethodName canmount_method{"CanUserMount"};
+      auto method =
+          proxy->createMethodCall(interface_name_obj, canmount_method);
       method << dev;
       auto reply = proxy->callMethod(method);
       std::string res;
