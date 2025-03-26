@@ -1,7 +1,7 @@
 %define _altdata_dir %_datadir/alterator
 
 Name: alterator-usbmount
-Version: 0.1.2
+Version: 0.1.3
 Release: alt1
 Summary: Alterator module to control mountpoints of USB block devices
 Group: System/Configuration/Other
@@ -13,7 +13,7 @@ Source: %name-%version.tar
 Requires: alterator %name-daemon
 BuildPreReq: gcc-c++ cmake ninja-build rpm-macros-cmake rpm-build-licenses 
 
-BuildRequires: boost-devel-headers libsdbus-cpp-devel libsystemd-devel gettext-tools 
+BuildRequires: boost-devel-headers libsdbus-cpp2-devel libsystemd-devel gettext-tools 
 BuildRequires: libudev-devel libacl-devel libspdlog-devel libfmt-devel
 
 %description
@@ -57,6 +57,9 @@ The usbmount-daemon contains a systemd service to apply mount policies
 %dir %_logdir/alt-usb-automount/
 
 %changelog
+* Wed Mar 26 2025 Oleg Proskurin <proskur@altlinux.org> 0.1.3-alt1
+- Port to sdbus-c++ 2.1.0-alt1 aka libsdbus-cpp2
+
 * Mon Feb 17 2025 Oleg Proskurin <proskur@altlinux.org> 0.1.2-alt1
 - New version (Closes: #52834,#52929 )
   + Translate the module title
