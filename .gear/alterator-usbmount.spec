@@ -13,7 +13,7 @@ Source: %name-%version.tar
 Requires: alterator %name-daemon
 BuildPreReq: gcc-c++ cmake ninja-build rpm-macros-cmake rpm-build-licenses 
 
-BuildRequires: boost-devel-headers libsdbus-cpp2-devel libsystemd-devel gettext-tools 
+BuildRequires: boost-devel-headers libsdbus-cpp-devel libsystemd-devel gettext-tools 
 BuildRequires: libudev-devel libacl-devel libspdlog-devel libfmt-devel
 
 %description
