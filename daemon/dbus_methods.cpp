@@ -39,6 +39,7 @@
 #include <memory>
 #include <sdbus-c++/IConnection.h>
 #include <sdbus-c++/Message.h>
+#include <sdbus-c++/VTableItems.h>
 #include <sdbus-c++/sdbus-c++.h>
 #include <spdlog/spdlog.h>
 #include <stdexcept>
@@ -53,38 +54,105 @@ namespace json = boost::json;
 
 DbusMethods::DbusMethods(std::shared_ptr<UdevMonitor> udev_monitor,
                          std::shared_ptr<spdlog::logger> logger)
-    : connection_(sdbus::createSystemBusConnection(service_name)),
-      dbus_object_ptr(sdbus::createObject(*connection_, object_path)),
+    : service_name_obj_{service_name}, object_path_obj_{object_path},
+      interface_name_obj_{interface_name},
+      connection_(sdbus::createSystemBusConnection(service_name_obj_)),
+      dbus_object_ptr(sdbus::createObject(*connection_, object_path_obj_)),
       logger_(std::move(logger)), dbase_(dal::LocalStorage::GetStorage()),
       udev_monitor_(std::move(udev_monitor)) {
   // NOLINTEND(misc-include-cleaner)
-  dbus_object_ptr->registerMethod(interface_name, "health", "", "s", Health);
-  // ListDevices()
-  dbus_object_ptr->registerMethod(
-      interface_name, "ListDevices", "", "s",
-      [this](const sdbus::MethodCall &call) { ListActiveDevices(call); });
-  // ListRules
-  dbus_object_ptr->registerMethod(
-      interface_name, "ListRules", "", "s",
-      [this](const sdbus::MethodCall &call) { ListActiveRules(call); });
-  // Get users and groups
-  dbus_object_ptr->registerMethod(
-      interface_name, "GetUsersAndGroups", "", "s",
-      [this](const sdbus::MethodCall &call) { GetSystemUsersAndGroups(call); });
-  // CanAnotherUserUnmount("/dev/sd..")
-  dbus_object_ptr->registerMethod(interface_name, "CanAnotherUserUnmount", "s",
-                                  "s", [this](sdbus::MethodCall call) {
+  dbus_object_ptr
+      ->addVTable(
+          sdbus::MethodVTableItem{sdbus::MethodName{"health"},
+                                  sdbus::Signature{""},
+                                  {},
+                                  sdbus::Signature{"s"},
+                                  {},
+                                  &Health,
+                                  {}},
+          sdbus::MethodVTableItem{sdbus::MethodName{"ListDevices"},
+                                  sdbus::Signature{""},
+                                  {},
+                                  sdbus::Signature{"s"},
+                                  {},
+                                  [this](const sdbus::MethodCall &call) {
+                                    ListActiveDevices(call);
+                                  },
+                                  {}},
+          sdbus::MethodVTableItem{
+              sdbus::MethodName{"ListRules"},
+              sdbus::Signature{""},
+              {},
+              sdbus::Signature{"s"},
+              {},
+              [this](const sdbus::MethodCall &call) { ListActiveRules(call); },
+              {}},
+          sdbus::MethodVTableItem{sdbus::MethodName{"GetUsersAndGroups"},
+                                  sdbus::Signature{""},
+                                  {},
+                                  sdbus::Signature{"s"},
+                                  {},
+                                  [this](const sdbus::MethodCall &call) {
+                                    GetSystemUsersAndGroups(call);
+                                  },
+                                  {}},
+          sdbus::MethodVTableItem{sdbus::MethodName{"CanAnotherUserUnmount"},
+                                  sdbus::Signature{"s"},
+                                  {},
+                                  sdbus::Signature{"s"},
+                                  {},
+                                  [this](sdbus::MethodCall call) {
                                     CanAnotherUserUnmount(std::move(call));
-                                  });
-  // CanUserMount("/dev/sd..")
-  dbus_object_ptr->registerMethod(
-      interface_name, "CanUserMount", "s", "s",
-      [this](sdbus::MethodCall call) { CanUserMount(std::move(call)); });
-  // SaveRules (json string)
-  dbus_object_ptr->registerMethod(
-      interface_name, "SaveRules", "s", "s",
-      [this](sdbus::MethodCall call) { SaveRules(std::move(call)); });
-  dbus_object_ptr->finishRegistration();
+                                  },
+                                  {}},
+          sdbus::MethodVTableItem{
+              sdbus::MethodName{"CanUserMount"},
+              sdbus::Signature{"s"},
+              {},
+              sdbus::Signature{"s"},
+              {},
+              [this](sdbus::MethodCall call) { CanUserMount(std::move(call)); },
+              {}},
+          sdbus::MethodVTableItem{
+              sdbus::MethodName{"SaveRules"},
+              sdbus::Signature{"s"},
+              {},
+              sdbus::Signature{"s"},
+              {},
+              [this](sdbus::MethodCall call) { SaveRules(std::move(call)); },
+              {}})
+      .forInterface(interface_name_obj_);
+
+  // dbus_object_ptr->registerMethod(interface_name_obj_, "health", "", "s",
+  // Health);
+  //  ListDevices()
+  // dbus_object_ptr->registerMethod(
+  //     interface_name_obj_, "ListDevices", "", "s",
+  //     [this](const sdbus::MethodCall &call) { ListActiveDevices(call); });
+  //  ListRules
+  // dbus_object_ptr->registerMethod(
+  //     interface_name_obj_, "ListRules", "", "s",
+  //     [this](const sdbus::MethodCall &call) { ListActiveRules(call); });
+  //  Get users and groups
+  // dbus_object_ptr->registerMethod(
+  //     interface_name_obj_, "GetUsersAndGroups", "", "s",
+  //     [this](const sdbus::MethodCall &call) { GetSystemUsersAndGroups(call);
+  //     });
+  //  CanAnotherUserUnmount("/dev/sd..")
+  // dbus_object_ptr->registerMethod(interface_name_obj_,
+  // "CanAnotherUserUnmount", "s",
+  //                                 "s", [this](sdbus::MethodCall call) {
+  //                                   CanAnotherUserUnmount(std::move(call));
+  //                                 });
+  //  CanUserMount("/dev/sd..")
+  //  dbus_object_ptr->registerMethod(
+  //      interface_name_obj_, "CanUserMount", "s", "s",
+  //      [this](sdbus::MethodCall call) { CanUserMount(std::move(call)); });
+  //  SaveRules (json string)
+  //  dbus_object_ptr->registerMethod(
+  //      interface_name_obj_, "SaveRules", "s", "s",
+  //      [this](sdbus::MethodCall call) { SaveRules(std::move(call)); });
+  // dbus_object_ptr->finishRegistration();
 }
 
 void DbusMethods::Run() { connection_->enterEventLoopAsync(); }

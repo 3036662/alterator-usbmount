@@ -26,6 +26,7 @@
 #include <sdbus-c++/IConnection.h>
 #include <sdbus-c++/IObject.h>
 #include <sdbus-c++/Message.h>
+#include <sdbus-c++/Types.h>
 #include <sdbus-c++/sdbus-c++.h>
 #include <spdlog/logger.h>
 #include <string>
@@ -62,6 +63,9 @@ private:
   const std::string service_name = "ru.alterator.usbd";
   const std::string object_path = "/ru/alterator/altusbd";
   const std::string interface_name = "ru.alterator.Usbd";
+  sdbus::ServiceName service_name_obj_;
+  sdbus::ObjectPath object_path_obj_;
+  sdbus::InterfaceName interface_name_obj_;
   std::unique_ptr<sdbus::IConnection> connection_;
   std::unique_ptr<sdbus::IObject> dbus_object_ptr;
   std::shared_ptr<spdlog::logger> logger_;

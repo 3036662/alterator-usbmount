@@ -86,6 +86,7 @@ private:
       "org.freedesktop.systemd1.Manager";
   const std::string kSystemdInterfaceUnit = "org.freedesktop.systemd1.Unit";
   std::unique_ptr<sdbus::IConnection> connection_;
+  sdbus::InterfaceName sysetmd_interface_manager_;
 };
 
 } // namespace dbus_bindings

@@ -27,6 +27,8 @@
 #include <boost/json/object.hpp>
 #include <cstddef>
 #include <exception>
+#include <sdbus-c++/IConnection.h>
+#include <sdbus-c++/Types.h>
 #include <sdbus-c++/sdbus-c++.h>
 #include <stdexcept>
 #include <string>
@@ -35,9 +37,11 @@
 namespace alterator::usbmount {
 using common_utils::Log;
 
-UsbMount::UsbMount() noexcept : dbus_proxy_(nullptr) {
+UsbMount::UsbMount() noexcept
+    : dbus_proxy_(nullptr), interface_usbd_{kInterfaceName} {
   try {
-    dbus_proxy_ = sdbus::createProxy(kDest, kObjectPath);
+    dbus_proxy_ = sdbus::createProxy(sdbus::ServiceName{kDest},
+                                     sdbus::ObjectPath{kObjectPath});
   } catch (const std::exception &ex) {
     Log::Warning() << "[Usbmount] Can't create dbus proxy ";
   }
@@ -49,7 +53,8 @@ std::vector<ActiveDevice> UsbMount::ListDevices() const noexcept {
   if (!dbus_proxy_) {
     return res;
   }
-  auto method = dbus_proxy_->createMethodCall(kInterfaceName, "ListDevices");
+  const sdbus::MemberName list_method("ListDevices");
+  auto method = dbus_proxy_->createMethodCall(interface_usbd_, list_method);
   auto reply = dbus_proxy_->callMethod(method);
   std::string json_string;
   reply >> json_string;
@@ -80,7 +85,9 @@ UsbMount::GetStringNoParams(const std::string &method_name) const noexcept {
     return res;
   }
   try {
-    auto method = dbus_proxy_->createMethodCall(kInterfaceName, method_name);
+    const sdbus::MethodName method_name_obj{method_name};
+    auto method =
+        dbus_proxy_->createMethodCall(interface_usbd_, method_name_obj);
     auto reply = dbus_proxy_->callMethod(method);
     reply >> res;
   } catch (const std::exception &ex) {
@@ -98,7 +105,9 @@ UsbMount::GetStringResponse(const DbusOneParam &param) const noexcept {
     return res;
   }
   try {
-    auto method = dbus_proxy_->createMethodCall(kInterfaceName, param.method);
+    const sdbus::MethodName method_name_obj{param.method};
+    auto method =
+        dbus_proxy_->createMethodCall(interface_usbd_, method_name_obj);
     method << param.param;
     auto reply = dbus_proxy_->callMethod(method);
     reply >> res;
@@ -156,7 +165,8 @@ bool UsbMount::Run() noexcept {
     }
   }
   try {
-    dbus_proxy_ = sdbus::createProxy(kDest, kObjectPath);
+    dbus_proxy_ = sdbus::createProxy(sdbus::ServiceName{kDest},
+                                     sdbus::ObjectPath{kObjectPath});
   } catch (const std::exception &ex) {
     Log::Warning() << "[Usbmount][Run] Can't create dbus proxy ";
     return false;

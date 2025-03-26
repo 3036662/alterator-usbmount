@@ -51,6 +51,8 @@ private:
   std::string GetStringNoParams(const std::string &method_name) const noexcept;
   std::string GetStringResponse(const DbusOneParam &) const noexcept;
   std::unique_ptr<sdbus::IProxy> dbus_proxy_;
+
+  sdbus::InterfaceName interface_usbd_;
 };
 
 } // namespace alterator::usbmount
